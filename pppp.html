@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growhaz - Account & Land Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+        
+        .app-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .app-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        .section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #2e7d32;
+            border-bottom: 2px solid #e8f5e9;
+            padding-bottom: 10px;
+        }
+        
+        .user-info {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            width: 120px;
+            color: #2e7d32;
+        }
+        
+        .info-value {
+            flex: 1;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #4caf50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        
+        .input-error {
+            border-color: #e74c3c;
+        }
+        
+        .input-success {
+            border-color: #2ecc71;
+        }
+        
+        .error-message {
+            display: none;
+            align-items: center;
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .error-message i {
+            margin-right: 5px;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            display: none;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .supabase-error {
+            display: none;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .speech-indicator {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4caf50;
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .speaking .speech-indicator {
+            opacity: 1;
+        }
+        
+        .input-container {
+            position: relative;
+        }
+        
+        /* Land Management Styles */
+        .map-container {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+        
+        .land-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .land-btn {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .land-btn.primary {
+            background: #2e7d32;
+            color: white;
+        }
+        
+        .land-btn.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .land-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .land-form {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .land-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .land-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+        
+        .land-area {
+            background: #e8f5e9;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .area-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        
+        .area-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        
+        .area-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .corner-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .corner-item {
+            background: #f0f0f0;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .area-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="app-name">Growhaz</div>
+            <div class="app-subtitle">Account & Land Management</div>
+        </div>
+        
+        <div class="content">
+            <!-- Account Details Section -->
+            <div class="section">
+                <h2 class="section-title">Account & Water Information</h2>
+                
+                <div id="userInfo" class="user-info">
+                    <div class="info-row">
+                        <span class="info-label">Name:</span>
+                        <span class="info-value" id="userName">Loading...</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Phone:</span>
+                        <span class="info-value" id="userPhone">Loading...</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Language:</span>
+                        <span class="info-value" id="userLanguage">Loading...</span>
+                    </div>
+                </div>
+                
+                <div id="supabaseError" class="supabase-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="supabaseErrorText">Connection error</span>
+                </div>
+                
+                <div id="successMessage" class="success-message">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Profile updated successfully!</span>
+                </div>
+                
+                <form id="accountForm">
+                    <div class="form-group">
+                        <label for="accountHolder" class="form-label">Account Holder Name</label>
+                        <div class="input-container">
+                            <input type="text" id="accountHolder" class="form-input" placeholder="Enter account holder name">
+                            <div class="speech-indicator">
+                                <i class="fas fa-volume-up"></i>
+                            </div>
+                        </div>
+                        <div id="accountHolderError" class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Please enter account holder name</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="accountNumber" class="form-label">Account Number</label>
+                        <div class="input-container">
+                            <input type="text" id="accountNumber" class="form-input" placeholder="Enter account number">
+                            <div class="speech-indicator">
+                                <i class="fas fa-volume-up"></i>
+                            </div>
+                        </div>
+                        <div id="accountNumberError" class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Please enter valid account number</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ifscCode" class="form-label">IFSC Code</label>
+                        <div class="input-container">
+                            <input type="text" id="ifscCode" class="form-input" placeholder="Enter IFSC code">
+                            <div class="speech-indicator">
+                                <i class="fas fa-volume-up"></i>
+                            </div>
+                        </div>
+                        <div id="ifscCodeError" class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Please enter valid IFSC code</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="waterSource" class="form-label">Water Source</label>
+                        <div class="input-container">
+                            <select id="waterSource" class="form-select">
+                                <option value="">Select water source</option>
+                                <option value="canal">Canal</option>
+                                <option value="well">Well</option>
+                                <option value="tube_well">Tube Well</option>
+                                <option value="rainwater">Rainwater</option>
+                                <option value="river">River</option>
+                                <option value="pond">Pond</option>
+                            </select>
+                            <div class="speech-indicator">
+                                <i class="fas fa-volume-up"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="saveAccountBtn" class="submit-btn">
+                        <div id="accountLoader" class="loader"></div>
+                        <span id="accountText">Save Account Details</span>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Land Management Section -->
+            <div class="section">
+                <h2 class="section-title">Land Management</h2>
+                
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+                
+                <div class="land-controls">
+                    <button id="startTracking" class="land-btn primary">Start Tracking</button>
+                    <button id="stopTracking" class="land-btn secondary">Stop Tracking</button>
+                    <button id="addCorner" class="land-btn primary">Add Corner</button>
+                    <button id="finishLand" class="land-btn primary">Finish Land</button>
+                    <button id="resetLand" class="land-btn secondary">Reset</button>
+                </div>
+                
+                <div class="status-info">
+                    <p id="status">Status: Not tracking</p>
+                    <p>Current Location: <span id="coords">—</span></p>
+                    <p>Corners Added: <span id="cornerCount">0</span></p>
+                </div>
+                
+                <ul id="cornerList" class="corner-list"></ul>
+                
+                <div id="landsContainer">
+                    <!-- Land forms will be dynamically added here -->
+                    <div id="noLandsMessage" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-map-marked-alt" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                        <p>No lands added yet. Use the map to add your first land.</p>
+                    </div>
+                </div>
+                
+                <button id="saveAllLands" class="submit-btn" style="display: none;">
+                    <div id="saveAllLoader" class="loader"></div>
+                    <span id="saveAllText">Save All Lands to Database</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
+
+        // Initialize Supabase client
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true
+                }
+            });
+            console.log('Supabase client initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Supabase client:', error);
+        }
+
+        // Global variables
+        let currentLanguage = 'English';
+        let speechLang = 'en-IN';
+        let currentUser = null;
+        let currentUserId = null; // This will store the user_id from users table
+        
+        // Map variables
+        let map = L.map('map').setView([20.5937, 78.9629], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        
+        let watchId = null;
+        let currentPosMarker = null;
+        let currentCoords = null;
+        let currentCorners = [];
+        let allLands = [];
+        let drawnLayers = [];
+        let landCounter = 1;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+            setupTextToSpeech();
+        });
+
+        async function initializeApp() {
+            // Get current user
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                currentUser = user;
+                await loadUserData();
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function loadUserData() {
+            try {
+                // Get user_id from users table using auth_id
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('user_id, language, full_name, phone, account_holder, account_number, ifsc_code, water_source')
+                    .eq('auth_id', currentUser.id)
+                    .single();
+                
+                if (error) {
+                    console.error('Error loading user data:', error);
+                    showError('User profile not found. Please complete your profile first.');
+                    return;
+                }
+                
+                if (userData) {
+                    currentUserId = userData.user_id; // This is the correct user_id for foreign key
+                    currentLanguage = userData.language || 'English';
+                    speechLang = currentLanguage === 'Hindi' ? 'hi-IN' : 'en-IN';
+                    
+                    // Update UI with user info
+                    document.getElementById('userName').textContent = userData.full_name;
+                    document.getElementById('userPhone').textContent = userData.phone;
+                    document.getElementById('userLanguage').textContent = userData.language || 'English';
+                    
+                    // Load account details if exists
+                    if (userData.account_holder) {
+                        document.getElementById('accountHolder').value = userData.account_holder;
+                    }
+                    if (userData.account_number) {
+                        document.getElementById('accountNumber').value = userData.account_number;
+                    }
+                    if (userData.ifsc_code) {
+                        document.getElementById('ifscCode').value = userData.ifsc_code;
+                    }
+                    if (userData.water_source) {
+                        document.getElementById('waterSource').value = userData.water_source;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError('Error loading user profile');
+            }
+        }
+
+        function setupEventListeners() {
+            // Account form submission
+            document.getElementById('accountForm').addEventListener('submit', saveAccountDetails);
+            
+            // Land management buttons
+            document.getElementById('startTracking').addEventListener('click', startTracking);
+            document.getElementById('stopTracking').addEventListener('click', stopTracking);
+            document.getElementById('addCorner').addEventListener('click', addCorner);
+            document.getElementById('finishLand').addEventListener('click', finishLand);
+            document.getElementById('resetLand').addEventListener('click', resetLand);
+            document.getElementById('saveAllLands').addEventListener('click', saveAllLands);
+        }
+
+        function setupTextToSpeech() {
+            // Setup text-to-speech for all interactive elements
+            const interactiveElements = document.querySelectorAll('button, input, select');
+            interactiveElements.forEach(element => {
+                element.addEventListener('focus', function() {
+                    speakElementInstruction(this);
+                });
+            });
+        }
+
+        function speakElementInstruction(element) {
+            if (!window.speechSynthesis) return;
+            
+            let text = '';
+            const elementType = element.tagName.toLowerCase();
+            const elementId = element.id;
+            const elementText = element.textContent || element.value || element.placeholder;
+            
+            if (currentLanguage === 'Hindi') {
+                switch(elementType) {
+                    case 'button':
+                        text = elementText;
+                        break;
+                    case 'input':
+                    case 'select':
+                        if (elementId.includes('accountHolder')) text = 'खाता धारक का नाम दर्ज करें';
+                        else if (elementId.includes('accountNumber')) text = 'खाता नंबर दर्ज करें';
+                        else if (elementId.includes('ifscCode')) text = 'आई एफ एस सी कोड दर्ज करें';
+                        else if (elementId.includes('waterSource')) text = 'पानी का स्रोत चुनें';
+                        else if (elementId.includes('landName')) text = 'जमीन का नाम दर्ज करें';
+                        else if (elementId.includes('soilType')) text = 'मिट्टी का प्रकार चुनें';
+                        else if (elementId.includes('waterAvailability')) text = 'पानी की उपलब्धता चुनें';
+                        else text = 'इनपुट फ़ील्ड';
+                        break;
+                    default:
+                        text = elementText;
+                }
+            } else {
+                switch(elementType) {
+                    case 'button':
+                        text = elementText;
+                        break;
+                    case 'input':
+                    case 'select':
+                        if (elementId.includes('accountHolder')) text = 'Enter account holder name';
+                        else if (elementId.includes('accountNumber')) text = 'Enter account number';
+                        else if (elementId.includes('ifscCode')) text = 'Enter IFSC code';
+                        else if (elementId.includes('waterSource')) text = 'Select water source';
+                        else if (elementId.includes('landName')) text = 'Enter land name';
+                        else if (elementId.includes('soilType')) text = 'Select soil type';
+                        else if (elementId.includes('waterAvailability')) text = 'Select water availability';
+                        else text = 'Input field';
+                        break;
+                    default:
+                        text = elementText;
+                }
+            }
+            
+            if (text) {
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = speechLang;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        function speakText(text) {
+            if (!window.speechSynthesis) return;
+            
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = speechLang;
+            window.speechSynthesis.speak(msg);
+        }
+
+        // Account Management Functions
+        async function saveAccountDetails(e) {
+            e.preventDefault();
+            
+            const accountHolder = document.getElementById('accountHolder').value.trim();
+            const accountNumber = document.getElementById('accountNumber').value.trim();
+            const ifscCode = document.getElementById('ifscCode').value.trim();
+            const waterSource = document.getElementById('waterSource').value;
+            
+            // Basic validation
+            if (!accountHolder) {
+                showFieldError(document.getElementById('accountHolder'), document.getElementById('accountHolderError'), 
+                    currentLanguage === 'Hindi' ? 'कृपया खाता धारक का नाम दर्ज करें' : 'Please enter account holder name');
+                return;
+            }
+            
+            if (!accountNumber || accountNumber.length < 8) {
+                showFieldError(document.getElementById('accountNumber'), document.getElementById('accountNumberError'), 
+                    currentLanguage === 'Hindi' ? 'कृपया वैध खाता नंबर दर्ज करें' : 'Please enter valid account number');
+                return;
+            }
+            
+            if (!ifscCode || ifscCode.length !== 11) {
+                showFieldError(document.getElementById('ifscCode'), document.getElementById('ifscCodeError'), 
+                    currentLanguage === 'Hindi' ? 'कृपया वैध आई एफ एस सी कोड दर्ज करें' : 'Please enter valid IFSC code');
+                return;
+            }
+            
+            // Show loading state
+            const saveBtn = document.getElementById('saveAccountBtn');
+            const btnText = document.getElementById('accountText');
+            const loader = document.getElementById('accountLoader');
+            
+            saveBtn.disabled = true;
+            btnText.textContent = currentLanguage === 'Hindi' ? 'सहेजा जा रहा है...' : 'Saving...';
+            loader.style.display = 'inline-block';
+            
+            try {
+                // Update user profile with account details
+                const { data, error } = await supabase
+                    .from('users')
+                    .update({
+                        account_holder: accountHolder,
+                        account_number: accountNumber,
+                        ifsc_code: ifscCode,
+                        water_source: waterSource,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('auth_id', currentUser.id);
+                
+                if (error) throw error;
+                
+                // Show success message
+                document.getElementById('successMessage').style.display = 'flex';
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 3000);
+                
+                speakText(currentLanguage === 'Hindi' ? 
+                    'खाता विवरण सफलतापूर्वक सहेजे गए' : 
+                    'Account details saved successfully');
+                
+            } catch (error) {
+                console.error('Error saving account details:', error);
+                showError(currentLanguage === 'Hindi' ? 
+                    'खाता विवरण सहेजने में त्रुटि: ' + error.message : 
+                    'Error saving account details: ' + error.message);
+            } finally {
+                // Reset button state
+                saveBtn.disabled = false;
+                btnText.textContent = currentLanguage === 'Hindi' ? 'खाता विवरण सहेजें' : 'Save Account Details';
+                loader.style.display = 'none';
+            }
+        }
+
+        function showFieldError(input, errorElement, message) {
+            input.classList.add('input-error');
+            input.classList.remove('input-success');
+            errorElement.querySelector('span').textContent = message;
+            errorElement.style.display = 'flex';
+        }
+
+        function showFieldSuccess(input, errorElement) {
+            input.classList.remove('input-error');
+            input.classList.add('input-success');
+            errorElement.style.display = 'none';
+        }
+
+        // Land Management Functions
+        function startTracking() {
+            if (!navigator.geolocation) { 
+                speakText(currentLanguage === 'Hindi' ? "जीपीएस समर्थित नहीं है" : "GPS not supported");
+                return; 
+            }
+            
+            document.getElementById("status").textContent = currentLanguage === 'Hindi' ? "स्थिति: ट्रैकिंग..." : "Status: Tracking...";
+            speakText(currentLanguage === 'Hindi' ? "ट्रैकिंग शुरू" : "Tracking started");
+            
+            watchId = navigator.geolocation.watchPosition(pos => {
+                const { latitude, longitude } = pos.coords;
+                currentCoords = [latitude, longitude];
+                document.getElementById("coords").textContent = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                
+                if (currentPosMarker) {
+                    currentPosMarker.setLatLng(currentCoords);
+                } else {
+                    currentPosMarker = L.marker(currentCoords).addTo(map);
+                }
+                map.setView(currentCoords, 18);
+            }, err => { 
+                const errorMsg = currentLanguage === 'Hindi' ? "स्थान त्रुटि: " : "Location error: ";
+                speakText(errorMsg + err.message);
+            }, { enableHighAccuracy: true, maximumAge: 1000 });
+        }
+
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+                document.getElementById("status").textContent = currentLanguage === 'Hindi' ? "स्थिति: रोक दी गई" : "Status: Stopped";
+                speakText(currentLanguage === 'Hindi' ? "ट्रैकिंग रोक दी गई" : "Tracking stopped");
+            }
+        }
+
+        function addCorner() {
+            if (!currentCoords) { 
+                speakText(currentLanguage === 'Hindi' ? "पहले स्थान प्राप्त करें" : "Get location first");
+                return; 
+            }
+            
+            currentCorners.push([...currentCoords]);
+            updateCornerList();
+            L.circleMarker(currentCoords, {radius:6, color:"red"}).addTo(map);
+            
+            const cornerMsg = currentLanguage === 'Hindi' ? 
+                `कोना ${currentCorners.length} जोड़ा गया` : 
+                `Corner ${currentCorners.length} added`;
+            speakText(cornerMsg);
+        }
+
+        function updateCornerList() {
+            const list = document.getElementById("cornerList");
+            const count = document.getElementById("cornerCount");
+            
+            list.innerHTML = "";
+            count.textContent = currentCorners.length;
+            
+            currentCorners.forEach((c, i) => {
+                const li = document.createElement("li");
+                li.className = "corner-item";
+                li.textContent = `${currentLanguage === 'Hindi' ? 'कोना' : 'Corner'} ${i+1}: (${c[0].toFixed(6)}, ${c[1].toFixed(6)})`;
+                list.appendChild(li);
+            });
+        }
+
+        function finishLand() {
+            if (currentCorners.length < 3) {
+                const errorMsg = currentLanguage === 'Hindi' ? 
+                    "कम से कम 3 कोने आवश्यक हैं" : 
+                    "At least 3 corners required";
+                showError(errorMsg);
+                speakText(errorMsg);
+                return;
+            }
+
+            // Close the polygon by adding the first point at the end
+            const polygonCoords = [...currentCorners, currentCorners[0]];
+            
+            // Calculate area using Turf.js
+            const polygon = turf.polygon([polygonCoords]);
+            const areaSqMeters = turf.area(polygon);
+            const areaHectares = areaSqMeters / 10000;
+            const areaAcres = areaSqMeters / 4046.856;
+            
+            // Create land object
+            const landId = 'land-' + Date.now();
+            const land = {
+                id: landId,
+                corners: polygonCoords,
+                areaSqMeters: parseFloat(areaSqMeters.toFixed(2)),
+                areaHectares: parseFloat(areaHectares.toFixed(4)),
+                areaAcres: parseFloat(areaAcres.toFixed(4)),
+                landName: `${currentLanguage === 'Hindi' ? 'जमीन' : 'Land'} ${landCounter}`,
+                soilType: 'loam',
+                waterAvailability: 'medium'
+            };
+            
+            allLands.push(land);
+            landCounter++;
+            
+            // Draw polygon on map
+            const polygonLayer = L.polygon(polygonCoords, {color: 'blue', fillOpacity: 0.1}).addTo(map);
+            drawnLayers.push(polygonLayer);
+            
+            // Create land form
+            createLandForm(land);
+            
+            // Reset current corners
+            currentCorners = [];
+            updateCornerList();
+            
+            // Show save button
+            document.getElementById('saveAllLands').style.display = 'flex';
+            document.getElementById('noLandsMessage').style.display = 'none';
+            
+            const successMsg = currentLanguage === 'Hindi' ? 
+                "जमीन सफलतापूर्वक जोड़ी गई" : 
+                "Land added successfully";
+            speakText(successMsg);
+        }
+
+        function createLandForm(land) {
+            const landsContainer = document.getElementById('landsContainer');
+            
+            const landForm = document.createElement('div');
+            landForm.className = 'land-form';
+            landForm.id = `land-${land.id}`;
+            
+            landForm.innerHTML = `
+                <div class="land-header">
+                    <div class="land-title">${land.landName}</div>
+                    <button class="land-btn secondary" onclick="removeLand('${land.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                
+                <div class="land-area">
+                    <div class="area-stats">
+                        <div>
+                            <div class="area-value">${land.areaSqMeters}</div>
+                            <div class="area-label">m²</div>
+                        </div>
+                        <div>
+                            <div class="area-value">${land.areaHectares}</div>
+                            <div class="area-label">हेक्टेयर</div>
+                        </div>
+                        <div>
+                            <div class="area-value">${land.areaAcres}</div>
+                            <div class="area-label">एकड़</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="landName-${land.id}">
+                        ${currentLanguage === 'Hindi' ? 'जमीन का नाम' : 'Land Name'}
+                    </label>
+                    <input type="text" 
+                           class="form-input" 
+                           id="landName-${land.id}" 
+                           value="${land.landName}"
+                           placeholder="${currentLanguage === 'Hindi' ? 'जमीन का नाम दर्ज करें' : 'Enter land name'}">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="soilType-${land.id}">
+                        ${currentLanguage === 'Hindi' ? 'मिट्टी का प्रकार' : 'Soil Type'}
+                    </label>
+                    <select class="form-select" id="soilType-${land.id}">
+                        <option value="sandy" ${land.soilType === 'sandy' ? 'selected' : ''}>
+                            ${currentLanguage === 'Hindi' ? 'रेतीली' : 'Sandy'}
+                        </option>
+                        <option value="clay" ${land.soilType === 'clay' ? 'selected' : ''}>
+                            ${currentLanguage === 'Hindi' ? 'चिकनी मिट्टी' : 'Clay'}
+                        </option>
+                        <option value="loam" ${land.soilType === 'loam' ? 'selected' : ''}>
+                            ${currentLanguage === 'Hindi' ? 'दोमट मिट्टी' : 'Loam'}
+                        </option>
+                        <option value="silt" ${land.soilType === 'silt' ? 'selected' : ''}>
+                            ${currentLanguage === 'Hindi' ? 'गाद मिट्टी' : 'Silt'}
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="waterAvailability-${land.id}">
+                        ${currentLanguage === 'Hindi' ? 'पानी की उपलब्धता' : 'Water Availability'}
+                    </label>
+                    <select class="form-select" id="waterAvailability-${land.id}">
+                        <option value="low" ${land.waterAvailability === 'low' ? 'selected' : ''}>
+                            ${currentLanguage === 'Hindi' ? 'कम' : 'Low'}
+                        </option>
+                        <option value="medium" ${land.waterAvailability === 'medium' ? 'selected' : ''}>
+                            ${currentLanguage === 'Hindi' ? 'मध्यम' : 'Medium'}
+                        </option>
+                        <option value="high" ${land.waterAvailability === 'high' ? 'selected' : ''}>
+                            ${currentLanguage === 'Hindi' ? 'उच्च' : 'High'}
+                        </option>
+                    </select>
+                </div>
+            `;
+            
+            landsContainer.appendChild(landForm);
+        }
+
+        function removeLand(landId) {
+            // Remove from allLands array
+            allLands = allLands.filter(land => land.id !== landId);
+            
+            // Remove from map
+            const layerIndex = drawnLayers.findIndex(layer => layer._leaflet_id === landId);
+            if (layerIndex !== -1) {
+                map.removeLayer(drawnLayers[layerIndex]);
+                drawnLayers.splice(layerIndex, 1);
+            }
+            
+            // Remove form
+            const landForm = document.getElementById(`land-${landId}`);
+            if (landForm) {
+                landForm.remove();
+            }
+            
+            // Show no lands message if no lands left
+            if (allLands.length === 0) {
+                document.getElementById('noLandsMessage').style.display = 'block';
+                document.getElementById('saveAllLands').style.display = 'none';
+            }
+            
+            speakText(currentLanguage === 'Hindi' ? "जमीन हटा दी गई" : "Land removed");
+        }
+
+        function resetLand() {
+            currentCorners = [];
+            updateCornerList();
+            
+            // Clear current tracking
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            // Remove current position marker
+            if (currentPosMarker) {
+                map.removeLayer(currentPosMarker);
+                currentPosMarker = null;
+            }
+            
+            document.getElementById("status").textContent = currentLanguage === 'Hindi' ? "स्थिति: ट्रैकिंग नहीं" : "Status: Not tracking";
+            document.getElementById("coords").textContent = "—";
+            
+            speakText(currentLanguage === 'Hindi' ? "रीसेट किया गया" : "Reset");
+        }
+
+        async function saveAllLands() {
+            if (allLands.length === 0) {
+                showError(currentLanguage === 'Hindi' ? "कोई जमीन नहीं है" : "No lands to save");
+                return;
+            }
+            
+            // Update land data with form values
+            allLands.forEach(land => {
+                const landNameInput = document.getElementById(`landName-${land.id}`);
+                const soilTypeInput = document.getElementById(`soilType-${land.id}`);
+                const waterAvailabilityInput = document.getElementById(`waterAvailability-${land.id}`);
+                
+                if (landNameInput) land.landName = landNameInput.value;
+                if (soilTypeInput) land.soilType = soilTypeInput.value;
+                if (waterAvailabilityInput) land.waterAvailability = waterAvailabilityInput.value;
+            });
+            
+            // Show loading state
+            const saveBtn = document.getElementById('saveAllLands');
+            const btnText = document.getElementById('saveAllText');
+            const loader = document.getElementById('saveAllLoader');
+            
+            saveBtn.disabled = true;
+            btnText.textContent = currentLanguage === 'Hindi' ? 'सहेजा जा रहा है...' : 'Saving...';
+            loader.style.display = 'inline-block';
+            
+            try {
+                // Prepare land data for database
+                const landData = allLands.map(land => ({
+                    user_id: currentUserId,
+                    land_name: land.landName,
+                    coordinates: land.corners,
+                    area_sq_meters: land.areaSqMeters,
+                    area_hectares: land.areaHectares,
+                    area_acres: land.areaAcres,
+                    soil_type: land.soilType,
+                    water_availability: land.waterAvailability,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }));
+                
+                // Insert into database
+                const { data, error } = await supabase
+                    .from('lands')
+                    .insert(landData);
+                
+                if (error) throw error;
+                
+                // Show success message
+                const successMsg = currentLanguage === 'Hindi' ? 
+                    `${allLands.length} जमीनें सफलतापूर्वक सहेजी गईं` : 
+                    `${allLands.length} lands saved successfully`;
+                showSuccess(successMsg);
+                speakText(successMsg);
+                
+                // Clear lands after successful save
+                allLands = [];
+                landCounter = 1;
+                document.getElementById('landsContainer').innerHTML = `
+                    <div id="noLandsMessage" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-map-marked-alt" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                        <p>${currentLanguage === 'Hindi' ? 'कोई जमीन नहीं जोड़ी गई। अपनी पहली जमीन जोड़ने के लिए मानचित्र का उपयोग करें।' : 'No lands added yet. Use the map to add your first land.'}</p>
+                    </div>
+                `;
+                document.getElementById('saveAllLands').style.display = 'none';
+                
+                // Clear drawn layers from map
+                drawnLayers.forEach(layer => {
+                    map.removeLayer(layer);
+                });
+                drawnLayers = [];
+                
+            } catch (error) {
+                console.error('Error saving lands:', error);
+                showError(currentLanguage === 'Hindi' ? 
+                    'जमीनें सहेजने में त्रुटि: ' + error.message : 
+                    'Error saving lands: ' + error.message);
+            } finally {
+                // Reset button state
+                saveBtn.disabled = false;
+                btnText.textContent = currentLanguage === 'Hindi' ? 'सभी जमीनें डेटाबेस में सहेजें' : 'Save All Lands to Database';
+                loader.style.display = 'none';
+            }
+        }
+
+        // Utility Functions
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            if (!errorElement) {
+                const newErrorElement = document.createElement('div');
+                newErrorElement.id = 'errorMessage';
+                newErrorElement.className = 'error-message';
+                newErrorElement.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
+                document.querySelector('.content').insertBefore(newErrorElement, document.querySelector('.section'));
+            } else {
+                errorElement.querySelector('span').textContent = message;
+                errorElement.style.display = 'flex';
+            }
+            
+            setTimeout(() => {
+                document.getElementById('errorMessage').style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            if (!successElement) {
+                const newSuccessElement = document.createElement('div');
+                newSuccessElement.id = 'successMessage';
+                newSuccessElement.className = 'success-message';
+                newSuccessElement.innerHTML = `<i class="fas fa-check-circle"></i><span>${message}</span>`;
+                document.querySelector('.content').insertBefore(newSuccessElement, document.querySelector('.section'));
+            } else {
+                successElement.querySelector('span').textContent = message;
+                successElement.style.display = 'flex';
+            }
+            
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
