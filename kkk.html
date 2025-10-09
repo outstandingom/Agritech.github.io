@@ -797,7 +797,7 @@
             try {
                 // Prepare lands data
                 const landsToSave = allLands.map(land => ({
-                    user_id: currentUser.id,
+                    user_id: actualUser.id,
                     land_name: land.landName,
                     corners: land.corners,
                     area_sq_meters: land.areaSqMeters,
