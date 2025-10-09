@@ -750,6 +750,12 @@
                 speakText(currentLanguage === 'Hindi' ? 
                     'खाता विवरण सफलतापूर्वक सहेजे गए' : 
                     'Account details saved successfully');
+           
+             setTimeout(() => {
+                        window.location.href = 'profile.html';
+                    }, 2000);
+                    
+                
                 
             } catch (error) {
                 console.error('Error saving account details:', error);
