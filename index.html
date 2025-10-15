@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Growlnz - Smart Agricultural Assistant</title>
+    <title>GrowSmart - Smart Agricultural Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -63,6 +63,46 @@
         .location {
             font-size: 14px;
             color: var(--text-light);
+        }
+
+        /* Menu Bar */
+        .menu-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .menu-item {
+            flex: 1;
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .menu-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .menu-icon {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .menu-label {
+            font-size: 12px;
+            font-weight: 600;
         }
 
         /* Date and Assistant Card */
@@ -331,6 +371,200 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* AI Voice Chat Modal */
+        .ai-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ai-modal-content {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 25px;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .ai-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .ai-chat-box {
+            background: var(--background);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin: 15px 0;
+            min-height: 150px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .ai-message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+
+        .ai-user {
+            background: var(--primary-light);
+            color: white;
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        .ai-bot {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .ai-voice-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .ai-voice-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .ai-voice-btn.listening {
+            background: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        /* Market Price Section */
+        .market-price-section {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .price-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .crop-price {
+            font-weight: 600;
+        }
+
+        .price-change {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .price-up {
+            color: #27ae60;
+        }
+
+        .price-down {
+            color: #e74c3c;
+        }
+
+        /* Subsidy Section */
+        .subsidy-section {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .subsidy-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .subsidy-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .subsidy-name {
+            font-weight: 600;
+        }
+
+        .subsidy-status {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .status-approved {
+            background: rgba(39, 174, 96, 0.1);
+            color: #27ae60;
+        }
+
+        .status-pending {
+            background: rgba(241, 196, 15, 0.1);
+            color: #f1c40f;
+        }
+
+        .status-rejected {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
     </style>
 </head>
 <body>
@@ -340,6 +574,22 @@
         <div class="time-location">
             <div class="time">02:18 PM</div>
             <div class="location">Indore, Madhya Pradesh</div>
+        </div>
+    </div>
+
+    <!-- Menu Bar -->
+    <div class="menu-bar">
+        <div class="menu-item active" data-section="dashboard">
+            <div class="menu-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="menu-label">Market Price</div>
+        </div>
+        <div class="menu-item" data-section="subsidy">
+            <div class="menu-icon"><i class="fas fa-hand-holding-usd"></i></div>
+            <div class="menu-label">Subsidy</div>
+        </div>
+        <div class="menu-item" id="ai-chat-btn">
+            <div class="menu-icon"><i class="fas fa-robot"></i></div>
+            <div class="menu-label">AI Assistant</div>
         </div>
     </div>
 
@@ -364,92 +614,157 @@
         <i class="fas fa-lock"></i> Access Managed
     </div>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-value">12.4L</div>
-            <div class="stat-label">Expected Profit</div>
+    <!-- Main Dashboard Content -->
+    <div id="dashboard-content">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">12.4L</div>
+                <div class="stat-label">Expected Profit</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">8,500</div>
+                <div class="stat-label">Subsidy Received</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">65%</div>
+                <div class="stat-label">Rain Probability</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">4.2</div>
+                <div class="stat-label">Soil Health</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">8,500</div>
-            <div class="stat-label">Subsidy Received</div>
+
+        <!-- Crop Status -->
+        <div class="crop-status">
+            <div class="section-title">Current Crop Status</div>
+            <div class="crop-item">
+                <div class="crop-name">Soybean</div>
+                <div class="crop-details">
+                    <div class="crop-acreage">8 acres</div>
+                    <div class="crop-stage">Flowering Stage</div>
+                </div>
+            </div>
+            <div class="crop-item">
+                <div class="crop-name">Wheat</div>
+                <div class="crop-details">
+                    <div class="crop-acreage">4 acres</div>
+                    <div class="crop-stage">Germination Stage</div>
+                </div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">65%</div>
-            <div class="stat-label">Rain Probability</div>
+
+        <!-- AI Recommendation -->
+        <div class="ai-recommendation">
+            <div class="section-title">AI Recommendation</div>
+            <div class="recommendation-text">
+                Perfect time for <span class="highlight">felsur spray</span> on soybean. Market price trending <span class="highlight">up by 12%</span>.
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">4.2</div>
-            <div class="stat-label">Soil Health</div>
+
+        <!-- Weather Alerts -->
+        <div class="weather-alerts">
+            <div class="section-title">Weather & Alerts</div>
+            
+            <div class="alert-grid">
+                <div class="alert-item">
+                    <div class="alert-value" id="currentTemp">--°C</div>
+                    <div class="alert-label">Temperature</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-value" id="currentHumidity">--%</div>
+                    <div class="alert-label">Humidity</div>
+                </div>
+            </div>
+
+            <div class="weather-alert">
+                <i class="fas fa-exclamation-triangle"></i> Heavy rainfall expected in 3 days. Consider harvesting ready crops.
+            </div>
         </div>
     </div>
 
-    <!-- Crop Status -->
-    <div class="crop-status">
-        <div class="section-title">Current Crop Status</div>
-        <div class="crop-item">
-            <div class="crop-name">Soybean</div>
-            <div class="crop-details">
-                <div class="crop-acreage">8 acres</div>
-                <div class="crop-stage">Flowering Stage</div>
+    <!-- Market Price Section -->
+    <div class="market-price-section" id="market-price-content">
+        <div class="section-title">Current Market Prices</div>
+        <div class="price-item">
+            <div class="crop-price">Soybean</div>
+            <div class="price-details">
+                <div class="price-value">₹4,850 /Quintal</div>
+                <div class="price-change price-up">+12.5%</div>
             </div>
         </div>
-        <div class="crop-item">
-            <div class="crop-name">Wheat</div>
-            <div class="crop-details">
-                <div class="crop-acreage">4 acres</div>
-                <div class="crop-stage">Germination Stage</div>
+        <div class="price-item">
+            <div class="crop-price">Wheat</div>
+            <div class="price-details">
+                <div class="price-value">₹2,150 /Quintal</div>
+                <div class="price-change price-up">+3.2%</div>
+            </div>
+        </div>
+        <div class="price-item">
+            <div class="crop-price">Corn</div>
+            <div class="price-details">
+                <div class="price-value">₹1,980 /Quintal</div>
+                <div class="price-change price-down">-2.1%</div>
+            </div>
+        </div>
+        <div class="price-item">
+            <div class="crop-price">Cotton</div>
+            <div class="price-details">
+                <div class="price-value">₹6,750 /Quintal</div>
+                <div class="price-change price-up">+5.7%</div>
             </div>
         </div>
     </div>
 
-    <!-- AI Recommendation -->
-    <div class="ai-recommendation">
-        <div class="section-title">AI Recommendation</div>
-        <div class="recommendation-text">
-            Perfect time for <span class="highlight">felsur spray</span> on soybean. Market price trending <span class="highlight">up by 12%</span>.
+    <!-- Subsidy Section -->
+    <div class="subsidy-section" id="subsidy-content">
+        <div class="section-title">Subsidy Status</div>
+        <div class="subsidy-item">
+            <div class="subsidy-name">PM-KISAN</div>
+            <div class="subsidy-status status-approved">Approved</div>
+        </div>
+        <div class="subsidy-item">
+            <div class="subsidy-name">Seed Subsidy</div>
+            <div class="subsidy-status status-pending">Pending</div>
+        </div>
+        <div class="subsidy-item">
+            <div class="subsidy-name">Fertilizer Subsidy</div>
+            <div class="subsidy-status status-approved">Approved</div>
+        </div>
+        <div class="subsidy-item">
+            <div class="subsidy-name">Irrigation Equipment</div>
+            <div class="subsidy-status status-rejected">Rejected</div>
         </div>
     </div>
 
-    <!-- Weather Alerts -->
-    <div class="weather-alerts">
-        <div class="section-title">Weather & Alerts</div>
-        
-        <div class="alert-grid">
-            <div class="alert-item">
-                <div class="alert-value" id="currentTemp">--°C</div>
-                <div class="alert-label">Temperature</div>
+    <!-- AI Voice Chat Modal -->
+    <div class="ai-modal" id="ai-modal">
+        <div class="ai-modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            <div class="ai-modal-title">AI Assistant</div>
+            <div class="ai-chat-box" id="ai-chat-box">
+                <div class="ai-message ai-bot">
+                    Hello! I'm your farming assistant. How can I help you today?
+                </div>
             </div>
-            <div class="alert-item">
-                <div class="alert-value" id="currentHumidity">--%</div>
-                <div class="alert-label">Humidity</div>
-            </div>
-        </div>
-
-        <div class="weather-alert">
-            <i class="fas fa-exclamation-triangle"></i> Heavy rainfall expected in 3 days. Consider harvesting ready crops.
+            <button class="ai-voice-btn" id="ai-voice-btn">
+                <i class="fas fa-microphone"></i> Tap to Speak
+            </button>
         </div>
     </div>
 
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-        <div class="nav-item active">
+        <div class="nav-item active" data-page="dashboard">
             <i class="fas fa-home"></i>
-            <span>Home</span>
+            <span>Dashboard</span>
         </div>
-        <div class="nav-item">
-            <i class="fas fa-vial"></i>
-            <span>Soil</span>
+        <div class="nav-item" data-page="blockchain">
+            <i class="fas fa-link"></i>
+            <span>Blockchain</span>
         </div>
-        <div class="nav-item">
-            <i class="fas fa-seedling"></i>
-            <span>Crops</span>
-        </div>
-        <div class="nav-item">
-            <i class="fas fa-robot"></i>
-            <span>AI</span>
-        </div>
-        <div class="nav-item">
+        <div class="nav-item" data-page="profile">
             <i class="fas fa-user"></i>
             <span>Profile</span>
         </div>
@@ -579,16 +894,191 @@
             }
         }
         
-        // Add interactive elements
-        document.addEventListener('DOMContentLoaded', function() {
+        // Menu bar functionality
+        function setupMenuBar() {
+            const menuItems = document.querySelectorAll('.menu-item');
+            const dashboardContent = document.getElementById('dashboard-content');
+            const marketPriceContent = document.getElementById('market-price-content');
+            const subsidyContent = document.getElementById('subsidy-content');
+            const aiModal = document.getElementById('ai-modal');
+            const aiChatBtn = document.getElementById('ai-chat-btn');
+            const closeModal = document.getElementById('close-modal');
+            
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active class from all menu items
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                    
+                    // Get the section to show
+                    const section = this.getAttribute('data-section');
+                    
+                    // Hide all content sections
+                    dashboardContent.style.display = 'none';
+                    marketPriceContent.style.display = 'none';
+                    subsidyContent.style.display = 'none';
+                    
+                    // Show the selected section
+                    if (section === 'dashboard') {
+                        dashboardContent.style.display = 'block';
+                    } else if (section === 'market-price') {
+                        marketPriceContent.style.display = 'block';
+                    } else if (section === 'subsidy') {
+                        subsidyContent.style.display = 'block';
+                    }
+                });
+            });
+            
+            // AI Chat button functionality
+            aiChatBtn.addEventListener('click', function() {
+                aiModal.style.display = 'flex';
+            });
+            
+            // Close modal functionality
+            closeModal.addEventListener('click', function() {
+                aiModal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === aiModal) {
+                    aiModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // AI Voice Chat functionality
+        function setupAIVoiceChat() {
+            const voiceBtn = document.getElementById('ai-voice-btn');
+            const chatBox = document.getElementById('ai-chat-box');
+            
+            // Check if browser supports speech recognition
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                voiceBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Voice Not Supported';
+                voiceBtn.disabled = true;
+                return;
+            }
+            
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            let isListening = false;
+            
+            voiceBtn.addEventListener('click', function() {
+                if (!isListening) {
+                    // Start listening
+                    recognition.start();
+                    voiceBtn.classList.add('listening');
+                    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Listening...';
+                    isListening = true;
+                } else {
+                    // Stop listening
+                    recognition.stop();
+                    voiceBtn.classList.remove('listening');
+                    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Tap to Speak';
+                    isListening = false;
+                }
+            });
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                
+                // Add user message to chat
+                addMessageToChat(transcript, 'user');
+                
+                // Process the query and generate a response
+                setTimeout(() => {
+                    const response = generateAIResponse(transcript);
+                    addMessageToChat(response, 'bot');
+                }, 1000);
+                
+                // Reset button state
+                voiceBtn.classList.remove('listening');
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Tap to Speak';
+                isListening = false;
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event.error);
+                voiceBtn.classList.remove('listening');
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Tap to Speak';
+                isListening = false;
+            };
+            
+            recognition.onend = function() {
+                if (isListening) {
+                    voiceBtn.classList.remove('listening');
+                    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Tap to Speak';
+                    isListening = false;
+                }
+            };
+        }
+        
+        // Add message to chat box
+        function addMessageToChat(message, sender) {
+            const chatBox = document.getElementById('ai-chat-box');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('ai-message');
+            messageDiv.classList.add(sender === 'user' ? 'ai-user' : 'ai-bot');
+            messageDiv.textContent = message;
+            
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        // Generate AI response based on user query
+        function generateAIResponse(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            if (lowerQuery.includes('weather') || lowerQuery.includes('rain')) {
+                return "Based on current forecasts, expect moderate rainfall in the next 3 days. Consider delaying irrigation for your soybean crop.";
+            } else if (lowerQuery.includes('price') || lowerQuery.includes('market')) {
+                return "Soybean prices are currently at ₹4,850 per quintal, up 12.5% from last week. It's a good time to consider selling.";
+            } else if (lowerQuery.includes('subsidy') || lowerQuery.includes('government')) {
+                return "Your PM-KISAN subsidy has been approved. The seed subsidy application is still pending review.";
+            } else if (lowerQuery.includes('fertilizer') || lowerQuery.includes('spray')) {
+                return "For your soybean crop at flowering stage, I recommend applying felsur spray within the next 2-3 days for optimal results.";
+            } else if (lowerQuery.includes('soil') || lowerQuery.includes('health')) {
+                return "Your soil health index is 4.2/5. Consider adding organic compost to maintain fertility for the next planting season.";
+            } else {
+                return "I understand you're asking about: '" + query + "'. For detailed farming advice, please consult with our agricultural experts or check the specific section in the app.";
+            }
+        }
+        
+        // Bottom navigation functionality
+        function setupBottomNav() {
             const navItems = document.querySelectorAll('.nav-item');
             
             navItems.forEach(item => {
                 item.addEventListener('click', function() {
                     navItems.forEach(nav => nav.classList.remove('active'));
                     this.classList.add('active');
+                    
+                    // In a real app, you would navigate to different pages here
+                    const page = this.getAttribute('data-page');
+                    console.log(`Navigating to ${page} page`);
+                    
+                    // For this demo, we'll just show an alert
+                    if (page === 'blockchain') {
+                        alert("Blockchain page would show transaction history and smart contracts");
+                    } else if (page === 'profile') {
+                        alert("Profile page would show farmer details and settings");
+                    }
                 });
             });
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up all interactive elements
+            setupMenuBar();
+            setupAIVoiceChat();
+            setupBottomNav();
             
             // Simulate loading of data
             setTimeout(() => {
