@@ -33,6 +33,7 @@
             padding: 20px;
             max-width: 400px;
             margin: 0 auto;
+            padding-bottom: 80px; /* Space for fixed bottom nav */
         }
 
         /* Header Styles */
@@ -263,6 +264,13 @@
             box-shadow: var(--shadow);
             display: flex;
             justify-content: space-around;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 400px;
+            z-index: 1000;
         }
 
         .nav-item {
@@ -307,6 +315,22 @@
             background: var(--border);
             margin: 20px 0;
         }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -328,9 +352,11 @@
     <!-- Weather Card -->
     <div class="weather-card">
         <div class="weather-header">
-            <div class="weather-condition">32°C - Sunny</div>
+            <div class="weather-condition" id="weatherCondition">
+                <span class="spinner"></span>Loading...
+            </div>
         </div>
-        <div class="weather-desc">Perfect farming weather today</div>
+        <div class="weather-desc" id="weatherDesc">Fetching weather data...</div>
     </div>
 
     <!-- Access Managed -->
@@ -391,11 +417,11 @@
         
         <div class="alert-grid">
             <div class="alert-item">
-                <div class="alert-value">32°C</div>
+                <div class="alert-value" id="currentTemp">--°C</div>
                 <div class="alert-label">Temperature</div>
             </div>
             <div class="alert-item">
-                <div class="alert-value">68%</div>
+                <div class="alert-value" id="currentHumidity">--%</div>
                 <div class="alert-label">Humidity</div>
             </div>
         </div>
@@ -450,6 +476,109 @@
         updateTime();
         setInterval(updateTime, 60000);
         
+        // Get weather data automatically
+        function getWeather() {
+            const weatherCondition = document.getElementById('weatherCondition');
+            const weatherDesc = document.getElementById('weatherDesc');
+            const currentTemp = document.getElementById('currentTemp');
+            const currentHumidity = document.getElementById('currentHumidity');
+
+            if (!navigator.geolocation) {
+                weatherCondition.textContent = "Geolocation not supported";
+                weatherDesc.textContent = "Cannot fetch weather data";
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(success, error);
+
+            function success(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                // Update location in header
+                const locationElement = document.querySelector('.location');
+                
+                // Reverse geocoding to get location name
+                fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)
+                    .then(response => response.json())
+                    .then(locationData => {
+                        if (locationData.city) {
+                            locationElement.textContent = `${locationData.city}, ${locationData.countryName}`;
+                        }
+                    })
+                    .catch(err => {
+                        console.log("Could not fetch location name");
+                    });
+                
+                // Open-Meteo API call for weather
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Network response was not ok");
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.current_weather) {
+                            const cw = data.current_weather;
+                            const temp = Math.round(cw.temperature);
+                            
+                            // Get humidity if available
+                            let humidity = "--";
+                            if (data.hourly && data.hourly.relativehumidity_2m) {
+                                const currentHour = new Date().getHours();
+                                humidity = data.hourly.relativehumidity_2m[currentHour] || "--";
+                            }
+                            
+                            // Determine weather condition
+                            let condition = "Clear";
+                            let desc = "Good farming weather";
+                            
+                            if (cw.weathercode) {
+                                // Weather code interpretation (simplified)
+                                if (cw.weathercode <= 3) condition = "Sunny";
+                                else if (cw.weathercode <= 48) condition = "Foggy";
+                                else if (cw.weathercode <= 67 || cw.weathercode <= 77) condition = "Rainy";
+                                else if (cw.weathercode <= 99) condition = "Stormy";
+                                
+                                // Update description based on condition
+                                if (condition === "Rainy") desc = "Consider delaying irrigation";
+                                else if (condition === "Stormy") desc = "Take protective measures";
+                            }
+                            
+                            // Update UI
+                            weatherCondition.innerHTML = `${temp}°C - ${condition}`;
+                            weatherDesc.textContent = desc;
+                            currentTemp.textContent = `${temp}°C`;
+                            currentHumidity.textContent = `${humidity}%`;
+                        } else {
+                            weatherCondition.textContent = "No weather data";
+                            weatherDesc.textContent = "Try again later";
+                        }
+                    })
+                    .catch(err => {
+                        weatherCondition.textContent = "Error fetching weather";
+                        weatherDesc.textContent = "Check connection";
+                        console.error("Weather fetch error:", err);
+                    });
+            }
+
+            function error(err) {
+                weatherCondition.textContent = "Location denied";
+                weatherDesc.textContent = "Using default weather data";
+                
+                // Fallback to default data
+                setTimeout(() => {
+                    weatherCondition.innerHTML = "32°C - Sunny";
+                    weatherDesc.textContent = "Perfect farming weather today";
+                    currentTemp.textContent = "32°C";
+                    currentHumidity.textContent = "68%";
+                }, 1000);
+            }
+        }
+        
         // Add interactive elements
         document.addEventListener('DOMContentLoaded', function() {
             const navItems = document.querySelectorAll('.nav-item');
@@ -467,6 +596,12 @@
                 profitElement.textContent = '12.8L';
                 profitElement.style.color = '#27ae60';
             }, 2000);
+            
+            // Get weather on page load
+            getWeather();
+            
+            // Refresh weather every 30 minutes
+            setInterval(getWeather, 30 * 60 * 1000);
         });
     </script>
 </body>
