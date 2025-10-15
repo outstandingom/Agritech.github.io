@@ -3,1284 +3,471 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Growhaz - Farmer Dashboard</title>
+    <title>Growlnz - Smart Agricultural Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-        
+
+        :root {
+            --primary: #1a7f37;
+            --primary-light: #27ae60;
+            --primary-dark: #13652c;
+            --background: #f5f7fa;
+            --surface: #ffffff;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+            --border: #e0e0e0;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --radius: 16px;
+        }
+
         body {
-            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-            color: #333;
-            line-height: 1.6;
-            min-height: 100vh;
-            padding-bottom: 80px; /* Space for bottom navigation */
-        }
-        
-        .header {
-            background: linear-gradient(to right, #2e7d32, #4caf50);
-            color: white;
-            padding: 25px 20px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .app-name {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .app-subtitle {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .dashboard-content {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.5;
             padding: 20px;
-            max-width: 1200px;
+            max-width: 400px;
             margin: 0 auto;
         }
-        
-        .welcome-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+
+        /* Header Styles */
+        .header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 15px;
-        }
-        
-        .user-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #4caf50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-        }
-        
-        .welcome-text h2 {
-            color: #2e7d32;
-            margin-bottom: 5px;
-        }
-        
-        .welcome-text p {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
             margin-bottom: 20px;
         }
-        
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            transition: transform 0.3s ease;
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
         }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
+
+        .time-location {
+            text-align: right;
         }
-        
-        .stat-icon {
-            font-size: 2rem;
-            color: #4caf50;
-            margin-bottom: 10px;
-        }
-        
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #2e7d32;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .action-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-            background: #f1f8e9;
-        }
-        
-        .action-icon {
-            font-size: 2rem;
-            color: #4caf50;
-            margin-bottom: 10px;
-        }
-        
-        .action-label {
+
+        .time {
+            font-size: 18px;
             font-weight: 600;
-            color: #2e7d32;
+            margin-bottom: 4px;
         }
-        
-        .recent-activity {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+
+        .location {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        /* Date and Assistant Card */
+        .date-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 16px;
             margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
         }
-        
-        .section-title {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: #2e7d32;
-            border-bottom: 2px solid #e8f5e9;
-            padding-bottom: 10px;
-        }
-        
-        .activity-list {
-            list-style: none;
-        }
-        
-        .activity-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-        
-        .activity-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e8f5e9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4caf50;
-            margin-right: 15px;
-        }
-        
-        .activity-content {
-            flex: 1;
-        }
-        
-        .activity-title {
+
+        .assistant-title {
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            color: var(--primary);
         }
-        
-        .activity-time {
-            font-size: 0.8rem;
-            color: #888;
+
+        .date {
+            font-size: 14px;
+            color: var(--text-light);
         }
-        
+
+        /* Weather Card */
         .weather-card {
-            background: white;
-            border-radius: 15px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border-radius: var(--radius);
             padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
+            box-shadow: var(--shadow);
         }
-        
+
         .weather-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
-        
-        .weather-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+
+        .weather-condition {
+            font-size: 18px;
+            font-weight: 600;
         }
-        
-        .weather-icon {
-            font-size: 3rem;
-            color: #4caf50;
-        }
-        
+
         .weather-temp {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #2e7d32;
+            font-size: 32px;
+            font-weight: 700;
         }
-        
-        .weather-details {
+
+        .weather-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        
-        .weather-detail {
+
+        .stat-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* Crop Status */
+        .crop-status {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .crop-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
         }
-        
-        .weather-detail:last-child {
+
+        .crop-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
             border-bottom: none;
         }
-        
-        .detail-label {
-            color: #666;
-        }
-        
-        .detail-value {
+
+        .crop-name {
             font-weight: 600;
-            color: #2e7d32;
         }
-        
+
+        .crop-details {
+            text-align: right;
+        }
+
+        .crop-acreage {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .crop-stage {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* AI Recommendation */
+        .ai-recommendation {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .recommendation-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Weather Alerts */
+        .weather-alerts {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .alert-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .alert-item {
+            text-align: center;
+        }
+
+        .alert-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .alert-label {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .weather-alert {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
         /* Bottom Navigation */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 15px;
+            box-shadow: var(--shadow);
             display: flex;
             justify-content: space-around;
-            padding: 15px 0;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            z-index: 100;
         }
-        
+
         .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            text-decoration: none;
-            color: #666;
-            transition: all 0.3s ease;
-            flex: 1;
+            gap: 5px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.3s;
         }
-        
+
         .nav-item.active {
-            color: #2e7d32;
+            opacity: 1;
+            color: var(--primary);
         }
-        
-        .nav-icon {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
+
+        .nav-item i {
+            font-size: 20px;
         }
-        
-        .nav-label {
-            font-size: 0.8rem;
-        }
-        
-        .nav-item.active .nav-icon {
-            transform: translateY(-5px);
-        }
-        
-        /* Page Content */
-        .page-content {
-            display: none;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .page-content.active {
-            display: block;
-        }
-        
-        /* Soil Page Styles */
-        .soil-test-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-        }
-        
-        .soil-parameters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .parameter-card {
-            background: #f1f8e9;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-        }
-        
-        .parameter-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #2e7d32;
-            margin-bottom: 5px;
-        }
-        
-        .parameter-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        /* ChatAI Page Styles */
-        .chat-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            height: 500px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .chat-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            text-align: center;
-            color: #2e7d32;
-            font-weight: 600;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .message {
-            max-width: 80%;
-            padding: 12px 15px;
-            border-radius: 15px;
-            position: relative;
-        }
-        
-        .message.user {
-            align-self: flex-end;
-            background: #e8f5e9;
-            border-bottom-right-radius: 5px;
-        }
-        
-        .message.bot {
-            align-self: flex-start;
-            background: #f5f5f5;
-            border-bottom-left-radius: 5px;
-        }
-        
-        .chat-input {
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid #f0f0f0;
-        }
-        
-        .chat-input input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            outline: none;
-        }
-        
-        .chat-input button {
-            background: #2e7d32;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            margin-left: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Crops Page Styles */
-        .crops-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        
-        .crop-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
-        }
-        
-        .crop-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .crop-image {
-            height: 150px;
-            background: #e8f5e9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4caf50;
-            font-size: 3rem;
-        }
-        
-        .crop-info {
-            padding: 15px;
-        }
-        
-        .crop-name {
-            font-weight: bold;
-            color: #2e7d32;
-            margin-bottom: 10px;
-        }
-        
-        .crop-details {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        .crop-detail {
-            text-align: center;
-        }
-        
-        .detail-value {
-            font-weight: bold;
-            color: #2e7d32;
-        }
-        
-        .detail-label {
-            font-size: 0.8rem;
-            color: #666;
-        }
-        
-        .crop-status {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            margin-top: 10px;
-        }
-        
-        .status-healthy {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .status-warning {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-        
-        /* Profile Page Styles */
-        .profile-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-        }
-        
-        .profile-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #4caf50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-            margin-right: 20px;
-        }
-        
-        .profile-info h2 {
-            color: #2e7d32;
-            margin-bottom: 5px;
-        }
-        
-        .profile-info p {
-            color: #666;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .info-card {
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 15px;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            color: #2e7d32;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-        
-        .info-value {
-            color: #333;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .action-btn {
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
+
+        .nav-item span {
+            font-size: 12px;
             font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-        
-        .action-btn.primary {
-            background: #2e7d32;
-            color: white;
+
+        /* Access Managed Badge */
+        .access-badge {
+            display: inline-block;
+            background: rgba(26, 127, 55, 0.1);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
         }
-        
-        .action-btn.secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-        
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .quick-actions {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .quick-actions {
-                grid-template-columns: 1fr;
-            }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
     <!-- Header -->
     <div class="header">
-        <div class="app-name">Growhaz</div>
-        <div class="app-subtitle">Smart Agricultural Assistant</div>
+        <div class="app-title">Growlnz</div>
+        <div class="time-location">
+            <div class="time">02:18 PM</div>
+            <div class="location">Indore, Madhya Pradesh</div>
+        </div>
     </div>
-    
-    <!-- Dashboard Page -->
-    <div id="dashboardPage" class="page-content active">
-        <div class="dashboard-content">
-            <!-- Welcome Card -->
-            <div class="welcome-card">
-                <div class="user-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="welcome-text">
-                    <h2 id="welcomeName">Welcome, Farmer!</h2>
-                    <p>Here's your farming overview for today</p>
-                </div>
+
+    <!-- Date and Assistant -->
+    <div class="date-card">
+        <div class="assistant-title">Smart Agricultural Assistant</div>
+        <div class="date">15/01/2025</div>
+    </div>
+
+    <!-- Weather Card -->
+    <div class="weather-card">
+        <div class="weather-header">
+            <div class="weather-condition">32°C - Sunny</div>
+        </div>
+        <div class="weather-desc">Perfect farming weather today</div>
+    </div>
+
+    <!-- Access Managed -->
+    <div class="access-badge">
+        <i class="fas fa-lock"></i> Access Managed
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">12.4L</div>
+            <div class="stat-label">Expected Profit</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">8,500</div>
+            <div class="stat-label">Subsidy Received</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">65%</div>
+            <div class="stat-label">Rain Probability</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">4.2</div>
+            <div class="stat-label">Soil Health</div>
+        </div>
+    </div>
+
+    <!-- Crop Status -->
+    <div class="crop-status">
+        <div class="section-title">Current Crop Status</div>
+        <div class="crop-item">
+            <div class="crop-name">Soybean</div>
+            <div class="crop-details">
+                <div class="crop-acreage">8 acres</div>
+                <div class="crop-stage">Flowering Stage</div>
             </div>
-            
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-tractor"></i>
-                    </div>
-                    <div class="stat-value" id="totalLands">3</div>
-                    <div class="stat-label">Total Lands</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-seedling"></i>
-                    </div>
-                    <div class="stat-value" id="activeCrops">5</div>
-                    <div class="stat-label">Active Crops</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-cloud-sun"></i>
-                    </div>
-                    <div class="stat-value" id="weatherTemp">28°C</div>
-                    <div class="stat-label">Current Temperature</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="stat-value" id="tasksDue">2</div>
-                    <div class="stat-label">Tasks Due</div>
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <div class="action-card" data-page="soil">
-                    <div class="action-icon">
-                        <i class="fas fa-vial"></i>
-                    </div>
-                    <div class="action-label">Soil Test</div>
-                </div>
-                <div class="action-card" data-page="chatai">
-                    <div class="action-icon">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div class="action-label">Ask AI</div>
-                </div>
-                <div class="action-card" data-page="crops">
-                    <div class="action-icon">
-                        <i class="fas fa-leaf"></i>
-                    </div>
-                    <div class="action-label">My Crops</div>
-                </div>
-                <div class="action-card" data-page="profile">
-                    <div class="action-icon">
-                        <i class="fas fa-user-cog"></i>
-                    </div>
-                    <div class="action-label">Profile</div>
-                </div>
-            </div>
-            
-            <!-- Weather Card -->
-            <div class="weather-card">
-                <div class="weather-header">
-                    <h3 class="section-title">Weather Forecast</h3>
-                    <div class="weather-location">
-                        <i class="fas fa-map-marker-alt"></i> <span id="location">Punjab, India</span>
-                    </div>
-                </div>
-                <div class="weather-info">
-                    <div class="weather-icon">
-                        <i class="fas fa-sun"></i>
-                    </div>
-                    <div class="weather-temp">28°C</div>
-                    <div class="weather-desc">Sunny</div>
-                </div>
-                <div class="weather-details">
-                    <div class="weather-detail">
-                        <span class="detail-label">Humidity</span>
-                        <span class="detail-value">65%</span>
-                    </div>
-                    <div class="weather-detail">
-                        <span class="detail-label">Wind</span>
-                        <span class="detail-value">12 km/h</span>
-                    </div>
-                    <div class="weather-detail">
-                        <span class="detail-label">Rain Chance</span>
-                        <span class="detail-value">10%</span>
-                    </div>
-                    <div class="weather-detail">
-                        <span class="detail-label">UV Index</span>
-                        <span class="detail-value">6</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Recent Activity -->
-            <div class="recent-activity">
-                <h3 class="section-title">Recent Activity</h3>
-                <ul class="activity-list">
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-tint"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Irrigation completed</div>
-                            <div class="activity-time">2 hours ago</div>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-seedling"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Wheat crop planted</div>
-                            <div class="activity-time">Yesterday</div>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-vial"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Soil test conducted</div>
-                            <div class="activity-time">2 days ago</div>
-                        </div>
-                    </li>
-                </ul>
+        </div>
+        <div class="crop-item">
+            <div class="crop-name">Wheat</div>
+            <div class="crop-details">
+                <div class="crop-acreage">4 acres</div>
+                <div class="crop-stage">Germination Stage</div>
             </div>
         </div>
     </div>
-    
-    <!-- Soil Page -->
-    <div id="soilPage" class="page-content">
-        <div class="dashboard-content">
-            <div class="welcome-card">
-                <div class="user-avatar" style="background: #8d6e63;">
-                    <i class="fas fa-vial"></i>
-                </div>
-                <div class="welcome-text">
-                    <h2>Soil Health Analysis</h2>
-                    <p>Monitor and improve your soil quality</p>
-                </div>
-            </div>
-            
-            <div class="soil-test-card">
-                <h3 class="section-title">Latest Soil Test Results</h3>
-                <div class="soil-parameters">
-                    <div class="parameter-card">
-                        <div class="parameter-value">6.8</div>
-                        <div class="parameter-label">pH Level</div>
-                    </div>
-                    <div class="parameter-card">
-                        <div class="parameter-value">2.4%</div>
-                        <div class="parameter-label">Organic Matter</div>
-                    </div>
-                    <div class="parameter-card">
-                        <div class="parameter-value">Medium</div>
-                        <div class="parameter-label">Nitrogen (N)</div>
-                    </div>
-                    <div class="parameter-card">
-                        <div class="parameter-value">High</div>
-                        <div class="parameter-label">Phosphorus (P)</div>
-                    </div>
-                    <div class="parameter-card">
-                        <div class="parameter-value">Medium</div>
-                        <div class="parameter-label">Potassium (K)</div>
-                    </div>
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="action-btn primary">
-                        <i class="fas fa-plus"></i> Schedule New Test
-                    </button>
-                    <button class="action-btn secondary">
-                        <i class="fas fa-history"></i> View History
-                    </button>
-                </div>
-            </div>
-            
-            <div class="recent-activity">
-                <h3 class="section-title">Soil Recommendations</h3>
-                <ul class="activity-list">
-                    <li class="activity-item">
-                        <div class="activity-icon" style="background: #fff3e0; color: #f57c00;">
-                            <i class="fas fa-lightbulb"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Add compost to increase organic matter</div>
-                            <div class="activity-time">Recommended for better yield</div>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-icon" style="background: #e8f5e9; color: #2e7d32;">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">pH level is optimal for wheat cultivation</div>
-                            <div class="activity-time">No adjustment needed</div>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-icon" style="background: #e3f2fd; color: #1976d2;">
-                            <i class="fas fa-tint"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Consider adding nitrogen fertilizer</div>
-                            <div class="activity-time">For improved plant growth</div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+
+    <!-- AI Recommendation -->
+    <div class="ai-recommendation">
+        <div class="section-title">AI Recommendation</div>
+        <div class="recommendation-text">
+            Perfect time for <span class="highlight">felsur spray</span> on soybean. Market price trending <span class="highlight">up by 12%</span>.
         </div>
     </div>
-    
-    <!-- ChatAI Page -->
-    <div id="chataiPage" class="page-content">
-        <div class="dashboard-content">
-            <div class="welcome-card">
-                <div class="user-avatar" style="background: #7e57c2;">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="welcome-text">
-                    <h2>Growhaz AI Assistant</h2>
-                    <p>Ask me anything about farming</p>
-                </div>
+
+    <!-- Weather Alerts -->
+    <div class="weather-alerts">
+        <div class="section-title">Weather & Alerts</div>
+        
+        <div class="alert-grid">
+            <div class="alert-item">
+                <div class="alert-value">32°C</div>
+                <div class="alert-label">Temperature</div>
             </div>
-            
-            <div class="chat-container">
-                <div class="chat-header">
-                    <i class="fas fa-robot"></i> Growhaz AI
-                </div>
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message bot">
-                        Hello! I'm your farming assistant. How can I help you today?
-                    </div>
-                    <div class="message user">
-                        What's the best time to plant wheat in Punjab?
-                    </div>
-                    <div class="message bot">
-                        In Punjab, the ideal time for wheat planting is from late October to mid-November. This allows the crop to benefit from the winter rains and mature before the extreme heat of summer.
-                    </div>
-                </div>
-                <div class="chat-input">
-                    <input type="text" id="chatInput" placeholder="Type your question here...">
-                    <button id="sendMessage">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
+            <div class="alert-item">
+                <div class="alert-value">68%</div>
+                <div class="alert-label">Humidity</div>
             </div>
         </div>
-    </div>
-    
-    <!-- Crops Page -->
-    <div id="cropsPage" class="page-content">
-        <div class="dashboard-content">
-            <div class="welcome-card">
-                <div class="user-avatar" style="background: #66bb6a;">
-                    <i class="fas fa-seedling"></i>
-                </div>
-                <div class="welcome-text">
-                    <h2>My Crops</h2>
-                    <p>Manage and monitor your crops</p>
-                </div>
-            </div>
-            
-            <div class="crops-grid">
-                <div class="crop-card">
-                    <div class="crop-image">
-                        <i class="fas fa-wheat-alt"></i>
-                    </div>
-                    <div class="crop-info">
-                        <div class="crop-name">Wheat</div>
-                        <div class="crop-details">
-                            <div class="crop-detail">
-                                <div class="detail-value">45 days</div>
-                                <div class="detail-label">Planted</div>
-                            </div>
-                            <div class="crop-detail">
-                                <div class="detail-value">2.5 ha</div>
-                                <div class="detail-label">Area</div>
-                            </div>
-                        </div>
-                        <div class="crop-status status-healthy">Healthy</div>
-                    </div>
-                </div>
-                
-                <div class="crop-card">
-                    <div class="crop-image">
-                        <i class="fas fa-seedling"></i>
-                    </div>
-                    <div class="crop-info">
-                        <div class="crop-name">Rice</div>
-                        <div class="crop-details">
-                            <div class="crop-detail">
-                                <div class="detail-value">22 days</div>
-                                <div class="detail-label">Planted</div>
-                            </div>
-                            <div class="crop-detail">
-                                <div class="detail-value">1.8 ha</div>
-                                <div class="detail-label">Area</div>
-                            </div>
-                        </div>
-                        <div class="crop-status status-warning">Needs Water</div>
-                    </div>
-                </div>
-                
-                <div class="crop-card">
-                    <div class="crop-image">
-                        <i class="fas fa-pepper-hot"></i>
-                    </div>
-                    <div class="crop-info">
-                        <div class="crop-name">Vegetables</div>
-                        <div class="crop-details">
-                            <div class="crop-detail">
-                                <div class="detail-value">15 days</div>
-                                <div class="detail-label">Planted</div>
-                            </div>
-                            <div class="crop-detail">
-                                <div class="detail-value">0.5 ha</div>
-                                <div class="detail-label">Area</div>
-                            </div>
-                        </div>
-                        <div class="crop-status status-healthy">Healthy</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="action-buttons" style="margin-top: 20px;">
-                <button class="action-btn primary">
-                    <i class="fas fa-plus"></i> Add New Crop
-                </button>
-                <button class="action-btn secondary">
-                    <i class="fas fa-chart-line"></i> View Analytics
-                </button>
-            </div>
+
+        <div class="weather-alert">
+            <i class="fas fa-exclamation-triangle"></i> Heavy rainfall expected in 3 days. Consider harvesting ready crops.
         </div>
     </div>
-    
-    <!-- Profile Page -->
-    <div id="profilePage" class="page-content">
-        <div class="dashboard-content">
-            <div class="profile-card">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="profile-info">
-                        <h2 id="profileName">Rajesh Kumar</h2>
-                        <p>Farmer since 2015</p>
-                    </div>
-                </div>
-                
-                <div class="info-grid">
-                    <div class="info-card">
-                        <div class="info-label">Email</div>
-                        <div class="info-value" id="profileEmail">rajesh@example.com</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Phone</div>
-                        <div class="info-value" id="profilePhone">+91 98765 43210</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Location</div>
-                        <div class="info-value" id="profileLocation">Punjab, India</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Language</div>
-                        <div class="info-value" id="profileLanguage">English</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Total Land</div>
-                        <div class="info-value" id="profileLand">4.8 hectares</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Active Crops</div>
-                        <div class="info-value" id="profileCrops">3 crops</div>
-                    </div>
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="action-btn primary">
-                        <i class="fas fa-edit"></i> Edit Profile
-                    </button>
-                    <button class="action-btn secondary" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </div>
-            </div>
-            
-            <div class="recent-activity">
-                <h3 class="section-title">Account Details</h3>
-                <ul class="activity-list">
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-university"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Bank Account</div>
-                            <div class="activity-time">XXXX XXXX 1234</div>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-tint"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Water Source</div>
-                            <div class="activity-time">Tube Well</div>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Member Since</div>
-                            <div class="activity-time">January 2023</div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    
+
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-        <a href="#" class="nav-item active" data-page="dashboard">
-            <div class="nav-icon">
-                <i class="fas fa-home"></i>
-            </div>
-            <div class="nav-label">Dashboard</div>
-        </a>
-        <a href="#" class="nav-item" data-page="soil">
-            <div class="nav-icon">
-                <i class="fas fa-vial"></i>
-            </div>
-            <div class="nav-label">Soil</div>
-        </a>
-        <a href="#" class="nav-item" data-page="chatai">
-            <div class="nav-icon">
-                <i class="fas fa-robot"></i>
-            </div>
-            <div class="nav-label">ChatAI</div>
-        </a>
-        <a href="#" class="nav-item" data-page="crops">
-            <div class="nav-icon">
-                <i class="fas fa-seedling"></i>
-            </div>
-            <div class="nav-label">Crops</div>
-        </a>
-        <a href="#" class="nav-item" data-page="profile">
-            <div class="nav-icon">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="nav-label">Profile</div>
-        </a>
+        <div class="nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-vial"></i>
+            <span>Soil</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-seedling"></i>
+            <span>Crops</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-robot"></i>
+            <span>AI</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase configuration
-        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
-
-        // Initialize Supabase client
-        let supabase;
-        try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-                auth: {
-                    autoRefreshToken: true,
-                    persistSession: true,
-                    detectSessionInUrl: true
-                }
-            });
-            console.log('Supabase client initialized successfully');
-        } catch (error) {
-            console.error('Error initializing Supabase client:', error);
+        // Update time dynamically
+        function updateTime() {
+            const now = new Date();
+            const timeElement = document.querySelector('.time');
+            
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            
+            timeElement.textContent = `${hours}:${minutes} ${ampm}`;
         }
-
-        // Global variables
-        let currentUser = null;
-        let userData = null;
-
+        
+        // Update time immediately and then every minute
+        updateTime();
+        setInterval(updateTime, 60000);
+        
+        // Add interactive elements
         document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-            setupEventListeners();
-        });
-
-        async function initializeApp() {
-            // Get current user
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                currentUser = user;
-                await loadUserData();
-            } else {
-                window.location.href = 'login.html';
-            }
-        }
-
-        async function loadUserData() {
-            try {
-                // Get user data from users table
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('auth_id', currentUser.id)
-                    .single();
-                
-                if (error) {
-                    console.error('Error loading user data:', error);
-                    return;
-                }
-                
-                if (data) {
-                    userData = data;
-                    updateUserUI();
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-            }
-        }
-
-        function updateUserUI() {
-            // Update dashboard
-            document.getElementById('welcomeName').textContent = `Welcome, ${userData.full_name || 'Farmer'}!`;
+            const navItems = document.querySelectorAll('.nav-item');
             
-            // Update profile page
-            document.getElementById('profileName').textContent = userData.full_name || 'Farmer';
-            document.getElementById('profileEmail').textContent = userData.email || 'Not provided';
-            document.getElementById('profilePhone').textContent = userData.phone || 'Not provided';
-            document.getElementById('profileLanguage').textContent = userData.language || 'English';
-        }
-
-        function setupEventListeners() {
-            // Bottom navigation
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    const page = this.getAttribute('data-page');
-                    
-                    // Update active nav item
-                    document.querySelectorAll('.nav-item').forEach(nav => {
-                        nav.classList.remove('active');
-                    });
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    navItems.forEach(nav => nav.classList.remove('active'));
                     this.classList.add('active');
-                    
-                    // Show corresponding page
-                    document.querySelectorAll('.page-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    document.getElementById(`${page}Page`).classList.add('active');
                 });
             });
             
-            // Quick action cards
-            document.querySelectorAll('.action-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    const page = this.getAttribute('data-page');
-                    
-                    // Update active nav item
-                    document.querySelectorAll('.nav-item').forEach(nav => {
-                        nav.classList.remove('active');
-                        if (nav.getAttribute('data-page') === page) {
-                            nav.classList.add('active');
-                        }
-                    });
-                    
-                    // Show corresponding page
-                    document.querySelectorAll('.page-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    document.getElementById(`${page}Page`).classList.add('active');
-                });
-            });
-            
-            // Chat functionality
-            document.getElementById('sendMessage').addEventListener('click', sendMessage);
-            document.getElementById('chatInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-            
-            // Logout button
-            document.getElementById('logoutBtn').addEventListener('click', async function() {
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                    console.error('Error signing out:', error);
-                } else {
-                    window.location.href = 'login.html';
-                }
-            });
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            
-            if (message === '') return;
-            
-            // Add user message to chat
-            const chatMessages = document.getElementById('chatMessages');
-            const userMessage = document.createElement('div');
-            userMessage.className = 'message user';
-            userMessage.textContent = message;
-            chatMessages.appendChild(userMessage);
-            
-            // Clear input
-            input.value = '';
-            
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // Simulate AI response after a delay
+            // Simulate loading of data
             setTimeout(() => {
-                const botMessage = document.createElement('div');
-                botMessage.className = 'message bot';
-                
-                // Simple response logic based on keywords
-                if (message.toLowerCase().includes('wheat') || message.toLowerCase().includes('plant')) {
-                    botMessage.textContent = 'For wheat cultivation, ensure proper irrigation and monitor for pests. The optimal soil pH is between 6.0 and 7.5.';
-                } else if (message.toLowerCase().includes('fertilizer') || message.toLowerCase().includes('nutrient')) {
-                    botMessage.textContent = 'Based on your soil test results, I recommend adding nitrogen-rich fertilizer. Consider using organic compost for better soil health.';
-                } else if (message.toLowerCase().includes('weather') || message.toLowerCase().includes('rain')) {
-                    botMessage.textContent = 'The forecast shows sunny weather for the next 3 days with a 10% chance of rain. Ideal conditions for most crops.';
-                } else {
-                    botMessage.textContent = 'I understand your question about farming. For more specific advice, please provide details about your crops, soil conditions, or current challenges.';
-                }
-                
-                chatMessages.appendChild(botMessage);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 1000);
-        }
+                const profitElement = document.querySelector('.stat-value');
+                profitElement.textContent = '12.8L';
+                profitElement.style.color = '#27ae60';
+            }, 2000);
+        });
     </script>
 </body>
 </html>
