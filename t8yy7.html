@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growhaz - Multi-Land Mapping</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+        
+        .app-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .app-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        
+        .section {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #2e7d32;
+            border-bottom: 2px solid #e8f5e9;
+            padding-bottom: 10px;
+        }
+        
+        .map-container {
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+        
+        .land-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .land-btn {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .land-btn.primary {
+            background: #2e7d32;
+            color: white;
+        }
+        
+        .land-btn.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .land-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .land-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .status-info {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .status-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            width: 120px;
+            color: #2e7d32;
+        }
+        
+        .status-value {
+            flex: 1;
+        }
+        
+        .coordinates-list {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .coordinate-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .coordinate-item:last-child {
+            border-bottom: none;
+        }
+        
+        .lands-container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .lands-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .lands-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+        
+        .lands-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .land-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .land-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .land-title {
+            font-weight: 600;
+            color: #2e7d32;
+        }
+        
+        .land-details {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .total-area {
+            background: #2e7d32;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .total-area-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        
+        .permission-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .location-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .section {
+                min-width: 100%;
+            }
+            
+            .land-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="app-name">Growhaz</div>
+            <div class="app-subtitle">Multi-Land Mapping & Management</div>
+        </div>
+        
+        <div class="content">
+            <!-- Land Mapping Section -->
+            <div class="section">
+                <h2 class="section-title">Land Mapping</h2>
+                
+                <!-- Location Permission Message -->
+                <div id="permissionMessage" class="permission-message" style="display: none;">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Please allow location access to use the mapping features</span>
+                </div>
+                
+                <!-- Location Error Message -->
+                <div id="locationError" class="location-error" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="locationErrorText">Location error occurred</span>
+                </div>
+                
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+                
+                <div class="land-controls">
+                    <button id="startTracking" class="land-btn primary">
+                        <i class="fas fa-play"></i> Start Tracking
+                    </button>
+                    <button id="stopTracking" class="land-btn secondary" disabled>
+                        <i class="fas fa-stop"></i> Stop Tracking
+                    </button>
+                    <button id="addCorner" class="land-btn primary" disabled>
+                        <i class="fas fa-plus"></i> Add Corner
+                    </button>
+                    <button id="finishLand" class="land-btn primary" disabled>
+                        <i class="fas fa-check"></i> Finish Land
+                    </button>
+                    <button id="resetAll" class="land-btn secondary">
+                        <i class="fas fa-redo"></i> Reset All
+                    </button>
+                </div>
+                
+                <div class="status-info">
+                    <div class="status-row">
+                        <span class="status-label">Status:</span>
+                        <span class="status-value" id="status">Ready to start</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Current Location:</span>
+                        <span class="status-value" id="coords">—</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Accuracy:</span>
+                        <span class="status-value" id="accuracy">—</span>
+                    </div>
+                </div>
+                
+                <div class="coordinates-list">
+                    <h3 style="margin-bottom: 10px; color: #2e7d32;">Current Land Corners</h3>
+                    <ul id="cornerList">
+                        <li style="text-align: center; color: #999; padding: 20px;">No corners added yet</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Lands Overview Section -->
+            <div class="section">
+                <h2 class="section-title">Lands Overview</h2>
+                
+                <div class="lands-container">
+                    <div class="lands-header">
+                        <h3 class="lands-title">Your Farm Lands</h3>
+                        <span class="land-count" id="landCount">0 lands</span>
+                    </div>
+                    
+                    <div class="lands-list" id="landsList">
+                        <div style="text-align: center; color: #999; padding: 40px;">
+                            <i class="fas fa-tractor" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                            <p>No lands mapped yet. Start tracking and add corners to create your first land.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="total-area">
+                        <div>Total Farm Area</div>
+                        <div class="total-area-value" id="totalArea">—</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                    <h4 style="color: #1976d2; margin-bottom: 10px;">
+                        <i class="fas fa-info-circle"></i> How to Map Your Land
+                    </h4>
+                    <ol style="padding-left: 20px; color: #555;">
+                        <li>Click <strong>Start Tracking</strong> to begin location tracking</li>
+                        <li>Allow location access when prompted by your browser</li>
+                        <li>Move to each corner of your land and click <strong>Add Corner</strong></li>
+                        <li>Add at least 3 corners to define your land boundary</li>
+                        <li>Click <strong>Finish Land</strong> to save the land</li>
+                        <li>Repeat for additional lands</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script>
+        // Initialize map
+        let map = L.map('map').setView([20.5937, 78.9629], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let watchId = null;
+        let currentPosMarker = null;
+        let currentCoords = null;
+        let locationAccuracy = null;
+
+        let currentCorners = [];
+        let allLands = [];
+        let drawnLayers = [];
+
+        // DOM elements
+        const startTrackingBtn = document.getElementById('startTracking');
+        const stopTrackingBtn = document.getElementById('stopTracking');
+        const addCornerBtn = document.getElementById('addCorner');
+        const finishLandBtn = document.getElementById('finishLand');
+        const resetAllBtn = document.getElementById('resetAll');
+        const statusElement = document.getElementById('status');
+        const coordsElement = document.getElementById('coords');
+        const accuracyElement = document.getElementById('accuracy');
+        const permissionMessage = document.getElementById('permissionMessage');
+        const locationErrorElement = document.getElementById('locationError');
+        const locationErrorText = document.getElementById('locationErrorText');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if geolocation is available
+            if (!navigator.geolocation) {
+                showLocationError("Geolocation is not supported by your browser");
+                startTrackingBtn.disabled = true;
+                return;
+            }
+
+            // Setup event listeners
+            startTrackingBtn.addEventListener('click', startTracking);
+            stopTrackingBtn.addEventListener('click', stopTracking);
+            addCornerBtn.addEventListener('click', addCorner);
+            finishLandBtn.addEventListener('click', finishLand);
+            resetAllBtn.addEventListener('click', resetAll);
+
+            // Test location permission on load
+            checkLocationPermission();
+        });
+
+        function checkLocationPermission() {
+            if (!navigator.permissions) {
+                return; // Permissions API not supported
+            }
+
+            navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
+                if (result.state === 'denied') {
+                    showPermissionMessage();
+                }
+                result.onchange = function() {
+                    if (this.state === 'denied') {
+                        showPermissionMessage();
+                    } else {
+                        hidePermissionMessage();
+                    }
+                };
+            });
+        }
+
+        function showPermissionMessage() {
+            permissionMessage.style.display = 'block';
+            startTrackingBtn.disabled = false;
+        }
+
+        function hidePermissionMessage() {
+            permissionMessage.style.display = 'none';
+        }
+
+        function showLocationError(message) {
+            locationErrorText.textContent = message;
+            locationErrorElement.style.display = 'block';
+        }
+
+        function hideLocationError() {
+            locationErrorElement.style.display = 'none';
+        }
+
+        function updateButtonStates() {
+            const isTracking = watchId !== null;
+            const hasLocation = currentCoords !== null;
+            const hasCorners = currentCorners.length > 0;
+
+            startTrackingBtn.disabled = isTracking;
+            stopTrackingBtn.disabled = !isTracking;
+            addCornerBtn.disabled = !isTracking || !hasLocation;
+            finishLandBtn.disabled = !hasCorners || currentCorners.length < 3;
+        }
+
+        function startTracking() {
+            hideLocationError();
+            
+            statusElement.textContent = "Requesting location access...";
+            statusElement.style.color = "#ff9800";
+            statusElement.style.fontWeight = "600";
+
+            // Clear any existing watcher
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            };
+
+            watchId = navigator.geolocation.watchPosition(
+                handlePositionSuccess,
+                handlePositionError,
+                options
+            );
+
+            // Also get current position once to trigger permission prompt
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // Permission granted, update with actual position
+                    handlePositionSuccess(position);
+                },
+                function(error) {
+                    // This will trigger the error handler
+                },
+                options
+            );
+        }
+
+        function handlePositionSuccess(position) {
+            const { latitude, longitude, accuracy } = position.coords;
+            currentCoords = [latitude, longitude];
+            locationAccuracy = accuracy;
+
+            coordsElement.textContent = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+            accuracyElement.textContent = `±${accuracy.toFixed(1)} meters`;
+            
+            statusElement.textContent = "Tracking active";
+            statusElement.style.color = "#4caf50";
+
+            // Update or create marker
+            if (currentPosMarker) {
+                currentPosMarker.setLatLng(currentCoords);
+            } else {
+                currentPosMarker = L.marker(currentCoords)
+                    .addTo(map)
+                    .bindPopup(`
+                        <div>
+                            <strong>Current Position</strong><br>
+                            Lat: ${latitude.toFixed(6)}<br>
+                            Lng: ${longitude.toFixed(6)}<br>
+                            Accuracy: ±${accuracy.toFixed(1)}m
+                        </div>
+                    `)
+                    .openPopup();
+            }
+
+            // Center map on current position
+            map.setView(currentCoords, Math.max(16, map.getZoom()));
+
+            // Update button states
+            updateButtonStates();
+        }
+
+        function handlePositionError(error) {
+            let errorMessage = "Unknown location error";
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = "Location access denied. Please allow location access in your browser settings.";
+                    showPermissionMessage();
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = "Location information unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = "Location request timed out.";
+                    break;
+            }
+
+            showLocationError(errorMessage);
+            statusElement.textContent = "Location error";
+            statusElement.style.color = "#f44336";
+            
+            stopTracking();
+        }
+
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            statusElement.textContent = "Tracking stopped";
+            statusElement.style.color = "#666";
+            updateButtonStates();
+        }
+
+        function addCorner() {
+            if (!currentCoords) { 
+                showLocationError("No location data available");
+                return; 
+            }
+            
+            currentCorners.push([...currentCoords]); // Create a copy
+            updateCornerList();
+            
+            // Add visual marker for the corner
+            const cornerMarker = L.circleMarker(currentCoords, {
+                radius: 8, 
+                color: "red", 
+                fillColor: "#ff4444", 
+                fillOpacity: 0.8,
+                weight: 2
+            }).addTo(map);
+            
+            cornerMarker.bindPopup(`
+                <div>
+                    <strong>Corner ${currentCorners.length}</strong><br>
+                    Lat: ${currentCoords[0].toFixed(6)}<br>
+                    Lng: ${currentCoords[1].toFixed(6)}
+                </div>
+            `);
+                
+            // Show success feedback
+            statusElement.textContent = `Corner ${currentCorners.length} added!`;
+            statusElement.style.color = "#ff9800";
+            
+            setTimeout(() => {
+                if (watchId) {
+                    statusElement.textContent = "Tracking active";
+                    statusElement.style.color = "#4caf50";
+                }
+            }, 1500);
+
+            updateButtonStates();
+        }
+
+        function updateCornerList() {
+            const list = document.getElementById("cornerList");
+            list.innerHTML = "";
+            
+            if (currentCorners.length === 0) {
+                list.innerHTML = '<li style="text-align: center; color: #999; padding: 20px;">No corners added yet</li>';
+                return;
+            }
+            
+            currentCorners.forEach((c, i) => {
+                const li = document.createElement("li");
+                li.className = "coordinate-item";
+                li.innerHTML = `
+                    <span><strong>Corner ${i+1}:</strong> ${c[0].toFixed(6)}, ${c[1].toFixed(6)}</span>
+                    <span style="color: #666; font-size: 0.9rem;">${getDistanceFromStart(i)}</span>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function getDistanceFromStart(cornerIndex) {
+            if (cornerIndex === 0) return "Start point";
+            
+            const start = currentCorners[0];
+            const current = currentCorners[cornerIndex];
+            
+            // Calculate distance using Haversine formula
+            const R = 6371000; // Earth radius in meters
+            const dLat = (current[0] - start[0]) * Math.PI / 180;
+            const dLon = (current[1] - start[1]) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(start[0] * Math.PI / 180) * Math.cos(current[0] * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+            
+            if (distance < 1000) {
+                return `${distance.toFixed(0)}m from start`;
+            } else {
+                return `${(distance/1000).toFixed(2)}km from start`;
+            }
+        }
+
+        function finishLand() {
+            if (currentCorners.length < 3) {
+                alert("At least 3 corners needed to create a land polygon");
+                return;
+            }
+            
+            // Create polygon
+            const poly = L.polygon(currentCorners, {
+                color: '#2e7d32', 
+                fillColor: '#4caf50',
+                fillOpacity: 0.3,
+                weight: 3
+            }).addTo(map);
+            
+            drawnLayers.push(poly);
+
+            // Calculate area with Turf.js - FIXED: Removed extra brackets
+            const polygonCoords = currentCorners.map(c => [c[1], c[0]]);
+            polygonCoords.push([currentCorners[0][1], currentCorners[0][0]]); // Close the polygon
+            const polygon = turf.polygon([polygonCoords]);
+            let areaSqMeters = turf.area(polygon);
+            let areaHectares = areaSqMeters / 10000;
+            let areaAcres = areaSqMeters / 4046.856;
+
+            // Generate land name
+            const landName = `Land ${allLands.length + 1}`;
+
+            // Save this land
+            allLands.push({ 
+                corners: [...currentCorners], 
+                areaSqMeters, 
+                areaHectares, 
+                areaAcres,
+                name: landName
+            });
+            
+            updateLandsList();
+
+            // Add popup to the polygon
+            poly.bindPopup(`
+                <div style="min-width: 200px;">
+                    <h4 style="margin: 0 0 8px 0; color: #2e7d32;">${landName}</h4>
+                    <p style="margin: 4px 0;"><strong>Area:</strong> ${areaAcres.toFixed(2)} acres</p>
+                    <p style="margin: 4px 0;"><strong>Corners:</strong> ${currentCorners.length}</p>
+                    <p style="margin: 4px 0;"><strong>Perimeter:</strong> ${calculatePerimeter().toFixed(2)}m</p>
+                </div>
+            `);
+
+            // Fit map to show all lands
+            if (allLands.length === 1) {
+                map.fitBounds(poly.getBounds());
+            } else {
+                // Create bounds that include all lands
+                const group = new L.featureGroup(drawnLayers);
+                map.fitBounds(group.getBounds());
+            }
+
+            // Reset current land
+            currentCorners = [];
+            updateCornerList();
+            updateButtonStates();
+            
+            // Show success message
+            alert(`✅ ${landName} created successfully!\nArea: ${areaAcres.toFixed(2)} acres\nPerimeter: ${calculatePerimeter().toFixed(2)} meters`);
+        }
+
+        function calculatePerimeter() {
+            let perimeter = 0;
+            for (let i = 0; i < currentCorners.length; i++) {
+                const start = currentCorners[i];
+                const end = currentCorners[(i + 1) % currentCorners.length];
+                
+                const R = 6371000; // Earth radius in meters
+                const dLat = (end[0] - start[0]) * Math.PI / 180;
+                const dLon = (end[1] - start[1]) * Math.PI / 180;
+                const a = 
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(start[0] * Math.PI / 180) * Math.cos(end[0] * Math.PI / 180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                perimeter += R * c;
+            }
+            return perimeter;
+        }
+
+        function updateLandsList() {
+            const list = document.getElementById("landsList");
+            const landCount = document.getElementById("landCount");
+            const totalArea = document.getElementById("totalArea");
+            
+            list.innerHTML = "";
+            let totalMeters = 0;
+            let totalAcres = 0;
+            let totalHectares = 0;
+
+            if (allLands.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align: center; color: #999; padding: 40px;">
+                        <i class="fas fa-tractor" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>No lands mapped yet. Start tracking and add corners to create your first land.</p>
+                    </div>
+                `;
+                landCount.textContent = "0 lands";
+                totalArea.textContent = "—";
+                return;
+            }
+
+            allLands.forEach((land, i) => {
+                totalMeters += land.areaSqMeters;
+                totalAcres += land.areaAcres;
+                totalHectares += land.areaHectares;
+
+                const div = document.createElement("div");
+                div.className = "land-item";
+                div.innerHTML = `
+                    <div class="land-header">
+                        <span class="land-title">${land.name}</span>
+                        <span class="land-details">${land.areaAcres.toFixed(2)} acres</span>
+                    </div>
+                    <div class="land-details">
+                        ${land.areaSqMeters.toFixed(2)} m² | 
+                        ${land.areaHectares.toFixed(4)} ha
+                    </div>
+                    <div style="font-size: 0.8rem; color: #888; margin-top: 5px;">
+                        ${land.corners.length} corners
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            landCount.textContent = `${allLands.length} land${allLands.length > 1 ? 's' : ''}`;
+            totalArea.innerHTML = `
+                ${totalMeters.toFixed(2)} m²<br>
+                ${totalHectares.toFixed(4)} ha<br>
+                ${totalAcres.toFixed(4)} acres
+            `;
+        }
+
+        function resetAll() {
+            if (allLands.length > 0 && !confirm("Are you sure you want to reset all lands? This action cannot be undone.")) {
+                return;
+            }
+            
+            stopTracking();
+            currentCorners = [];
+            allLands = [];
+            updateCornerList();
+            updateLandsList();
+            
+            // Remove all drawn layers from map
+            drawnLayers.forEach(layer => map.removeLayer(layer));
+            drawnLayers = [];
+            
+            // Remove current position marker
+            if (currentPosMarker) {
+                map.removeLayer(currentPosMarker);
+                currentPosMarker = null;
+            }
+            
+            // Reset UI
+            statusElement.textContent = "Ready to start";
+            statusElement.style.color = "#666";
+            coordsElement.textContent = "—";
+            accuracyElement.textContent = "—";
+            currentCoords = null;
+            
+            // Reset map view
+            map.setView([20.5937, 78.9629], 5);
+            
+            updateButtonStates();
+        }
+    </script>
+</body>
+</html>
