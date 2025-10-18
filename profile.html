@@ -206,13 +206,13 @@
             font-weight: 600;
         }
 
-        /* Land Cards */
-        .land-card {
+        /* Land Summary */
+        .land-summary {
             background: var(--background);
             border-radius: 12px;
             padding: 16px;
-            margin-bottom: 16px;
             border-left: 4px solid var(--secondary);
+            margin-bottom: 16px;
         }
 
         .land-header {
@@ -252,21 +252,6 @@
         .detail-label {
             font-size: 12px;
             color: var(--text-light);
-            font-weight: 600;
-        }
-
-        .land-properties {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .property {
-            background: rgba(70, 130, 180, 0.1);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: var(--secondary);
             font-weight: 600;
         }
 
@@ -388,11 +373,6 @@
             .action-buttons {
                 flex-direction: column;
             }
-            
-            .land-properties {
-                flex-direction: column;
-                gap: 6px;
-            }
         }
     </style>
 </head>
@@ -500,9 +480,30 @@
             </h2>
             
             <div id="landsContainer">
-                <div id="noLandsMessage" class="no-data">
-                    <i class="fas fa-map-marked-alt"></i>
-                    <p>No lands added yet</p>
+                <div class="land-summary">
+                    <div class="land-header">
+                        <div class="land-name">Total Land Area</div>
+                    </div>
+                    <div class="land-details">
+                        <div class="land-detail">
+                            <div class="detail-value" id="totalAreaSqMeters">0</div>
+                            <div class="detail-label">Square Meters</div>
+                        </div>
+                        <div class="land-detail">
+                            <div class="detail-value" id="totalAreaHectares">0</div>
+                            <div class="detail-label">Hectares</div>
+                        </div>
+                        <div class="land-detail">
+                            <div class="detail-value" id="totalAreaAcres">0</div>
+                            <div class="detail-label">Acres</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn secondary" id="viewCropsBtn">
+                        <i class="fas fa-seedling"></i> View Crops
+                    </button>
                     <button class="action-btn primary" id="addLandBtn">
                         <i class="fas fa-plus"></i> Add Land
                     </button>
@@ -633,15 +634,15 @@
 
         function updateProfileUI() {
             // Personal Information
-            document.getElementById('userFullName').textContent = userData.full_name;
+  document.getElementById('userFullName').textContent = userData.full_name;
             document.getElementById('profileFullName').textContent = userData.full_name;
             document.getElementById('profilePhone').textContent = userData.phone;
             document.getElementById('profileEmail').textContent = userData.email;
             document.getElementById('profileLanguage').textContent = userData.language || 'English';
             
             // Account Information
-            if (userData.account_holder && userData.account_number) {
-                document.getElementById('profileAccountHolder').textContent = userData.account_holder;
+            if (userData.account_holder_name && userData.account_number) {
+                document.getElementById('profileAccountHolder').textContent = userData.account_holder_name;
                 document.getElementById('profileAccountNumber').textContent = userData.account_number;
                 document.getElementById('profileIfscCode').textContent = userData.ifsc_code || 'Not provided';
                 document.getElementById('profileWaterSource').textContent = userData.water_source || 'Not provided';
@@ -655,50 +656,21 @@
         }
 
         function updateLandsUI() {
-            const landsContainer = document.getElementById('landsContainer');
-            const noLandsMessage = document.getElementById('noLandsMessage');
-            
-            if (landsData.length === 0) {
-                noLandsMessage.style.display = 'block';
-                return;
-            }
-            
-            noLandsMessage.style.display = 'none';
-            landsContainer.innerHTML = '';
+            // Calculate total area across all lands
+            let totalSqMeters = 0;
+            let totalHectares = 0;
+            let totalAcres = 0;
             
             landsData.forEach(land => {
-                const landCard = document.createElement('div');
-                landCard.className = 'land-card';
-                
-                landCard.innerHTML = `
-                    <div class="land-header">
-                        <div class="land-name">${land.land_name}</div>
-                        <button class="speech-btn" data-land="${land.land_id}">
-                            <i class="fas fa-volume-up"></i>
-                        </button>
-                    </div>
-                    <div class="land-details">
-                        <div class="land-detail">
-                            <div class="detail-value">${land.area_sq_meters || 0}</div>
-                            <div class="detail-label">m²</div>
-                        </div>
-                        <div class="land-detail">
-                            <div class="detail-value">${land.area_hectares || 0}</div>
-                            <div class="detail-label">हेक्टेयर</div>
-                        </div>
-                        <div class="land-detail">
-                            <div class="detail-value">${land.area_acres || 0}</div>
-                            <div class="detail-label">एकड़</div>
-                        </div>
-                    </div>
-                    <div class="land-properties">
-                        <div class="property">${currentLanguage === 'Hindi' ? 'मिट्टी: ' : 'Soil: '}${land.soil_type || 'Not specified'}</div>
-                        <div class="property">${currentLanguage === 'Hindi' ? 'पानी: ' : 'Water: '}${land.water_availability || 'Not specified'}</div>
-                    </div>
-                `;
-                
-                landsContainer.appendChild(landCard);
+                totalSqMeters += parseFloat(land.area_sq_meters) || 0;
+                totalHectares += parseFloat(land.area_hectares) || 0;
+                totalAcres += parseFloat(land.area_acres) || 0;
             });
+            
+            // Update UI with total areas
+            document.getElementById('totalAreaSqMeters').textContent = totalSqMeters.toFixed(2);
+            document.getElementById('totalAreaHectares').textContent = totalHectares.toFixed(2);
+            document.getElementById('totalAreaAcres').textContent = totalAcres.toFixed(2);
         }
 
         function setupEventListeners() {
@@ -706,16 +678,7 @@
             document.querySelectorAll('.speech-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const section = this.getAttribute('data-section');
-                    if (section === 'land') {
-                        const landId = this.getAttribute('data-land');
-                        if (landId) {
-                            speakLandDetails(landId);
-                        } else {
-                            speakSection('land');
-                        }
-                    } else {
-                        speakSection(section);
-                    }
+                    speakSection(section);
                 });
             });
             
@@ -728,8 +691,12 @@
                 window.location.href = 'account-management.html';
             });
             
+            document.getElementById('viewCropsBtn').addEventListener('click', function() {
+                window.location.href = 'crops.html';
+            });
+            
             document.getElementById('addLandBtn').addEventListener('click', function() {
-                window.location.href = 'account-management.html';
+                window.location.href = 'land.html';
             });
             
             document.getElementById('logoutBtn').addEventListener('click', async function() {
@@ -755,9 +722,9 @@
                         भाषा: ${userData.language || 'अंग्रेजी'}`;
                         break;
                     case 'account':
-                        if (userData.account_holder && userData.account_number) {
+                        if (userData.account_holder_name && userData.account_number) {
                             text = `आपका खाता विवरण: 
-                            खाता धारक: ${userData.account_holder}, 
+                            खाता धारक: ${userData.account_holder_name}, 
                             खाता नंबर: ${userData.account_number}, 
                             आई एफ एस सी कोड: ${userData.ifsc_code || 'उपलब्ध नहीं'}, 
                             पानी का स्रोत: ${userData.water_source || 'उपलब्ध नहीं'}`;
@@ -767,10 +734,15 @@
                         break;
                     case 'land':
                         if (landsData.length > 0) {
-                            text = `आपकी ${landsData.length} जमीनें हैं। `;
-                            landsData.forEach((land, index) => {
-                                text += `${index + 1}. ${land.land_name}, क्षेत्रफल: ${land.area_hectares || 0} हेक्टेयर, मिट्टी: ${land.soil_type || 'उपलब्ध नहीं'}, पानी: ${land.water_availability || 'उपलब्ध नहीं'}. `;
-                            });
+                            const totalSqMeters = landsData.reduce((sum, land) => sum + (parseFloat(land.area_sq_meters) || 0), 0);
+                            const totalHectares = landsData.reduce((sum, land) => sum + (parseFloat(land.area_hectares) || 0), 0);
+                            const totalAcres = landsData.reduce((sum, land) => sum + (parseFloat(land.area_acres) || 0), 0);
+                            
+                            text = `आपके पास कुल ${landsData.length} जमीनें हैं। 
+                            कुल क्षेत्रफल: ${totalHectares.toFixed(2)} हेक्टेयर, 
+                            ${totalSqMeters.toFixed(2)} वर्ग मीटर, 
+                            ${totalAcres.toFixed(2)} एकड़। 
+                            विस्तृत जानकारी के लिए फसलें देखें।`;
                         } else {
                             text = 'कोई जमीन जानकारी उपलब्ध नहीं है। कृपया जमीन जोड़ें।';
                         }
@@ -786,9 +758,9 @@
                         Language: ${userData.language || 'English'}`;
                         break;
                     case 'account':
-                        if (userData.account_holder && userData.account_number) {
+                        if (userData.account_holder_name && userData.account_number) {
                             text = `Your account details: 
-                            Account holder: ${userData.account_holder}, 
+                            Account holder: ${userData.account_holder_name}, 
                             Account number: ${userData.account_number}, 
                             IFSC code: ${userData.ifsc_code || 'Not provided'}, 
                             Water source: ${userData.water_source || 'Not provided'}`;
@@ -798,10 +770,15 @@
                         break;
                     case 'land':
                         if (landsData.length > 0) {
-                            text = `You have ${landsData.length} lands. `;
-                            landsData.forEach((land, index) => {
-                                text += `${index + 1}. ${land.land_name}, Area: ${land.area_hectares || 0} hectares, Soil: ${land.soil_type || 'Not specified'}, Water: ${land.water_availability || 'Not specified'}. `;
-                            });
+                            const totalSqMeters = landsData.reduce((sum, land) => sum + (parseFloat(land.area_sq_meters) || 0), 0);
+                            const totalHectares = landsData.reduce((sum, land) => sum + (parseFloat(land.area_hectares) || 0), 0);
+                            const totalAcres = landsData.reduce((sum, land) => sum + (parseFloat(land.area_acres) || 0), 0);
+                            
+                            text = `You have ${landsData.length} lands. 
+                            Total area: ${totalHectares.toFixed(2)} hectares, 
+                            ${totalSqMeters.toFixed(2)} square meters, 
+                            ${totalAcres.toFixed(2)} acres. 
+                            View crops for detailed information.`;
                         } else {
                             text = 'No land information available. Please add lands.';
                         }
@@ -815,32 +792,6 @@
                 msg.rate = 0.9;
                 window.speechSynthesis.speak(msg);
             }
-        }
-
-        function speakLandDetails(landId) {
-            if (!window.speechSynthesis) return;
-            
-            const land = landsData.find(l => l.land_id === landId);
-            if (!land) return;
-            
-            let text = '';
-            
-            if (currentLanguage === 'Hindi') {
-                text = `जमीन का नाम: ${land.land_name}, 
-                क्षेत्रफल: ${land.area_hectares || 0} हेक्टेयर, 
-                मिट्टी का प्रकार: ${land.soil_type || 'उपलब्ध नहीं'}, 
-                पानी की उपलब्धता: ${land.water_availability || 'उपलब्ध नहीं'}`;
-            } else {
-                text = `Land name: ${land.land_name}, 
-                Area: ${land.area_hectares || 0} hectares, 
-                Soil type: ${land.soil_type || 'Not specified'}, 
-                Water availability: ${land.water_availability || 'Not specified'}`;
-            }
-            
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = speechLang;
-            msg.rate = 0.9;
-            window.speechSynthesis.speak(msg);
         }
 
         function updateTime() {
@@ -863,4 +814,4 @@
         }
     </script>
 </body>
-</html>
+</html>          
