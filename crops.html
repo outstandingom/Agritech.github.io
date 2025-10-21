@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowSmart - Crop Growth Tracking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary: #2E8B57;
+            --primary-light: #3CB371;
+            --primary-dark: #228B22;
+            --secondary: #4682B4;
+            --accent: #FFA500;
+            --warning: #FF6347;
+            --background: #F5F5F5;
+            --surface: #FFFFFF;
+            --text: #2F4F4F;
+            --text-light: #708090;
+            --border: #E0E0E0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --radius: 16px;
+            --gradient: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 16px;
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 12px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-title i {
+            font-size: 22px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .location {
+            font-size: 14px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Content Cards */
+        .content-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* Current Crop Status */
+        .current-crop-status {
+            background: var(--gradient);
+            color: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .crop-name {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .crop-stage {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 8px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .stage-duration {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Map Container */
+        .map-container {
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            height: 200px;
+            position: relative;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .map-nav {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .map-nav-btn {
+            background: var(--surface);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .map-nav-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Crop Information */
+        .crop-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+
+        .crop-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 15px;
+        }
+
+        .crop-detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .crop-detail-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .crop-detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Stage Conditions */
+        .stage-conditions {
+            margin-top: 20px;
+        }
+
+        .condition-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .condition-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .condition-met {
+            background: var(--primary);
+            color: white;
+        }
+
+        .condition-pending {
+            background: var(--border);
+            color: var(--text-light);
+        }
+
+        .condition-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .condition-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .condition-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mark-complete-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .mark-complete-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Stage Navigation */
+        .stage-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .stage-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .stage-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .stage-btn:disabled {
+            background: var(--border);
+            color: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Growth Stages Overview */
+        .stages-overview {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 0;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .stage-indicator {
+            min-width: 80px;
+            text-align: center;
+            padding: 12px 8px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .stage-indicator.active {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .stage-indicator.completed {
+            background: rgba(46, 139, 87, 0.1);
+            border: 2px solid var(--primary);
+        }
+
+        .stage-emoji {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .stage-name-short {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Plant Growth Stage Identifier */
+        .upload-section {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 30px 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(46, 139, 87, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary-light);
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 15px;
+        }
+
+        .upload-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .image-preview {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 15px;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .analyze-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .analyze-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .remove-btn {
+            background: var(--warning);
+            color: white;
+        }
+
+        .remove-btn:hover {
+            background: #e74c3c;
+        }
+
+        /* Crop Selection */
+        .crop-selection {
+            margin-top: 15px;
+        }
+
+        .crop-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .crop-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        }
+
+        .crop-input::placeholder {
+            color: var(--text-light);
+        }
+
+        .start-journey-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .start-journey-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .start-journey-btn:disabled {
+            background: var(--border);
+            color: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-around;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 480px;
+            z-index: 1000;
+            border: 1px solid var(--border);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item.active {
+            opacity: 1;
+            color: var(--primary);
+            background: rgba(46, 139, 87, 0.1);
+        }
+
+        .nav-item:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .nav-item span {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+                padding-bottom: 100px;
+            }
+            
+            .header {
+                margin-bottom: 16px;
+                padding: 10px 0;
+            }
+            
+            .crop-details {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .stage-navigation {
+                flex-direction: column;
+            }
+            
+            .bottom-nav {
+                width: calc(100% - 32px);
+                padding: 14px;
+            }
+            
+            .nav-item span {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="app-title">
+                <i class="fas fa-leaf"></i>
+                GrowSmart
+            </div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="locationText">Loading location...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Crop Status -->
+        <div class="current-crop-status">
+            <div class="crop-name" id="currentCropName">No crop selected</div>
+            <div class="crop-stage" id="currentStageDisplay">🌱 Select a crop to begin</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="stageProgress" style="width: 0%"></div>
+            </div>
+            <div class="stage-duration" id="stageDurationDisplay">Start your crop journey</div>
+        </div>
+
+        <!-- Land and Crop Selection -->
+        <div class="content-card">
+            <div class="section-title">
+                <i class="fas fa-map-marked-alt"></i>
+                Select Land & Crop
+            </div>
+            
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="map-nav">
+                    <button class="map-nav-btn" id="prevLandBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="map-nav-btn" id="nextLandBtn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="crop-selection">
+                <div class="crop-detail-item" style="margin-top: 15px;">
+                    <div class="crop-detail-label">Selected Land</div>
+                    <div class="crop-detail-value" id="selectedLand">No land selected</div>
+                </div>
+                
+                <input type="text" class="crop-input" id="cropNameInput" placeholder="Enter crop name (e.g., Cotton, Wheat, Corn)">
+                
+                <button class="start-journey-btn" id="startJourneyBtn" disabled>
+                    <i class="fas fa-play-circle"></i>
+                    Start Crop Journey
+                </button>
+            </div>
+        </div>
+
+        <!-- Crop Information -->
+        <div class="content-card" id="cropInfoCard" style="display: none;">
+            <div class="section-title">
+                <i class="fas fa-seedling"></i>
+                Crop Information
+            </div>
+            
+            <div class="crop-info">
+                <div class="crop-details">
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Planting Date</div>
+                        <div class="crop-detail-value" id="plantingDate">-</div>
+                    </div>
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Expected Harvest</div>
+                        <div class="crop-detail-value" id="expectedHarvest">-</div>
+                    </div>
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Area</div>
+                        <div class="crop-detail-value" id="cropArea">-</div>
+                    </div>
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Days Since Planting</div>
+                        <div class="crop-detail-value" id="daysSincePlanting">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Stage Conditions -->
+        <div class="content-card" id="stageConditionsCard" style="display: none;">
+            <div class="section-title">
+                <i class="fas fa-tasks"></i>
+                Stage Conditions
+            </div>
+            
+            <div class="stage-conditions" id="stageConditions">
+                <!-- Conditions will be populated here -->
+            </div>
+            
+            <div class="stage-navigation">
+                <button class="stage-btn" id="prevStageBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous Stage
+                </button>
+                <button class="stage-btn" id="nextStageBtn" disabled>
+                    Next Stage <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Growth Stages Overview -->
+        <div class="content-card" id="stagesOverviewCard" style="display: none;">
+            <div class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Growth Journey
+            </div>
+            
+            <div class="stages-overview" id="stagesOverview">
+                <!-- Stage indicators will be populated here -->
+            </div>
+        </div>
+
+        <!-- Plant Growth Stage Identifier -->
+        <div class="upload-section" id="aiAnalysisSection" style="display: none;">
+            <div class="section-title">
+                <i class="fas fa-camera"></i>
+                AI Crop Stage Analysis
+            </div>
+            
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">Upload current crop photo</div>
+                <div class="upload-subtext">AI will analyze and update growth stage</div>
+                <button class="upload-btn" id="uploadButton">
+                    <i class="fas fa-folder-open"></i>
+                    Choose Image
+                </button>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+            
+            <div class="image-preview" id="imagePreview">
+                <img src="" alt="Crop Preview" class="preview-image" id="previewImage">
+                <div class="preview-actions">
+                    <button class="action-btn analyze-btn" id="analyzeButton">
+                        <i class="fas fa-search"></i>
+                        Analyze & Update
+                    </button>
+                    <button class="action-btn remove-btn" id="removeImageButton">
+                        <i class="fas fa-times"></i>
+                        Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="soil.html" class="nav-item">
+            <i class="fas fa-vial"></i>
+            <span>Soil</span>
+        </a>
+        <a href="crops.html" class="nav-item active">
+            <i class="fas fa-seedling"></i>
+            <span>Crops</span>
+        </a>
+        <a href="blockchain.html" class="nav-item">
+            <i class="fas fa-link"></i>
+            <span>Blockchain</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <!-- Include external scripts -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth-checker.js"></script>
+
+    <script>
+        // Global variables
+        let map;
+        let currentUser = null;
+        let userLands = [];
+        let currentLandIndex = 0;
+        let currentCrop = null;
+        let currentStage = 'germination';
+        let userCrops = [];
+        let userLocation = null;
+
+        // Plant growth stages configuration
+        const plantStages = {
+            germination: {
+                name: "Germination (Seed Stage)",
+                emoji: "🌱",
+                duration: "Few days to 2 weeks",
+                description: "The seed absorbs water and swells. The embryo inside starts to grow. The root (radicle) comes out first, followed by the shoot.",
+                conditions: [
+                    "Adequate moisture",
+                    "Suitable temperature (20-25°C)",
+                    "Proper soil depth"
+                ],
+                recommendations: [
+                    "Maintain consistent soil moisture but avoid overwatering",
+                    "Keep soil temperature between 20-25°C for optimal germination",
+                    "Ensure proper seed depth according to crop type"
+                ],
+                durationDays: 14
+            },
+            seedling: {
+                name: "Seedling Stage",
+                emoji: "🌿",
+                duration: "1–4 weeks",
+                description: "The young plant develops its first true leaves. Roots grow deeper to absorb nutrients and water. The plant is delicate and needs proper care.",
+                conditions: [
+                    "Adequate light (12-16 hours daily)",
+                    "Regular watering",
+                    "Nutrient availability",
+                    "Protection from pests"
+                ],
+                recommendations: [
+                    "Provide adequate light for strong growth",
+                    "Apply balanced, diluted fertilizer",
+                    "Monitor for pests and diseases",
+                    "Maintain consistent soil moisture"
+                ],
+                durationDays: 28
+            },
+            vegetative: {
+                name: "Vegetative Growth Stage",
+                emoji: "🌾",
+                duration: "Several weeks to months",
+                description: "Rapid growth phase — plant produces more leaves, stems, and roots. Focus is on building a strong structure for future flowering and fruiting.",
+                conditions: [
+                    "Adequate space between plants",
+                    "Balanced nutrition",
+                    "Proper pruning",
+                    "Weed control",
+                    "Adequate water supply"
+                ],
+                recommendations: [
+                    "Increase nitrogen-rich fertilizer for leaf growth",
+                    "Ensure proper spacing for air circulation",
+                    "Implement weed control measures",
+                    "Monitor for nutrient deficiencies"
+                ],
+                durationDays: 56
+            },
+            flowering: {
+                name: "Flowering or Reproductive Stage",
+                emoji: "🌸",
+                duration: "1–4 weeks typically",
+                description: "The plant begins to produce flowers or reproductive parts. Pollination occurs (by wind, insects, or manually).",
+                conditions: [
+                    "Proper pollination",
+                    "Adequate light",
+                    "Proper temperature",
+                    "Reduced nitrogen",
+                    "Increased phosphorus"
+                ],
+                recommendations: [
+                    "Reduce nitrogen and increase phosphorus for flowering",
+                    "Ensure pollinators have access",
+                    "Consider manual pollination if needed",
+                    "Maintain optimal temperature range"
+                ],
+                durationDays: 28
+            },
+            fruiting: {
+                name: "Fruiting or Grain Filling Stage",
+                emoji: "🌾",
+                duration: "Varies widely (from weeks to months)",
+                description: "After successful pollination, fruits or grains start developing. Nutrients and energy are directed toward filling seeds or fruits.",
+                conditions: [
+                    "Adequate water supply",
+                    "Nutrient availability",
+                    "Pest control",
+                    "Disease management",
+                    "Proper support for heavy fruits"
+                ],
+                recommendations: [
+                    "Apply potassium-rich fertilizer for fruit development",
+                    "Maintain consistent watering",
+                    "Implement pest control measures",
+                    "Provide support for heavy fruiting plants"
+                ],
+                durationDays: 42
+            },
+            maturity: {
+                name: "Maturity and Harvesting Stage",
+                emoji: "🌻",
+                duration: "Varies by crop",
+                description: "Fruits, grains, or pods reach full size and ripen. Moisture levels drop, and the plant may begin to dry or turn yellow. Crops are ready for harvest.",
+                conditions: [
+                    "Proper harvest timing",
+                    "Dry weather for harvesting",
+                    "Storage preparation",
+                    "Quality assessment"
+                ],
+                recommendations: [
+                    "Reduce watering as harvest approaches",
+                    "Monitor for optimal harvest time",
+                    "Prepare storage facilities",
+                    "Check crop quality before harvest"
+                ],
+                durationDays: 14
+            }
+        };
+
+        const stageOrder = ['germination', 'seedling', 'vegetative', 'flowering', 'fruiting', 'maturity'];
+
+        // DOM Elements
+        const userName = document.getElementById('userName');
+        const locationText = document.getElementById('locationText');
+        const currentCropName = document.getElementById('currentCropName');
+        const currentStageDisplay = document.getElementById('currentStageDisplay');
+        const stageProgress = document.getElementById('stageProgress');
+        const stageDurationDisplay = document.getElementById('stageDurationDisplay');
+        const selectedLand = document.getElementById('selectedLand');
+        const cropNameInput = document.getElementById('cropNameInput');
+        const startJourneyBtn = document.getElementById('startJourneyBtn');
+        const prevLandBtn = document.getElementById('prevLandBtn');
+        const nextLandBtn = document.getElementById('nextLandBtn');
+        const cropInfoCard = document.getElementById('cropInfoCard');
+        const plantingDate = document.getElementById('plantingDate');
+        const expectedHarvest = document.getElementById('expectedHarvest');
+        const cropArea = document.getElementById('cropArea');
+        const daysSincePlanting = document.getElementById('daysSincePlanting');
+        const stageConditionsCard = document.getElementById('stageConditionsCard');
+        const stageConditions = document.getElementById('stageConditions');
+        const prevStageBtn = document.getElementById('prevStageBtn');
+        const nextStageBtn = document.getElementById('nextStageBtn');
+        const stagesOverviewCard = document.getElementById('stagesOverviewCard');
+        const stagesOverview = document.getElementById('stagesOverview');
+        const aiAnalysisSection = document.getElementById('aiAnalysisSection');
+
+        // Plant Identifier Elements
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadButton = document.getElementById('uploadButton');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImage = document.getElementById('previewImage');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const removeImageButton = document.getElementById('removeImageButton');
+
+        // Initialize map
+        function initializeMap() {
+            map = L.map('map').setView([22.7196, 75.8577], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        // Update map with land coordinates
+        function updateMapWithLand(land) {
+            map.eachLayer(layer => {
+                if (layer instanceof L.Polygon) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            if (land && land.coordinates && land.coordinates.length > 0) {
+                // Create polygon from coordinates
+                const polygon = L.polygon(land.coordinates, {
+                    color: '#2E8B57',
+                    fillColor: '#3CB371',
+                    fillOpacity: 0.3,
+                    weight: 3
+                }).addTo(map);
+                
+                // Fit map to the polygon bounds
+                map.fitBounds(polygon.getBounds());
+                
+                // Add marker at center
+                L.marker([land.center_lat, land.center_lng])
+                    .addTo(map)
+                    .bindPopup(`<b>${land.land_name}</b><br>${land.area_acres} acres`)
+                    .openPopup();
+            }
+        }
+
+        // Get user location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        userLocation = { lat, lng };
+                        
+                        // Get location name using reverse geocoding
+                        try {
+                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                            const data = await response.json();
+                            
+                            if (data && data.address) {
+                                const city = data.address.city || data.address.town || data.address.village || data.address.county;
+                                const state = data.address.state;
+                                locationText.textContent = city && state ? `${city}, ${state}` : 'Location found';
+                            } else {
+                                locationText.textContent = 'Location found';
+                            }
+                        } catch (error) {
+                            console.error('Error getting location name:', error);
+                            locationText.textContent = 'Location found';
+                        }
+                    },
+                    (error) => {
+                        console.error('Error getting location:', error);
+                        locationText.textContent = 'Location access denied';
+                    }
+                );
+            } else {
+                locationText.textContent = 'Geolocation not supported';
+            }
+        }
+
+        // Load user data from Supabase
+        async function loadUserData() {
+            try {
+                // Check authentication first
+                const isAuthenticated = await window.authChecker.requireAuth();
+                if (!isAuthenticated) return;
+
+                // Get current user
+                currentUser = await window.authChecker.getCurrentUser();
+                if (!currentUser) {
+                    console.error('No authenticated user found');
+                    return;
+                }
+
+                // Load user profile
+                const { data: userProfile, error: userError } = await window.supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('auth_id', currentUser.id)
+                    .single();
+                
+                if (userError) {
+                    console.error('Error loading user profile:', userError);
+                } else if (userProfile) {
+                    userName.textContent = userProfile.full_name;
+                }
+
+                // Load user's lands with coordinates
+                const { data: lands, error: landsError } = await window.supabaseClient
+                    .from('lands')
+                    .select('*')
+                    .eq('auth_id', currentUser.id);
+                
+                if (landsError) {
+                    console.error('Error loading lands:', landsError);
+                } else if (lands && lands.length > 0) {
+                    userLands = lands;
+                    
+                    // Load coordinates for each land
+                    for (let land of userLands) {
+                        const { data: coordinates, error: coordsError } = await window.supabaseClient
+                            .from('land_coordinates')
+                            .select('latitude, longitude, corner_index')
+                            .eq('land_id', land.land_id)
+                            .order('corner_index');
+                        
+                        if (!coordsError && coordinates && coordinates.length > 0) {
+                            land.coordinates = coordinates.map(coord => [coord.latitude, coord.longitude]);
+                        }
+                    }
+                    
+                    updateLandDisplay();
+                } else {
+                    selectedLand.textContent = 'No lands found';
+                    prevLandBtn.disabled = true;
+                    nextLandBtn.disabled = true;
+                }
+
+                // Load user's crops
+                const { data: crops, error: cropsError } = await window.supabaseClient
+                    .from('crops')
+                    .select('*')
+                    .eq('auth_id', currentUser.id);
+                
+                if (cropsError) {
+                    console.error('Error loading crops:', cropsError);
+                } else if (crops && crops.length > 0) {
+                    userCrops = crops;
+                    // If there's an active crop, load it
+                    const activeCrop = crops.find(crop => crop.is_active);
+                    if (activeCrop) {
+                        currentCrop = activeCrop;
+                        loadCropStages(activeCrop.crop_id);
+                        updateCropDisplay();
+                        showCropSections();
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Load crop stages from database
+        async function loadCropStages(cropId) {
+            try {
+                const { data: stages, error } = await window.supabaseClient
+                    .from('crop_stages')
+                    .select('*')
+                    .eq('crop_id', cropId)
+                    .order('stage_order');
+                
+                if (!error && stages && stages.length > 0) {
+                    // Update current stage based on database
+                    const activeStage = stages.find(stage => stage.is_current);
+                    if (activeStage) {
+                        currentStage = activeStage.stage_key;
+                    }
+                    
+                    // Update conditions met for each stage
+                    if (!currentCrop.conditions_met) {
+                        currentCrop.conditions_met = {};
+                    }
+                    
+                    stages.forEach(stage => {
+                        currentCrop.conditions_met[stage.stage_key] = stage.conditions_met || [];
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading crop stages:', error);
+            }
+        }
+
+        // Update land display
+        function updateLandDisplay() {
+            if (userLands.length === 0) {
+                selectedLand.textContent = 'No lands found';
+                prevLandBtn.disabled = true;
+                nextLandBtn.disabled = true;
+                return;
+            }
+            
+            const currentLand = userLands[currentLandIndex];
+            selectedLand.textContent = currentLand.land_name;
+            
+            // Update map
+            updateMapWithLand(currentLand);
+            
+            // Update navigation buttons
+            prevLandBtn.disabled = currentLandIndex === 0;
+            nextLandBtn.disabled = currentLandIndex === userLands.length - 1;
+        }
+
+        // Show crop sections when a crop is active
+        function showCropSections() {
+            cropInfoCard.style.display = 'block';
+            stageConditionsCard.style.display = 'block';
+            stagesOverviewCard.style.display = 'block';
+            aiAnalysisSection.style.display = 'block';
+        }
+
+        // Hide crop sections when no crop is active
+        function hideCropSections() {
+            cropInfoCard.style.display = 'none';
+            stageConditionsCard.style.display = 'none';
+            stagesOverviewCard.style.display = 'none';
+            aiAnalysisSection.style.display = 'none';
+        }
+
+        // Update crop display
+        function updateCropDisplay() {
+            if (!currentCrop) {
+                currentCropName.textContent = 'No crop selected';
+                currentStageDisplay.textContent = '🌱 Select a crop to begin';
+                stageProgress.style.width = '0%';
+                stageDurationDisplay.textContent = 'Start your crop journey';
+                hideCropSections();
+                return;
+            }
+
+            currentCropName.textContent = currentCrop.crop_name;
+            
+            if (currentCrop.planting_date) {
+                plantingDate.textContent = new Date(currentCrop.planting_date).toLocaleDateString();
+            } else {
+                plantingDate.textContent = 'Not set';
+            }
+            
+            if (currentCrop.expected_harvest_date) {
+                expectedHarvest.textContent = new Date(currentCrop.expected_harvest_date).toLocaleDateString();
+            } else {
+                expectedHarvest.textContent = 'Not set';
+            }
+            
+            cropArea.textContent = currentCrop.area_allocated ? 
+                `${currentCrop.area_allocated} acres` : 'Not specified';
+            
+            // Calculate days since planting
+            if (currentCrop.planting_date) {
+                const planting = new Date(currentCrop.planting_date);
+                const today = new Date();
+                const days = Math.floor((today - planting) / (1000 * 60 * 60 * 24));
+                daysSincePlanting.textContent = `${days} days`;
+            } else {
+                daysSincePlanting.textContent = 'Not set';
+            }
+
+            // Update current stage
+            updateStageDisplay();
+            showCropSections();
+        }
+
+        function updateStageDisplay() {
+            const stage = plantStages[currentStage];
+            if (!stage) {
+                currentStageDisplay.textContent = '🌱 Stage not found';
+                return;
+            }
+
+            currentStageDisplay.textContent = `${stage.emoji} ${stage.name}`;
+            const stageIndex = stageOrder.indexOf(currentStage);
+            const progress = (stageIndex / (stageOrder.length - 1)) * 100;
+            stageProgress.style.width = `${progress}%`;
+            
+            // Update stage duration
+            stageDurationDisplay.textContent = stage.duration;
+            
+            // Update conditions
+            updateStageConditions();
+            
+            // Update stage navigation
+            updateStageNavigation();
+            
+            // Update stages overview
+            updateStagesOverview();
+        }
+
+        function updateStageConditions() {
+            stageConditions.innerHTML = '';
+            const stage = plantStages[currentStage];
+            const conditionsMet = currentCrop.conditions_met?.[currentStage] || Array(stage.conditions.length).fill(false);
+            
+            stage.conditions.forEach((condition, index) => {
+                const isMet = conditionsMet[index] || false;
+                
+                const conditionItem = document.createElement('div');
+                conditionItem.className = 'condition-item';
+                
+                conditionItem.innerHTML = `
+                    <div class="condition-status ${isMet ? 'condition-met' : 'condition-pending'}">
+                        <i class="fas fa-${isMet ? 'check' : 'clock'}"></i>
+                    </div>
+                    <div class="condition-text">
+                        ${condition}
+                        <div class="condition-actions">
+                            <button class="condition-btn mark-complete-btn" 
+                                    onclick="markConditionComplete('${currentStage}', ${index}, ${!isMet})"
+                                    ${isMet ? 'disabled style="opacity:0.5"' : ''}>
+                                ${isMet ? 'Completed' : 'Mark Complete'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                stageConditions.appendChild(conditionItem);
+            });
+        }
+
+        // Mark condition as complete/incomplete
+        async function markConditionComplete(stage, conditionIndex, isComplete) {
+            try {
+                if (!currentCrop || !currentCrop.crop_id) {
+                    console.error('No crop selected');
+                    return;
+                }
+
+                // Update local state
+                if (!currentCrop.conditions_met) {
+                    currentCrop.conditions_met = {};
+                }
+                if (!currentCrop.conditions_met[stage]) {
+                    currentCrop.conditions_met[stage] = Array(plantStages[stage].conditions.length).fill(false);
+                }
+                currentCrop.conditions_met[stage][conditionIndex] = isComplete;
+
+                // Update in database
+                const { error } = await window.supabaseClient
+                    .from('crop_stages')
+                    .update({ 
+                        conditions_met: currentCrop.conditions_met[stage],
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('crop_id', currentCrop.crop_id)
+                    .eq('stage_key', stage);
+
+                if (error) {
+                    console.error('Error updating condition:', error);
+                    alert('Error updating condition. Please try again.');
+                    return;
+                }
+
+                // Update UI
+                updateStageConditions();
+                
+                // Check if all conditions are met for current stage
+                checkStageCompletion();
+
+            } catch (error) {
+                console.error('Error marking condition complete:', error);
+                alert('Error updating condition. Please try again.');
+            }
+        }
+
+        // Check if all conditions are met for current stage
+        function checkStageCompletion() {
+            const stage = plantStages[currentStage];
+            const conditionsMet = currentCrop.conditions_met?.[currentStage] || [];
+            const allConditionsMet = conditionsMet.length === stage.conditions.length && 
+                                   conditionsMet.every(condition => condition === true);
+
+            if (allConditionsMet) {
+                // Enable next stage button
+                nextStageBtn.disabled = false;
+                // Show notification
+                showNotification(`All conditions met for ${stage.name}! You can now proceed to the next stage.`);
+            }
+        }
+
+        function showNotification(message) {
+            // Create a simple notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--primary);
+                color: white;
+                padding: 12px 20px;
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                z-index: 10000;
+                font-weight: 600;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+
+        function updateStageNavigation() {
+            const currentIndex = stageOrder.indexOf(currentStage);
+            prevStageBtn.disabled = currentIndex === 0;
+            
+            // Only enable next stage if all conditions are met for current stage
+            const stage = plantStages[currentStage];
+            const conditionsMet = currentCrop.conditions_met?.[currentStage] || [];
+            const allConditionsMet = conditionsMet.length === stage.conditions.length && 
+                                   conditionsMet.every(condition => condition === true);
+            
+            nextStageBtn.disabled = currentIndex === stageOrder.length - 1 || !allConditionsMet;
+        }
+
+        function updateStagesOverview() {
+            stagesOverview.innerHTML = '';
+            const currentIndex = stageOrder.indexOf(currentStage);
+            
+            stageOrder.forEach((stageKey, index) => {
+                const stage = plantStages[stageKey];
+                const isCompleted = index < currentIndex;
+                const isActive = index === currentIndex;
+                
+                const stageIndicator = document.createElement('div');
+                stageIndicator.className = `stage-indicator ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
+                stageIndicator.setAttribute('data-stage', stageKey);
+                
+                stageIndicator.innerHTML = `
+                    <div class="stage-emoji">${stage.emoji}</div>
+                    <div class="stage-name-short">${stage.name.split(' ')[0]}</div>
+                `;
+                
+                stageIndicator.addEventListener('click', () => {
+                    // Only allow navigating to completed or current stages
+                    if (index <= currentIndex) {
+                        currentStage = stageKey;
+                        updateStageDisplay();
+                    }
+                });
+                
+                stagesOverview.appendChild(stageIndicator);
+            });
+        }
+
+        // Start crop journey
+        async function startCropJourney() {
+            const cropName = cropNameInput.value.trim();
+            
+            if (!cropName) {
+                alert('Please enter a crop name');
+                return;
+            }
+            
+            if (userLands.length === 0) {
+                alert('No land available. Please add a land first.');
+                return;
+            }
+            
+            const currentLand = userLands[currentLandIndex];
+            
+            try {
+                // Create a new crop
+                const cropId = 'CROP_' + Date.now();
+                const plantingDate = new Date().toISOString().split('T')[0];
+                
+                // Calculate expected harvest date (add 120 days as default)
+                const harvestDate = new Date();
+                harvestDate.setDate(harvestDate.getDate() + 120);
+                const expectedHarvestDate = harvestDate.toISOString().split('T')[0];
+                
+                // Insert crop into database
+                const { data: crop, error } = await window.supabaseClient
+                    .from('crops')
+                    .insert({
+                        crop_id: cropId,
+                        auth_id: currentUser.id,
+                        user_id: currentUser.id,
+                        land_id: currentLand.land_id,
+                        crop_name: cropName,
+                        crop_type: 'custom',
+                        planting_date: plantingDate,
+                        expected_harvest_date: expectedHarvestDate,
+                        area_allocated: currentLand.area_acres,
+                        current_stage: 'germination',
+                        is_active: true,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    })
+                    .select()
+                    .single();
+                
+                if (error) {
+                    console.error('Error creating crop:', error);
+                    alert('Error starting crop journey. Please try again.');
+                    return;
+                }
+                
+                // Create crop stages
+                for (let i = 0; i < stageOrder.length; i++) {
+                    const stageKey = stageOrder[i];
+                    const stage = plantStages[stageKey];
+                    
+                    await window.supabaseClient
+                        .from('crop_stages')
+                        .insert({
+                            crop_id: cropId,
+                            stage_key: stageKey,
+                            stage_name: stage.name,
+                            stage_order: i,
+                            conditions_met: Array(stage.conditions.length).fill(false),
+                            is_current: i === 0,
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        });
+                }
+                
+                // Set current crop
+                currentCrop = crop;
+                currentCrop.conditions_met = {};
+                
+                // Update UI
+                updateCropDisplay();
+                showNotification(`Crop journey started for ${cropName}!`);
+                
+            } catch (error) {
+                console.error('Error starting crop journey:', error);
+                alert('Error starting crop journey. Please try again.');
+            }
+        }
+
+        // Advance to next stage
+        async function advanceToNextStage() {
+            const currentIndex = stageOrder.indexOf(currentStage);
+            if (currentIndex < stageOrder.length - 1) {
+                const nextStage = stageOrder[currentIndex + 1];
+                
+                try {
+                    // Update current stage in crops table
+                    const { error: cropError } = await window.supabaseClient
+                        .from('crops')
+                        .update({ 
+                            current_stage: nextStage,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('crop_id', currentCrop.crop_id);
+
+                    if (cropError) {
+                        console.error('Error updating crop stage:', cropError);
+                        alert('Error updating crop stage. Please try again.');
+                        return;
+                    }
+
+                    // Update crop_stages table
+                    const { error: stageError } = await window.supabaseClient
+                        .from('crop_stages')
+                        .update({ 
+                            is_current: false,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('crop_id', currentCrop.crop_id)
+                        .eq('stage_key', currentStage);
+
+                    if (stageError) {
+                        console.error('Error updating current stage:', stageError);
+                    }
+
+                    const { error: nextStageError } = await window.supabaseClient
+                        .from('crop_stages')
+                        .update({ 
+                            is_current: true,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('crop_id', currentCrop.crop_id)
+                        .eq('stage_key', nextStage);
+
+                    if (nextStageError) {
+                        console.error('Error updating next stage:', nextStageError);
+                    }
+
+                    // Update local state
+                    currentStage = nextStage;
+                    currentCrop.current_stage = nextStage;
+                    
+                    // Initialize conditions for new stage
+                    if (!currentCrop.conditions_met) {
+                        currentCrop.conditions_met = {};
+                    }
+                    currentCrop.conditions_met[nextStage] = Array(plantStages[nextStage].conditions.length).fill(false);
+                    
+                    updateStageDisplay();
+                    showNotification(`Crop advanced to ${plantStages[nextStage].name}`);
+
+                } catch (error) {
+                    console.error('Error advancing crop stage:', error);
+                    alert('Error advancing crop stage. Please try again.');
+                }
+            }
+        }
+
+        // Go back to previous stage
+        async function goToPreviousStage() {
+            const currentIndex = stageOrder.indexOf(currentStage);
+            if (currentIndex > 0) {
+                const prevStage = stageOrder[currentIndex - 1];
+                
+                try {
+                    // Update current stage in crops table
+                    const { error: cropError } = await window.supabaseClient
+                        .from('crops')
+                        .update({ 
+                            current_stage: prevStage,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('crop_id', currentCrop.crop_id);
+
+                    if (cropError) {
+                        console.error('Error updating crop stage:', cropError);
+                        alert('Error updating crop stage. Please try again.');
+                        return;
+                    }
+
+                    // Update crop_stages table
+                    const { error: stageError } = await window.supabaseClient
+                        .from('crop_stages')
+                        .update({ 
+                            is_current: false,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('crop_id', currentCrop.crop_id)
+                        .eq('stage_key', currentStage);
+
+                    if (stageError) {
+                        console.error('Error updating current stage:', stageError);
+                    }
+
+                    const { error: prevStageError } = await window.supabaseClient
+                        .from('crop_stages')
+                        .update({ 
+                            is_current: true,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('crop_id', currentCrop.crop_id)
+                        .eq('stage_key', prevStage);
+
+                    if (prevStageError) {
+                        console.error('Error updating previous stage:', prevStageError);
+                    }
+
+                    // Update local state
+                    currentStage = prevStage;
+                    currentCrop.current_stage = prevStage;
+                    
+                    updateStageDisplay();
+                    showNotification(`Crop reverted to ${plantStages[prevStage].name}`);
+
+                } catch (error) {
+                    console.error('Error reverting crop stage:', error);
+                    alert('Error reverting crop stage. Please try again.');
+                }
+            }
+        }
+
+        // Plant Identifier Functions
+        function handleFileSelect() {
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                
+                if (!file.type.match('image.*')) {
+                    alert('Please select an image file (JPG, PNG, WebP)');
+                    return;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size exceeds 5MB limit. Please choose a smaller image.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function removeImage() {
+            fileInput.value = '';
+            imagePreview.style.display = 'none';
+        }
+        
+        async function analyzePlant() {
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            if (!currentCrop) {
+                alert('Please select a crop first');
+                return;
+            }
+            
+            // Show loading state
+            analyzeButton.innerHTML = '<span class="spinner"></span> Analyzing...';
+            analyzeButton.disabled = true;
+            
+            try {
+                // In a real implementation, this would call your ML API
+                // For demo, we'll simulate AI analysis
+                
+                // Create a detailed prompt for the AI
+                const stage = plantStages[currentStage];
+                const prompt = `
+                    Analyze this crop image and determine:
+                    
+                    1. Current growth stage (from: germination, seedling, vegetative, flowering, fruiting, maturity)
+                    2. Health status of the plant
+                    3. Any visible issues or deficiencies
+                    4. Recommendations for next steps
+                    
+                    Current expected stage: ${stage.name}
+                    Crop type: ${currentCrop.crop_name}
+                    
+                    Please provide a detailed analysis and update the stage conditions accordingly.
+                `;
+                
+                console.log('AI Analysis Prompt:', prompt);
+                
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // For demo, auto-complete some conditions based on "AI analysis"
+                const randomConditionsToComplete = Math.min(
+                    Math.floor(Math.random() * stage.conditions.length) + 1,
+                    stage.conditions.length
+                );
+                
+                for (let i = 0; i < randomConditionsToComplete; i++) {
+                    await markConditionComplete(currentStage, i, true);
+                }
+                
+                // Randomly decide if stage should be advanced (25% chance)
+                const shouldAdvance = Math.random() < 0.25;
+                if (shouldAdvance && nextStageBtn.disabled === false) {
+                    await advanceToNextStage();
+                    showNotification(`AI analysis completed! Crop advanced to next stage.`);
+                } else {
+                    showNotification(`AI analysis completed! ${randomConditionsToComplete} condition(s) marked as met.`);
+                }
+
+            } catch (error) {
+                console.error('Error analyzing plant:', error);
+                alert('Error analyzing image. Please try again.');
+            } finally {
+                analyzeButton.innerHTML = '<i class="fas fa-search"></i> Analyze & Update';
+                analyzeButton.disabled = false;
+                removeImage();
+            }
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Land navigation
+            prevLandBtn.addEventListener('click', () => {
+                if (currentLandIndex > 0) {
+                    currentLandIndex--;
+                    updateLandDisplay();
+                }
+            });
+
+            nextLandBtn.addEventListener('click', () => {
+                if (currentLandIndex < userLands.length - 1) {
+                    currentLandIndex++;
+                    updateLandDisplay();
+                }
+            });
+
+            // Crop input
+            cropNameInput.addEventListener('input', () => {
+                startJourneyBtn.disabled = !cropNameInput.value.trim();
+            });
+
+            startJourneyBtn.addEventListener('click', startCropJourney);
+
+            // Stage navigation
+            prevStageBtn.addEventListener('click', goToPreviousStage);
+            nextStageBtn.addEventListener('click', advanceToNextStage);
+
+            // Plant Identifier Event Listeners
+            uploadButton.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--primary)';
+                uploadArea.style.background = 'rgba(46, 139, 87, 0.1)';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--border)';
+                uploadArea.style.background = '';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--border)';
+                uploadArea.style.background = '';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelect();
+                }
+            });
+            
+            analyzeButton.addEventListener('click', analyzePlant);
+            removeImageButton.addEventListener('click', removeImage);
+        }
+
+        // Initialize the application
+        async function initApp() {
+            try {
+                // Set up event listeners
+                setupEventListeners();
+                
+                // Initialize map
+                initializeMap();
+                
+                // Get user location
+                getUserLocation();
+                
+                // Load user data
+                await loadUserData();
+                
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                alert('Error loading application. Please refresh the page.');
+            }
+        }
+
+        // Start the application
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
