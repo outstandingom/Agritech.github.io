@@ -6,960 +6,6 @@
     <title>GrowSmart - Plant Stage Identification</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Your existing CSS remains the same */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-
-        :root {
-            --primary: #2E8B57;
-            --primary-light: #3CB371;
-            --primary-dark: #228B22;
-            --secondary: #4682B4;
-            --accent: #FFA500;
-            --warning: #FF6347;
-            --error: #DC143C;
-            --background: #F5F5F5;
-            --surface: #FFFFFF;
-            --text: #2F4F4F;
-            --text-light: #708090;
-            --border: #E0E0E0;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
-            --radius: 16px;
-            --gradient: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
-        }
-
-        body {
-            background-color: var(--background);
-            color: var(--text);
-            line-height: 1.6;
-            padding: 16px;
-            max-width: 100%;
-            margin: 0 auto;
-            padding-bottom: 100px;
-        }
-
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        /* Your existing CSS remains the same until the JavaScript section */
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Error Display -->
-        <div class="error-display" id="errorDisplay">
-            <div class="error-header">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span id="errorTitle">Error Occurred</span>
-            </div>
-            <div class="error-details" id="errorDetails">
-                An error occurred while processing your request.
-            </div>
-        </div>
-
-        <!-- Header -->
-        <div class="header">
-            <div class="app-title">
-                <i class="fas fa-camera"></i>
-                Plant Stage ID
-            </div>
-            <div class="user-info">
-                <div class="user-name" id="userName">Loading...</div>
-                <div class="location">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span id="locationText">Loading...</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Current Crop Info -->
-        <div class="current-crop-info">
-            <div class="crop-name" id="currentCropName">Loading crop...</div>
-            <div class="crop-stage" id="currentStageDisplay">Current stage: Loading...</div>
-            <div class="land-info">
-                <i class="fas fa-tractor"></i>
-                <span id="currentLandInfo">Land: Loading...</span>
-            </div>
-        </div>
-
-        <!-- Upload Section -->
-        <div class="content-card">
-            <div class="section-title">
-                <i class="fas fa-cloud-upload-alt"></i>
-                Upload Crop Photo
-            </div>
-            
-            <div class="upload-section">
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">
-                        <i class="fas fa-camera"></i>
-                    </div>
-                    <div class="upload-text">Take or upload a photo of your crop</div>
-                    <div class="upload-subtext">Supported formats: JPG, PNG, WebP (Max 5MB)</div>
-                    <button class="upload-btn" id="uploadButton">
-                        <i class="fas fa-folder-open"></i>
-                        Choose Image
-                    </button>
-                    <input type="file" id="fileInput" accept="image/*">
-                </div>
-                
-                <div class="image-preview" id="imagePreview">
-                    <img src="" alt="Crop Preview" class="preview-image" id="previewImage">
-                    <div class="preview-actions">
-                        <button class="action-btn analyze-btn" id="analyzeButton">
-                            <i class="fas fa-search"></i>
-                            Analyze with Gemini AI
-                        </button>
-                        <button class="action-btn remove-btn" id="removeImageButton">
-                            <i class="fas fa-times"></i>
-                            Remove Image
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- AI Processing -->
-        <div class="ai-processing" id="aiProcessing">
-            <div class="processing-spinner"></div>
-            <div class="processing-text">Gemini AI is analyzing your crop image</div>
-            <div class="processing-subtext">Detecting growth stage and plant health...</div>
-        </div>
-
-        <!-- Analysis Results -->
-        <div class="analysis-results" id="analysisResults">
-            <div class="section-title">
-                <i class="fas fa-chart-bar"></i>
-                AI Analysis Results
-            </div>
-            
-            <div class="result-card">
-                <div class="result-title">
-                    <i class="fas fa-robot"></i>
-                    Gemini AI Detection
-                </div>
-                <div class="result-description" id="aiDescription">
-                    Analyzing your crop image...
-                </div>
-                
-                <div class="ai-insights" id="aiInsights">
-                    <div class="insight-title">
-                        <i class="fas fa-lightbulb"></i>
-                        AI Insights
-                    </div>
-                    <div class="insight-text" id="insightText">
-                        Detailed analysis will appear here...
-                    </div>
-                </div>
-                
-                <div class="stage-indicators" id="stageIndicators">
-                    <!-- Stage indicators will be populated here -->
-                </div>
-                
-                <button class="update-stage-btn" id="updateStageBtn">
-                    <i class="fas fa-check-circle"></i>
-                    Update Crop Stage
-                </button>
-            </div>
-        </div>
-
-        <!-- Success Message -->
-        <div class="success-message" id="successMessage">
-            <div class="success-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="success-text" id="successText">Stage updated successfully!</div>
-            <div class="success-subtext" id="successSubtext">Your crop stage has been updated in the system.</div>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-        <a href="dashboard.html" class="nav-item">
-            <i class="fas fa-home"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="soil.html" class="nav-item">
-            <i class="fas fa-vial"></i>
-            <span>Soil</span>
-        </a>
-        <a href="crops.html" class="nav-item">
-            <i class="fas fa-seedling"></i>
-            <span>Crops</span>
-        </a>
-        <a href="blockchain.html" class="nav-item">
-            <i class="fas fa-link"></i>
-            <span>Blockchain</span>
-        </a>
-        <a href="profile.html" class="nav-item">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </a>
-    </div>
-
-    <!-- Include external scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script src="auth-checker.js"></script>
-
-    <script>
-        // Global variables
-        let currentUser = null;
-        let currentCrop = null;
-        let currentStage = null;
-        let selectedStage = null;
-        let userLocation = null;
-        const GEMINI_API_KEY = 'AIzaSyAS_B1FtcH-xm48d6R4G0SAYA8-ySv1CMo';
-
-        // Plant growth stages configuration (same as in crops.html)
-        const plantStages = {
-            germination: {
-                name: "Germination (Seed Stage)",
-                emoji: "🌱",
-                duration: "Few days to 2 weeks",
-                description: "The seed absorbs water and swells. The embryo inside starts to grow. The root (radicle) comes out first, followed by the shoot.",
-                conditions: [
-                    "Adequate moisture",
-                    "Suitable temperature (20-25°C)",
-                    "Proper soil depth"
-                ],
-                recommendations: [
-                    "Maintain consistent soil moisture but avoid overwatering",
-                    "Keep soil temperature between 20-25°C for optimal germination",
-                    "Ensure proper seed depth according to crop type"
-                ],
-                durationDays: 14
-            },
-            seedling: {
-                name: "Seedling Stage",
-                emoji: "🌿",
-                duration: "1–4 weeks",
-                description: "The young plant develops its first true leaves. Roots grow deeper to absorb nutrients and water. The plant is delicate and needs proper care.",
-                conditions: [
-                    "Adequate light (12-16 hours daily)",
-                    "Regular watering",
-                    "Nutrient availability",
-                    "Protection from pests"
-                ],
-                recommendations: [
-                    "Provide adequate light for strong growth",
-                    "Apply balanced, diluted fertilizer",
-                    "Monitor for pests and diseases",
-                    "Maintain consistent soil moisture"
-                ],
-                durationDays: 28
-            },
-            vegetative: {
-                name: "Vegetative Growth Stage",
-                emoji: "🌾",
-                duration: "Several weeks to months",
-                description: "Rapid growth phase — plant produces more leaves, stems, and roots. Focus is on building a strong structure for future flowering and fruiting.",
-                conditions: [
-                    "Adequate space between plants",
-                    "Balanced nutrition",
-                    "Proper pruning",
-                    "Weed control",
-                    "Adequate water supply"
-                ],
-                recommendations: [
-                    "Increase nitrogen-rich fertilizer for leaf growth",
-                    "Ensure proper spacing for air circulation",
-                    "Implement weed control measures",
-                    "Monitor for nutrient deficiencies"
-                ],
-                durationDays: 56
-            },
-            flowering: {
-                name: "Flowering or Reproductive Stage",
-                emoji: "🌸",
-                duration: "1–4 weeks typically",
-                description: "The plant begins to produce flowers or reproductive parts. Pollination occurs (by wind, insects, or manually).",
-                conditions: [
-                    "Proper pollination",
-                    "Adequate light",
-                    "Proper temperature",
-                    "Reduced nitrogen",
-                    "Increased phosphorus"
-                ],
-                recommendations: [
-                    "Reduce nitrogen and increase phosphorus for flowering",
-                    "Ensure pollinators have access",
-                    "Consider manual pollination if needed",
-                    "Maintain optimal temperature range"
-                ],
-                durationDays: 28
-            },
-            fruiting: {
-                name: "Fruiting or Grain Filling Stage",
-                emoji: "🌾",
-                duration: "Varies widely (from weeks to months)",
-                description: "After successful pollination, fruits or grains start developing. Nutrients and energy are directed toward filling seeds or fruits.",
-                conditions: [
-                    "Adequate water supply",
-                    "Nutrient availability",
-                    "Pest control",
-                    "Disease management",
-                    "Proper support for heavy fruits"
-                ],
-                recommendations: [
-                    "Apply potassium-rich fertilizer for fruit development",
-                    "Maintain consistent watering",
-                    "Implement pest control measures",
-                    "Provide support for heavy fruiting plants"
-                ],
-                durationDays: 42
-            },
-            maturity: {
-                name: "Maturity and Harvesting Stage",
-                emoji: "🌻",
-                duration: "Varies by crop",
-                description: "Fruits, grains, or pods reach full size and ripen. Moisture levels drop, and the plant may begin to dry or turn yellow. Crops are ready for harvest.",
-                conditions: [
-                    "Proper harvest timing",
-                    "Dry weather for harvesting",
-                    "Storage preparation",
-                    "Quality assessment"
-                ],
-                recommendations: [
-                    "Reduce watering as harvest approaches",
-                    "Monitor for optimal harvest time",
-                    "Prepare storage facilities",
-                    "Check crop quality before harvest"
-                ],
-                durationDays: 14
-            }
-        };
-
-        const stageOrder = ['germination', 'seedling', 'vegetative', 'flowering', 'fruiting', 'maturity'];
-
-        // DOM Elements
-        const errorDisplay = document.getElementById('errorDisplay');
-        const errorTitle = document.getElementById('errorTitle');
-        const errorDetails = document.getElementById('errorDetails');
-        const userName = document.getElementById('userName');
-        const locationText = document.getElementById('locationText');
-        const currentCropName = document.getElementById('currentCropName');
-        const currentStageDisplay = document.getElementById('currentStageDisplay');
-        const currentLandInfo = document.getElementById('currentLandInfo');
-        const fileInput = document.getElementById('fileInput');
-        const uploadArea = document.getElementById('uploadArea');
-        const uploadButton = document.getElementById('uploadButton');
-        const imagePreview = document.getElementById('imagePreview');
-        const previewImage = document.getElementById('previewImage');
-        const analyzeButton = document.getElementById('analyzeButton');
-        const removeImageButton = document.getElementById('removeImageButton');
-        const aiProcessing = document.getElementById('aiProcessing');
-        const analysisResults = document.getElementById('analysisResults');
-        const aiDescription = document.getElementById('aiDescription');
-        const aiInsights = document.getElementById('aiInsights');
-        const insightText = document.getElementById('insightText');
-        const stageIndicators = document.getElementById('stageIndicators');
-        const updateStageBtn = document.getElementById('updateStageBtn');
-        const successMessage = document.getElementById('successMessage');
-        const successText = document.getElementById('successText');
-        const successSubtext = document.getElementById('successSubtext');
-
-        // Error Handling Functions
-        function showError(title, message, error = null) {
-            console.error(`Error: ${title}`, message, error);
-            
-            errorTitle.textContent = title;
-            errorDetails.textContent = message;
-            
-            errorDisplay.style.display = 'block';
-        }
-
-        function hideError() {
-            errorDisplay.style.display = 'none';
-        }
-
-        // Get user location
-        function getUserLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        try {
-                            const lat = position.coords.latitude;
-                            const lng = position.coords.longitude;
-                            
-                            userLocation = { lat, lng };
-                            
-                            // Get location name using reverse geocoding
-                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-                            const data = await response.json();
-                            
-                            if (data && data.address) {
-                                const city = data.address.city || data.address.town || data.address.village || data.address.county;
-                                const state = data.address.state;
-                                locationText.textContent = city && state ? `${city}, ${state}` : 'Location found';
-                            } else {
-                                locationText.textContent = 'Location found';
-                            }
-                        } catch (error) {
-                            locationText.textContent = 'Location found';
-                        }
-                    },
-                    (error) => {
-                        locationText.textContent = 'Location access denied';
-                    }
-                );
-            } else {
-                locationText.textContent = 'Geolocation not supported';
-            }
-        }
-
-        // Load current crop data
-        async function loadCurrentCrop() {
-            try {
-                // Check authentication first
-                const isAuthenticated = await window.authChecker.requireAuth();
-                if (!isAuthenticated) {
-                    showError('Authentication Required', 'Please log in to access this feature.');
-                    return;
-                }
-
-                // Get current user
-                currentUser = await window.authChecker.getCurrentUser();
-                if (!currentUser) {
-                    showError('User Not Found', 'No authenticated user found. Please log in again.');
-                    return;
-                }
-
-                // Load user profile
-                const { data: userProfile, error: userError } = await window.supabaseClient
-                    .from('users')
-                    .select('*')
-                    .eq('auth_id', currentUser.id)
-                    .single();
-                
-                if (userError) {
-                    showError('Profile Load Failed', 'Failed to load user profile from database.', userError);
-                } else if (userProfile) {
-                    userName.textContent = userProfile.full_name;
-                }
-
-                // Get crop ID from session storage
-                const cropId = sessionStorage.getItem('currentCropId');
-                const cropName = sessionStorage.getItem('currentCropName');
-                const stage = sessionStorage.getItem('currentStage');
-                const landId = sessionStorage.getItem('currentLandId');
-                const landName = sessionStorage.getItem('currentLandName');
-
-                if (!cropId) {
-                    showError('No Crop Selected', 'Please select a crop from the crops page first.');
-                    return;
-                }
-
-                // Load crop data
-                const { data: crop, error: cropError } = await window.supabaseClient
-                    .from('crops')
-                    .select('*')
-                    .eq('crop_id', cropId)
-                    .single();
-
-                if (cropError) {
-                    showError('Crop Load Failed', 'Failed to load crop data from database.', cropError);
-                    return;
-                }
-
-                currentCrop = crop;
-                currentStage = stage || crop.current_stage;
-
-                // Update UI
-                currentCropName.textContent = cropName || crop.crop_name;
-                currentStageDisplay.textContent = `Current stage: ${plantStages[currentStage]?.name || 'Unknown'}`;
-                currentLandInfo.textContent = `Land: ${landName || 'Unknown'}`;
-
-            } catch (error) {
-                showError('Data Load Failed', 'Failed to load crop data. Please try again.', error);
-            }
-        }
-
-        // Handle file selection
-        function handleFileSelect() {
-            if (fileInput.files && fileInput.files[0]) {
-                const file = fileInput.files[0];
-                
-                if (!file.type.match('image.*')) {
-                    showError('Invalid File Type', 'Please select an image file (JPG, PNG, WebP).');
-                    return;
-                }
-                
-                if (file.size > 5 * 1024 * 1024) {
-                    showError('File Too Large', 'File size exceeds 5MB limit. Please choose a smaller image.');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                    analysisResults.style.display = 'none';
-                    successMessage.style.display = 'none';
-                };
-                
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Remove image
-        function removeImage() {
-            fileInput.value = '';
-            imagePreview.style.display = 'none';
-            analysisResults.style.display = 'none';
-            successMessage.style.display = 'none';
-        }
-
-        // Analyze plant with Gemini AI
-        async function analyzePlantWithGemini() {
-            if (!fileInput.files || !fileInput.files[0]) {
-                showError('No Image Selected', 'Please select an image first.');
-                return;
-            }
-            
-            if (!currentCrop) {
-                showError('No Crop Selected', 'Please select a crop first.');
-                return;
-            }
-            
-            // Show processing state
-            analyzeButton.innerHTML = '<span class="spinner"></span> Gemini AI Analyzing...';
-            analyzeButton.disabled = true;
-            aiProcessing.style.display = 'block';
-            analysisResults.style.display = 'none';
-
-            try {
-                // Convert image to base64
-                const base64Image = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const base64 = e.target.result.split(',')[1];
-                        resolve(base64);
-                    };
-                    reader.readAsDataURL(fileInput.files[0]);
-                });
-
-                // Get crop type for better analysis
-                const cropType = currentCrop.crop_name || 'plant';
-                
-                // Improved prompt for Gemini with specific visual cues
-                const prompt = `Analyze this ${cropType} image and determine its growth stage based on these specific visual characteristics:
-
-1. Germination (Seed Stage): Look for seeds sprouting, initial root and shoot development, small emerging seedlings
-2. Seedling Stage: Identify young plants with first true leaves (not just cotyledons), delicate growth, small plant size
-3. Vegetative Growth Stage: Look for rapid leaf and stem growth, multiple sets of true leaves, strong plant structure, no flowers or fruits
-4. Flowering or Reproductive Stage: Identify flowers or reproductive parts visible, buds forming or opening
-5. Fruiting or Grain Filling Stage: Look for developing fruits, grains, or pods, fruits growing in size but not fully mature
-6. Maturity and Harvesting Stage: Identify full-sized fruits/grains, color changes indicating ripeness, drying or yellowing of plant parts
-
-IMPORTANT: Be very specific in your analysis. Look for:
-- Size and number of leaves
-- Presence of flowers or flower buds
-- Presence of fruits and their development stage
-- Overall plant height and structure
-- Color changes in leaves or fruits
-
-Please provide your analysis in this exact JSON format:
-{
-    "stage": "stage_key (one of: germination, seedling, vegetative, flowering, fruiting, maturity)",
-    "confidence": "High/Medium/Low",
-    "visual_indicators": ["list", "specific", "visual", "indicators", "you", "observed"],
-    "health_assessment": "description of plant health",
-    "recommendations": ["list", "of", "specific", "recommendations"]
-}
-
-Focus on the most prominent visual features to determine the correct growth stage.`;
-
-                // Call Gemini API
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: prompt },
-                                {
-                                    inline_data: {
-                                        mime_type: "image/jpeg",
-                                        data: base64Image
-                                    }
-                                }
-                            ]
-                        }]
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Gemini API error: ${response.status}`);
-                }
-
-                const data = await response.json();
-                
-                // Extract and parse the response
-                const responseText = data.candidates[0].content.parts[0].text;
-                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                
-                if (!jsonMatch) {
-                    throw new Error('Invalid response format from Gemini AI');
-                }
-
-                const analysisResult = JSON.parse(jsonMatch[0]);
-                
-                // Validate the response structure
-                if (!analysisResult.stage || !stageOrder.includes(analysisResult.stage)) {
-                    throw new Error('Invalid stage returned by Gemini AI');
-                }
-                
-                // Display analysis results
-                displayGeminiAnalysisResults(analysisResult);
-                
-            } catch (error) {
-                console.error('Gemini API Error:', error);
-                showError('AI Analysis Failed', 'Failed to analyze the plant image with Gemini AI. Please try again.', error);
-                
-                // Fallback to improved demo analysis
-                await performImprovedDemoAnalysis();
-            } finally {
-                analyzeButton.innerHTML = '<i class="fas fa-search"></i> Analyze with Gemini AI';
-                analyzeButton.disabled = false;
-                aiProcessing.style.display = 'none';
-            }
-        }
-
-        // Improved fallback demo analysis
-        async function performImprovedDemoAnalysis() {
-            // Get current stage index
-            const currentIndex = stageOrder.indexOf(currentStage);
-            
-            // More intelligent demo analysis based on time since planting
-            const plantingDate = currentCrop.planting_date ? new Date(currentCrop.planting_date) : new Date();
-            const daysSincePlanting = Math.floor((new Date() - plantingDate) / (1000 * 60 * 60 * 24));
-            
-            let detectedStage = currentStage;
-            let confidence = "Medium";
-            
-            // Logic to determine stage based on days since planting
-            if (daysSincePlanting <= 14) {
-                detectedStage = 'germination';
-                confidence = "High";
-            } else if (daysSincePlanting <= 42) {
-                detectedStage = 'seedling';
-                confidence = "Medium";
-            } else if (daysSincePlanting <= 98) {
-                detectedStage = 'vegetative';
-                confidence = "Medium";
-            } else if (daysSincePlanting <= 126) {
-                detectedStage = 'flowering';
-                confidence = "Medium";
-            } else if (daysSincePlanting <= 168) {
-                detectedStage = 'fruiting';
-                confidence = "Medium";
-            } else {
-                detectedStage = 'maturity';
-                confidence = "High";
-            }
-            
-            // Adjust based on current stage (don't go backwards in stages)
-            const detectedIndex = stageOrder.indexOf(detectedStage);
-            const currentIndex = stageOrder.indexOf(currentStage);
-            
-            if (detectedIndex < currentIndex) {
-                detectedStage = currentStage;
-                confidence = "High";
-            }
-            
-            const demoResult = {
-                stage: detectedStage,
-                confidence: confidence,
-                visual_indicators: [
-                    "Plant size and structure analysis",
-                    "Leaf development and count",
-                    "Presence/absence of flowers or fruits",
-                    "Overall plant health assessment"
-                ],
-                health_assessment: "Plant appears healthy based on visual assessment",
-                recommendations: [
-                    "Continue current care practices",
-                    "Monitor for any signs of stress or disease",
-                    "Adjust watering based on weather conditions"
-                ]
-            };
-            
-            displayGeminiAnalysisResults(demoResult);
-        }
-
-        // Display Gemini analysis results
-        function displayGeminiAnalysisResults(result) {
-            selectedStage = result.stage;
-            
-            // Update description
-            const stage = plantStages[result.stage];
-            aiDescription.textContent = `Gemini AI has detected your crop is in the ${stage.name} with ${result.confidence.toLowerCase()} confidence.`;
-            
-            // Update insights
-            insightText.innerHTML = `
-                <strong>Visual Indicators:</strong> ${result.visual_indicators.join(', ')}<br><br>
-                <strong>Health Assessment:</strong> ${result.health_assessment}<br><br>
-                <strong>AI Recommendations:</strong> ${result.recommendations.join(', ')}
-            `;
-            
-            // Clear previous stage indicators
-            stageIndicators.innerHTML = '';
-            
-            // Create stage indicators for all stages
-            stageOrder.forEach(stageKey => {
-                const stageData = plantStages[stageKey];
-                const isRecommended = stageKey === result.stage;
-                const isCurrent = stageKey === currentStage;
-                
-                const indicator = document.createElement('div');
-                indicator.className = `stage-indicator ${isRecommended ? 'recommended' : ''}`;
-                indicator.setAttribute('data-stage', stageKey);
-                
-                let statusText = '';
-                if (isRecommended && isCurrent) {
-                    statusText = '✓ Current & AI Detected';
-                } else if (isRecommended) {
-                    statusText = `👁️ AI Detected (${result.confidence})`;
-                } else if (isCurrent) {
-                    statusText = '✓ Current Stage';
-                }
-                
-                indicator.innerHTML = `
-                    <div class="stage-emoji">${stageData.emoji}</div>
-                    <div class="stage-name">${stageData.name.split(' ')[0]}</div>
-                    <div class="stage-confidence">${statusText}</div>
-                `;
-                
-                // Add click handler to select stage
-                indicator.addEventListener('click', () => {
-                    selectedStage = stageKey;
-                    updateStageSelection();
-                });
-                
-                stageIndicators.appendChild(indicator);
-            });
-            
-            // Update stage selection UI
-            updateStageSelection();
-            
-            // Show results
-            analysisResults.style.display = 'block';
-        }
-
-        // Update stage selection UI
-        function updateStageSelection() {
-            // Remove all recommended classes
-            document.querySelectorAll('.stage-indicator').forEach(indicator => {
-                indicator.classList.remove('recommended');
-            });
-            
-            // Add recommended class to selected stage
-            const selectedIndicator = document.querySelector(`.stage-indicator[data-stage="${selectedStage}"]`);
-            if (selectedIndicator) {
-                selectedIndicator.classList.add('recommended');
-            }
-        }
-
-        // Update crop stage in database
-        async function updateCropStage() {
-            if (!selectedStage) {
-                showError('No Stage Selected', 'Please select a growth stage first.');
-                return;
-            }
-            
-            if (!currentCrop) {
-                showError('No Crop Selected', 'No crop data available.');
-                return;
-            }
-            
-            try {
-                // Show loading state
-                updateStageBtn.innerHTML = '<span class="spinner"></span> Updating...';
-                updateStageBtn.disabled = true;
-
-                // Update current stage in crops table
-                const { error: cropError } = await window.supabaseClient
-                    .from('crops')
-                    .update({ 
-                        current_stage: selectedStage,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('crop_id', currentCrop.crop_id);
-
-                if (cropError) {
-                    showError('Crop Update Failed', 'Failed to update crop stage in database.', cropError);
-                    return;
-                }
-
-                // Update crop_stages table
-                await window.supabaseClient
-                    .from('crop_stages')
-                    .update({ 
-                        is_current: false,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('crop_id', currentCrop.crop_id);
-
-                await window.supabaseClient
-                    .from('crop_stages')
-                    .update({ 
-                        is_current: true,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('crop_id', currentCrop.crop_id)
-                    .eq('stage_key', selectedStage);
-
-                // Record stage update in stage_updates table
-                const updateId = 'UPDATE_' + Date.now();
-                await window.supabaseClient
-                    .from('stage_updates')
-                    .insert({
-                        update_id: updateId,
-                        crop_id: currentCrop.crop_id,
-                        auth_id: currentUser.id,
-                        previous_stage: currentStage,
-                        new_stage: selectedStage,
-                        update_method: 'gemini_ai_analysis',
-                        update_date: new Date().toISOString(),
-                        created_at: new Date().toISOString()
-                    });
-
-                // Show success message
-                successText.textContent = `Crop stage updated to ${plantStages[selectedStage].name}!`;
-                successSubtext.textContent = 'The change has been saved to your crop records.';
-                successMessage.style.display = 'block';
-                analysisResults.style.display = 'none';
-
-                // Update local state
-                currentStage = selectedStage;
-                currentStageDisplay.textContent = `Current stage: ${plantStages[selectedStage].name}`;
-
-                // Update session storage
-                sessionStorage.setItem('currentStage', selectedStage);
-
-                showNotification('Crop stage updated successfully!');
-
-            } catch (error) {
-                showError('Stage Update Failed', 'Failed to update crop stage.', error);
-            } finally {
-                updateStageBtn.innerHTML = '<i class="fas fa-check-circle"></i> Update Crop Stage';
-                updateStageBtn.disabled = false;
-            }
-        }
-
-        // Helper function to show notifications
-        function showNotification(message) {
-            // Create a simple notification
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: var(--primary);
-                color: white;
-                padding: 12px 20px;
-                border-radius: var(--radius);
-                box-shadow: var(--shadow-hover);
-                z-index: 10000;
-                max-width: 300px;
-                animation: slideIn 0.3s ease-out;
-            `;
-            
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-check-circle"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-in';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        // Event Listeners
-        function setupEventListeners() {
-            // File upload
-            uploadButton.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', handleFileSelect);
-            
-            // Drag and drop
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                
-                if (e.dataTransfer.files.length) {
-                    fileInput.files = e.dataTransfer.files;
-                    handleFileSelect();
-                }
-            });
-            
-            // Analysis buttons
-            analyzeButton.addEventListener('click', analyzePlantWithGemini);
-            removeImageButton.addEventListener('click', removeImage);
-            updateStageBtn.addEventListener('click', updateCropStage);
-
-            // Error display close
-            errorDisplay.addEventListener('click', hideError);
-        }
-
-        // Initialize the application
-        async function initApp() {
-            try {
-                // Set up event listeners
-                setupEventListeners();
-                
-                // Get user location
-                getUserLocation();
-                
-                // Load current crop data
-                await loadCurrentCrop();
-                
-            } catch (error) {
-                showError('App Initialization Failed', 'Failed to initialize the application.', error);
-            }
-        }
-
-        // Start the application
-        document.addEventListener('DOMContentLoaded', initApp);
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GrowSmart - Plant Stage Identification</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
         * {
             margin: 0;
             padding: 0;
@@ -1067,36 +113,6 @@ Focus on the most prominent visual features to determine the correct growth stag
 
         .section-title i {
             color: var(--primary);
-        }
-
-        /* Current Crop Info */
-        .current-crop-info {
-            background: var(--gradient);
-            color: white;
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-        }
-
-        .crop-name {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .crop-stage {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .land-info {
-            font-size: 14px;
-            opacity: 0.8;
-            margin-top: 5px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         /* Upload Section */
@@ -1555,21 +571,11 @@ Focus on the most prominent visual features to determine the correct growth stag
                 Plant Stage ID
             </div>
             <div class="user-info">
-                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-name" id="userName">Farmer</div>
                 <div class="location">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span id="locationText">Loading...</span>
+                    <span id="locationText">Farm Location</span>
                 </div>
-            </div>
-        </div>
-
-        <!-- Current Crop Info -->
-        <div class="current-crop-info">
-            <div class="crop-name" id="currentCropName">Loading crop...</div>
-            <div class="crop-stage" id="currentStageDisplay">Current stage: Loading...</div>
-            <div class="land-info">
-                <i class="fas fa-tractor"></i>
-                <span id="currentLandInfo">Land: Loading...</span>
             </div>
         </div>
 
@@ -1646,11 +652,6 @@ Focus on the most prominent visual features to determine the correct growth stag
                 <div class="stage-indicators" id="stageIndicators">
                     <!-- Stage indicators will be populated here -->
                 </div>
-                
-                <button class="update-stage-btn" id="updateStageBtn">
-                    <i class="fas fa-check-circle"></i>
-                    Update Crop Stage
-                </button>
             </div>
         </div>
 
@@ -1659,8 +660,8 @@ Focus on the most prominent visual features to determine the correct growth stag
             <div class="success-icon">
                 <i class="fas fa-check-circle"></i>
             </div>
-            <div class="success-text" id="successText">Stage updated successfully!</div>
-            <div class="success-subtext" id="successSubtext">Your crop stage has been updated in the system.</div>
+            <div class="success-text" id="successText">Stage identified successfully!</div>
+            <div class="success-subtext" id="successSubtext">The crop stage has been identified by Gemini AI.</div>
         </div>
     </div>
 
@@ -1688,136 +689,72 @@ Focus on the most prominent visual features to determine the correct growth stag
         </a>
     </div>
 
-    <!-- Include external scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script src="auth-checker.js"></script>
-
     <script>
         // Global variables
-        let currentUser = null;
-        let currentCrop = null;
-        let currentStage = null;
-        let selectedStage = null;
-        let userLocation = null;
         const GEMINI_API_KEY = 'AIzaSyAS_B1FtcH-xm48d6R4G0SAYA8-ySv1CMo';
 
-        // Plant growth stages configuration (same as in crops.html)
+        // Plant growth stages configuration
         const plantStages = {
             germination: {
                 name: "Germination (Seed Stage)",
                 emoji: "🌱",
-                duration: "Few days to 2 weeks",
                 description: "The seed absorbs water and swells. The embryo inside starts to grow. The root (radicle) comes out first, followed by the shoot.",
-                conditions: [
-                    "Adequate moisture",
-                    "Suitable temperature (20-25°C)",
-                    "Proper soil depth"
-                ],
-                recommendations: [
-                    "Maintain consistent soil moisture but avoid overwatering",
-                    "Keep soil temperature between 20-25°C for optimal germination",
-                    "Ensure proper seed depth according to crop type"
-                ],
-                durationDays: 14
+                visualIndicators: [
+                    "Seeds sprouting",
+                    "Initial root and shoot development",
+                    "Small emerging seedlings"
+                ]
             },
             seedling: {
                 name: "Seedling Stage",
                 emoji: "🌿",
-                duration: "1–4 weeks",
                 description: "The young plant develops its first true leaves. Roots grow deeper to absorb nutrients and water. The plant is delicate and needs proper care.",
-                conditions: [
-                    "Adequate light (12-16 hours daily)",
-                    "Regular watering",
-                    "Nutrient availability",
-                    "Protection from pests"
-                ],
-                recommendations: [
-                    "Provide adequate light for strong growth",
-                    "Apply balanced, diluted fertilizer",
-                    "Monitor for pests and diseases",
-                    "Maintain consistent soil moisture"
-                ],
-                durationDays: 28
+                visualIndicators: [
+                    "Young plants with first true leaves",
+                    "Delicate growth",
+                    "Small plant size"
+                ]
             },
             vegetative: {
                 name: "Vegetative Growth Stage",
                 emoji: "🌾",
-                duration: "Several weeks to months",
                 description: "Rapid growth phase — plant produces more leaves, stems, and roots. Focus is on building a strong structure for future flowering and fruiting.",
-                conditions: [
-                    "Adequate space between plants",
-                    "Balanced nutrition",
-                    "Proper pruning",
-                    "Weed control",
-                    "Adequate water supply"
-                ],
-                recommendations: [
-                    "Increase nitrogen-rich fertilizer for leaf growth",
-                    "Ensure proper spacing for air circulation",
-                    "Implement weed control measures",
-                    "Monitor for nutrient deficiencies"
-                ],
-                durationDays: 56
+                visualIndicators: [
+                    "Rapid leaf and stem growth",
+                    "Multiple sets of true leaves",
+                    "Strong plant structure",
+                    "No flowers or fruits visible"
+                ]
             },
             flowering: {
                 name: "Flowering or Reproductive Stage",
                 emoji: "🌸",
-                duration: "1–4 weeks typically",
                 description: "The plant begins to produce flowers or reproductive parts. Pollination occurs (by wind, insects, or manually).",
-                conditions: [
-                    "Proper pollination",
-                    "Adequate light",
-                    "Proper temperature",
-                    "Reduced nitrogen",
-                    "Increased phosphorus"
-                ],
-                recommendations: [
-                    "Reduce nitrogen and increase phosphorus for flowering",
-                    "Ensure pollinators have access",
-                    "Consider manual pollination if needed",
-                    "Maintain optimal temperature range"
-                ],
-                durationDays: 28
+                visualIndicators: [
+                    "Flowers or reproductive parts visible",
+                    "Buds forming or opening",
+                    "Colorful petals or reproductive structures"
+                ]
             },
             fruiting: {
                 name: "Fruiting or Grain Filling Stage",
-                emoji: "🌾",
-                duration: "Varies widely (from weeks to months)",
+                emoji: "🍅",
                 description: "After successful pollination, fruits or grains start developing. Nutrients and energy are directed toward filling seeds or fruits.",
-                conditions: [
-                    "Adequate water supply",
-                    "Nutrient availability",
-                    "Pest control",
-                    "Disease management",
-                    "Proper support for heavy fruits"
-                ],
-                recommendations: [
-                    "Apply potassium-rich fertilizer for fruit development",
-                    "Maintain consistent watering",
-                    "Implement pest control measures",
-                    "Provide support for heavy fruiting plants"
-                ],
-                durationDays: 42
+                visualIndicators: [
+                    "Developing fruits, grains, or pods",
+                    "Fruits growing in size but not fully mature",
+                    "Visible fruit formation"
+                ]
             },
             maturity: {
                 name: "Maturity and Harvesting Stage",
                 emoji: "🌻",
-                duration: "Varies by crop",
                 description: "Fruits, grains, or pods reach full size and ripen. Moisture levels drop, and the plant may begin to dry or turn yellow. Crops are ready for harvest.",
-                conditions: [
-                    "Proper harvest timing",
-                    "Dry weather for harvesting",
-                    "Storage preparation",
-                    "Quality assessment"
-                ],
-                recommendations: [
-                    "Reduce watering as harvest approaches",
-                    "Monitor for optimal harvest time",
-                    "Prepare storage facilities",
-                    "Check crop quality before harvest"
-                ],
-                durationDays: 14
+                visualIndicators: [
+                    "Full-sized fruits/grains",
+                    "Color changes indicating ripeness",
+                    "Drying or yellowing of plant parts"
+                ]
             }
         };
 
@@ -1827,11 +764,6 @@ Focus on the most prominent visual features to determine the correct growth stag
         const errorDisplay = document.getElementById('errorDisplay');
         const errorTitle = document.getElementById('errorTitle');
         const errorDetails = document.getElementById('errorDetails');
-        const userName = document.getElementById('userName');
-        const locationText = document.getElementById('locationText');
-        const currentCropName = document.getElementById('currentCropName');
-        const currentStageDisplay = document.getElementById('currentStageDisplay');
-        const currentLandInfo = document.getElementById('currentLandInfo');
         const fileInput = document.getElementById('fileInput');
         const uploadArea = document.getElementById('uploadArea');
         const uploadButton = document.getElementById('uploadButton');
@@ -1845,7 +777,6 @@ Focus on the most prominent visual features to determine the correct growth stag
         const aiInsights = document.getElementById('aiInsights');
         const insightText = document.getElementById('insightText');
         const stageIndicators = document.getElementById('stageIndicators');
-        const updateStageBtn = document.getElementById('updateStageBtn');
         const successMessage = document.getElementById('successMessage');
         const successText = document.getElementById('successText');
         const successSubtext = document.getElementById('successSubtext');
@@ -1862,108 +793,6 @@ Focus on the most prominent visual features to determine the correct growth stag
 
         function hideError() {
             errorDisplay.style.display = 'none';
-        }
-
-        // Get user location
-        function getUserLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        try {
-                            const lat = position.coords.latitude;
-                            const lng = position.coords.longitude;
-                            
-                            userLocation = { lat, lng };
-                            
-                            // Get location name using reverse geocoding
-                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-                            const data = await response.json();
-                            
-                            if (data && data.address) {
-                                const city = data.address.city || data.address.town || data.address.village || data.address.county;
-                                const state = data.address.state;
-                                locationText.textContent = city && state ? `${city}, ${state}` : 'Location found';
-                            } else {
-                                locationText.textContent = 'Location found';
-                            }
-                        } catch (error) {
-                            locationText.textContent = 'Location found';
-                        }
-                    },
-                    (error) => {
-                        locationText.textContent = 'Location access denied';
-                    }
-                );
-            } else {
-                locationText.textContent = 'Geolocation not supported';
-            }
-        }
-
-        // Load current crop data
-        async function loadCurrentCrop() {
-            try {
-                // Check authentication first
-                const isAuthenticated = await window.authChecker.requireAuth();
-                if (!isAuthenticated) {
-                    showError('Authentication Required', 'Please log in to access this feature.');
-                    return;
-                }
-
-                // Get current user
-                currentUser = await window.authChecker.getCurrentUser();
-                if (!currentUser) {
-                    showError('User Not Found', 'No authenticated user found. Please log in again.');
-                    return;
-                }
-
-                // Load user profile
-                const { data: userProfile, error: userError } = await window.supabaseClient
-                    .from('users')
-                    .select('*')
-                    .eq('auth_id', currentUser.id)
-                    .single();
-                
-                if (userError) {
-                    showError('Profile Load Failed', 'Failed to load user profile from database.', userError);
-                } else if (userProfile) {
-                    userName.textContent = userProfile.full_name;
-                }
-
-                // Get crop ID from session storage
-                const cropId = sessionStorage.getItem('currentCropId');
-                const cropName = sessionStorage.getItem('currentCropName');
-                const stage = sessionStorage.getItem('currentStage');
-                const landId = sessionStorage.getItem('currentLandId');
-                const landName = sessionStorage.getItem('currentLandName');
-
-                if (!cropId) {
-                    showError('No Crop Selected', 'Please select a crop from the crops page first.');
-                    return;
-                }
-
-                // Load crop data
-                const { data: crop, error: cropError } = await window.supabaseClient
-                    .from('crops')
-                    .select('*')
-                    .eq('crop_id', cropId)
-                    .single();
-
-                if (cropError) {
-                    showError('Crop Load Failed', 'Failed to load crop data from database.', cropError);
-                    return;
-                }
-
-                currentCrop = crop;
-                currentStage = stage || crop.current_stage;
-
-                // Update UI
-                currentCropName.textContent = cropName || crop.crop_name;
-                currentStageDisplay.textContent = `Current stage: ${plantStages[currentStage]?.name || 'Unknown'}`;
-                currentLandInfo.textContent = `Land: ${landName || 'Unknown'}`;
-
-            } catch (error) {
-                showError('Data Load Failed', 'Failed to load crop data. Please try again.', error);
-            }
         }
 
         // Handle file selection
@@ -2002,25 +831,10 @@ Focus on the most prominent visual features to determine the correct growth stag
             successMessage.style.display = 'none';
         }
 
-        // Convert image to base64 for Gemini API
-        function getBase64Image(img) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            return canvas.toDataURL('image/jpeg').split(',')[1];
-        }
-
         // Analyze plant with Gemini AI
         async function analyzePlantWithGemini() {
             if (!fileInput.files || !fileInput.files[0]) {
                 showError('No Image Selected', 'Please select an image first.');
-                return;
-            }
-            
-            if (!currentCrop) {
-                showError('No Crop Selected', 'Please select a crop first.');
                 return;
             }
             
@@ -2041,30 +855,35 @@ Focus on the most prominent visual features to determine the correct growth stag
                     reader.readAsDataURL(fileInput.files[0]);
                 });
 
-                // Prepare prompt for Gemini
-                const prompt = `Analyze this crop image and determine its growth stage. Consider the following stages:
-1. Germination (Seed Stage) - seeds sprouting, initial root and shoot development
-2. Seedling Stage - young plants with first true leaves, delicate growth
-3. Vegetative Growth Stage - rapid leaf and stem growth, strong plant structure
-4. Flowering or Reproductive Stage - flowers or reproductive parts visible
-5. Fruiting or Grain Filling Stage - fruits or grains developing and filling
-6. Maturity and Harvesting Stage - full size reached, ready for harvest
+                // Enhanced prompt for Gemini with specific visual cues
+                const prompt = `Analyze this plant image and determine its exact growth stage based on these specific visual characteristics:
 
-Please provide:
-1. The most likely growth stage
-2. Confidence level (High/Medium/Low)
-3. Key visual indicators you observed
-4. Any signs of plant health issues
-5. Recommendations for the farmer
+STAGES AND THEIR VISUAL INDICATORS:
+1. Germination (Seed Stage): Look for seeds sprouting, initial root and shoot development, small emerging seedlings
+2. Seedling Stage: Identify young plants with first true leaves (not just cotyledons), delicate growth, small plant size
+3. Vegetative Growth Stage: Look for rapid leaf and stem growth, multiple sets of true leaves, strong plant structure, no flowers or fruits
+4. Flowering or Reproductive Stage: Identify flowers or reproductive parts visible, buds forming or opening, colorful petals
+5. Fruiting or Grain Filling Stage: Look for developing fruits, grains, or pods, fruits growing in size but not fully mature
+6. Maturity and Harvesting Stage: Identify full-sized fruits/grains, color changes indicating ripeness, drying or yellowing of plant parts
+
+CRITICAL ANALYSIS INSTRUCTIONS:
+- Examine the image carefully for the most prominent visual features
+- Count leaves and assess their development stage
+- Check for presence/absence of flowers or flower buds
+- Look for any fruits and assess their development stage
+- Evaluate overall plant height and structure
+- Note any color changes in leaves or fruits
 
 Respond in this exact JSON format:
 {
-    "stage": "stage_key",
+    "stage": "stage_key (must be one of: germination, seedling, vegetative, flowering, fruiting, maturity)",
     "confidence": "High/Medium/Low",
-    "indicators": ["list", "of", "visual", "indicators"],
-    "health_issues": ["any", "issues", "detected"],
-    "recommendations": ["list", "of", "recommendations"]
-}`;
+    "visual_indicators": ["list", "specific", "visual", "indicators", "you", "observed"],
+    "health_assessment": "brief description of plant health",
+    "recommendations": ["list", "of", "specific", "recommendations"]
+}
+
+Be precise and base your analysis only on what you can see in the image.`;
 
                 // Call Gemini API
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
@@ -2103,15 +922,22 @@ Respond in this exact JSON format:
 
                 const analysisResult = JSON.parse(jsonMatch[0]);
                 
+                // Validate the response structure
+                if (!analysisResult.stage || !stageOrder.includes(analysisResult.stage)) {
+                    throw new Error('Invalid stage returned by Gemini AI');
+                }
+                
                 // Display analysis results
                 displayGeminiAnalysisResults(analysisResult);
+                
+                // Show success message
+                successText.textContent = `Crop stage identified as ${plantStages[analysisResult.stage].name}!`;
+                successSubtext.textContent = 'Gemini AI has analyzed your crop image successfully.';
+                successMessage.style.display = 'block';
                 
             } catch (error) {
                 console.error('Gemini API Error:', error);
                 showError('AI Analysis Failed', 'Failed to analyze the plant image with Gemini AI. Please try again.', error);
-                
-                // Fallback to demo analysis
-                await performDemoAnalysis();
             } finally {
                 analyzeButton.innerHTML = '<i class="fas fa-search"></i> Analyze with Gemini AI';
                 analyzeButton.disabled = false;
@@ -2119,54 +945,16 @@ Respond in this exact JSON format:
             }
         }
 
-        // Fallback demo analysis
-        async function performDemoAnalysis() {
-            // Get current stage index
-            const currentIndex = stageOrder.indexOf(currentStage);
-            
-            // AI "detects" either current stage or next stage (with some randomness)
-            const random = Math.random();
-            let detectedStage;
-            let confidence = "Medium";
-            
-            if (random < 0.7) {
-                // 70% chance: AI detects current stage
-                detectedStage = currentStage;
-                confidence = "High";
-            } else if (currentIndex < stageOrder.length - 1 && random < 0.9) {
-                // 20% chance: AI detects next stage (if available)
-                detectedStage = stageOrder[currentIndex + 1];
-                confidence = "Medium";
-            } else {
-                // 10% chance: AI detects a random previous stage (for demo variety)
-                const randomIndex = Math.floor(Math.random() * (currentIndex + 1));
-                detectedStage = stageOrder[randomIndex];
-                confidence = "Low";
-            }
-            
-            const demoResult = {
-                stage: detectedStage,
-                confidence: confidence,
-                indicators: ["Visual analysis based on plant morphology", "Leaf development patterns", "Overall plant structure"],
-                health_issues: ["No major issues detected", "Monitor for regular growth"],
-                recommendations: ["Continue current care practices", "Monitor plant development regularly"]
-            };
-            
-            displayGeminiAnalysisResults(demoResult);
-        }
-
         // Display Gemini analysis results
         function displayGeminiAnalysisResults(result) {
-            selectedStage = result.stage;
-            
             // Update description
             const stage = plantStages[result.stage];
             aiDescription.textContent = `Gemini AI has detected your crop is in the ${stage.name} with ${result.confidence.toLowerCase()} confidence.`;
             
             // Update insights
             insightText.innerHTML = `
-                <strong>Visual Indicators:</strong> ${result.indicators.join(', ')}<br><br>
-                <strong>Health Assessment:</strong> ${result.health_issues.join(', ')}<br><br>
+                <strong>Visual Indicators:</strong> ${result.visual_indicators.join(', ')}<br><br>
+                <strong>Health Assessment:</strong> ${result.health_assessment}<br><br>
                 <strong>AI Recommendations:</strong> ${result.recommendations.join(', ')}
             `;
             
@@ -2176,20 +964,14 @@ Respond in this exact JSON format:
             // Create stage indicators for all stages
             stageOrder.forEach(stageKey => {
                 const stageData = plantStages[stageKey];
-                const isRecommended = stageKey === result.stage;
-                const isCurrent = stageKey === currentStage;
+                const isDetected = stageKey === result.stage;
                 
                 const indicator = document.createElement('div');
-                indicator.className = `stage-indicator ${isRecommended ? 'recommended' : ''}`;
-                indicator.setAttribute('data-stage', stageKey);
+                indicator.className = `stage-indicator ${isDetected ? 'recommended' : ''}`;
                 
                 let statusText = '';
-                if (isRecommended && isCurrent) {
-                    statusText = '✓ Current & AI Detected';
-                } else if (isRecommended) {
+                if (isDetected) {
                     statusText = `👁️ AI Detected (${result.confidence})`;
-                } else if (isCurrent) {
-                    statusText = '✓ Current Stage';
                 }
                 
                 indicator.innerHTML = `
@@ -2198,159 +980,11 @@ Respond in this exact JSON format:
                     <div class="stage-confidence">${statusText}</div>
                 `;
                 
-                // Add click handler to select stage
-                indicator.addEventListener('click', () => {
-                    selectedStage = stageKey;
-                    updateStageSelection();
-                });
-                
                 stageIndicators.appendChild(indicator);
             });
             
-            // Update stage selection UI
-            updateStageSelection();
-            
             // Show results
             analysisResults.style.display = 'block';
-        }
-
-        // Update stage selection UI
-        function updateStageSelection() {
-            // Remove all recommended classes
-            document.querySelectorAll('.stage-indicator').forEach(indicator => {
-                indicator.classList.remove('recommended');
-            });
-            
-            // Add recommended class to selected stage
-            const selectedIndicator = document.querySelector(`.stage-indicator[data-stage="${selectedStage}"]`);
-            if (selectedIndicator) {
-                selectedIndicator.classList.add('recommended');
-            }
-        }
-
-        // Update crop stage in database
-        async function updateCropStage() {
-            if (!selectedStage) {
-                showError('No Stage Selected', 'Please select a growth stage first.');
-                return;
-            }
-            
-            if (!currentCrop) {
-                showError('No Crop Selected', 'No crop data available.');
-                return;
-            }
-            
-            try {
-                // Show loading state
-                updateStageBtn.innerHTML = '<span class="spinner"></span> Updating...';
-                updateStageBtn.disabled = true;
-
-                // Update current stage in crops table
-                const { error: cropError } = await window.supabaseClient
-                    .from('crops')
-                    .update({ 
-                        current_stage: selectedStage,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('crop_id', currentCrop.crop_id);
-
-                if (cropError) {
-                    showError('Crop Update Failed', 'Failed to update crop stage in database.', cropError);
-                    return;
-                }
-
-                // Update crop_stages table
-                await window.supabaseClient
-                    .from('crop_stages')
-                    .update({ 
-                        is_current: false,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('crop_id', currentCrop.crop_id);
-
-                await window.supabaseClient
-                    .from('crop_stages')
-                    .update({ 
-                        is_current: true,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('crop_id', currentCrop.crop_id)
-                    .eq('stage_key', selectedStage);
-
-                // Record stage update in stage_updates table
-                const updateId = 'UPDATE_' + Date.now();
-                await window.supabaseClient
-                    .from('stage_updates')
-                    .insert({
-                        update_id: updateId,
-                        crop_id: currentCrop.crop_id,
-                        auth_id: currentUser.id,
-                        previous_stage: currentStage,
-                        new_stage: selectedStage,
-                        update_method: 'gemini_ai_analysis',
-                        update_date: new Date().toISOString(),
-                        created_at: new Date().toISOString()
-                    });
-
-                // Show success message
-                successText.textContent = `Crop stage updated to ${plantStages[selectedStage].name}!`;
-                successSubtext.textContent = 'The change has been saved to your crop records.';
-                successMessage.style.display = 'block';
-                analysisResults.style.display = 'none';
-
-                // Update local state
-                currentStage = selectedStage;
-                currentStageDisplay.textContent = `Current stage: ${plantStages[selectedStage].name}`;
-
-                // Update session storage
-                sessionStorage.setItem('currentStage', selectedStage);
-
-                showNotification('Crop stage updated successfully!');
-
-            } catch (error) {
-                showError('Stage Update Failed', 'Failed to update crop stage.', error);
-            } finally {
-                updateStageBtn.innerHTML = '<i class="fas fa-check-circle"></i> Update Crop Stage';
-                updateStageBtn.disabled = false;
-            }
-        }
-
-        // Helper function to show notifications
-        function showNotification(message) {
-            // Create a simple notification
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: var(--primary);
-                color: white;
-                padding: 12px 20px;
-                border-radius: var(--radius);
-                box-shadow: var(--shadow-hover);
-                z-index: 10000;
-                max-width: 300px;
-                animation: slideIn 0.3s ease-out;
-            `;
-            
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-check-circle"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-in';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
         }
 
         // Event Listeners
@@ -2382,27 +1016,15 @@ Respond in this exact JSON format:
             // Analysis buttons
             analyzeButton.addEventListener('click', analyzePlantWithGemini);
             removeImageButton.addEventListener('click', removeImage);
-            updateStageBtn.addEventListener('click', updateCropStage);
 
             // Error display close
             errorDisplay.addEventListener('click', hideError);
         }
 
         // Initialize the application
-        async function initApp() {
-            try {
-                // Set up event listeners
-                setupEventListeners();
-                
-                // Get user location
-                getUserLocation();
-                
-                // Load current crop data
-                await loadCurrentCrop();
-                
-            } catch (error) {
-                showError('App Initialization Failed', 'Failed to initialize the application.', error);
-            }
+        function initApp() {
+            // Set up event listeners
+            setupEventListeners();
         }
 
         // Start the application
