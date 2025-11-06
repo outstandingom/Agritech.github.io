@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Subsidy Schemes - Government of India</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8f0;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      color: #2a7b2a;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .filter-section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #2a7b2a;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #1f5a1f;
+    }
+    .scheme-card {
+      background: white;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-left: 5px solid #2a7b2a;
+    }
+    .scheme-name {
+      color: #2a7b2a;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .scheme-details {
+      margin: 10px 0;
+    }
+    .subsidy-amount {
+      background: #e8ffe8;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      color: #1f5a1f;
+    }
+    .eligibility {
+      background: #fff8e8;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    .loading {
+      text-align: center;
+      color: #2a7b2a;
+      font-style: italic;
+    }
+    .error {
+      color: #ff0000;
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Government Subsidy Schemes for Farmers</h1>
+    
+    <div class="filter-section">
+      <h3>Filter by Category:</h3>
+      <button onclick="showAllSchemes()">All Schemes</button>
+      <button onclick="filterSchemes('equipment')">Farm Equipment</button>
+      <button onclick="filterSchemes('seeds')">Seeds & Fertilizers</button>
+      <button onclick="filterSchemes('irrigation')">Irrigation</button>
+      <button onclick="filterSchemes('crop')">Crop Insurance</button>
+      <button onclick="filterSchemes('organic')">Organic Farming</button>
+    </div>
+
+    <div id="schemesContainer">
+      <!-- Schemes will be loaded here -->
+    </div>
+  </div>
+
+  <script>
+    // Sample subsidy scheme data
+    const subsidySchemes = [
+      {
+        id: 1,
+        name: "PM-KISAN Scheme",
+        category: "income",
+        description: "Direct income support to all landholding farmers' families",
+        subsidyAmount: "₹6,000 per year in 3 installments",
+        eligibility: "All landholding farmers' families",
+        benefits: ["Direct bank transfer", "No middlemen", "Quarterly payments"],
+        applicationProcess: "Online through PM-KISAN portal",
+        documentsRequired: ["Aadhaar card", "Land records", "Bank account details"]
+      },
+      {
+        id: 2,
+        name: "Subsidy on Agricultural Machinery",
+        category: "equipment",
+        description: "Subsidy for purchase of farm machinery and equipment",
+        subsidyAmount: "Up to 50% of cost (Max ₹1,25,000)",
+        eligibility: "Individual farmers, Farmer Groups, FPOs",
+        benefits: ["Tractor subsidy", "Harvester subsidy", "Power tiller subsidy"],
+        applicationProcess: "Through State Agriculture Department",
+        documentsRequired: ["Aadhaar card", "Land documents", "Quotation from dealer"]
+      },
+      {
+        id: 3,
+        name: "National Food Security Mission",
+        category: "seeds",
+        description: "Subsidy for seeds, fertilizers and crop production",
+        subsidyAmount: "50-75% subsidy on seeds and inputs",
+        eligibility: "Small and marginal farmers",
+        benefits: ["Quality seeds", "Micro-nutrients", "Soil health cards"],
+        applicationProcess: "Through State Agriculture Department",
+        documentsRequired: ["Land records", "Aadhaar card", "Bank account"]
+      },
+      {
+        id: 4,
+        name: "Pradhan Mantri Krishi Sinchai Yojana",
+        category: "irrigation",
+        description: "Subsidy for irrigation systems and water conservation",
+        subsidyAmount: "Up to 55% subsidy (Max ₹50,000 per hectare)",
+        eligibility: "Individual farmers and groups",
+        benefits: ["Drip irrigation", "Sprinkler systems", "Water harvesting"],
+        applicationProcess: "Online through State Agriculture Portal",
+        documentsRequired: ["Land proof", "Aadhaar", "Bank details", "Project report"]
+      },
+      {
+        id: 5,
+        name: "PM Fasal Bima Yojana",
+        category: "crop",
+        description: "Crop insurance against natural calamities and price fall",
+        subsidyAmount: "Up to 90% premium subsidy for small farmers",
+        eligibility: "All farmers including sharecroppers and tenant farmers",
+        benefits: ["Risk coverage", "Quick claim settlement", "Low premium"],
+        applicationProcess: "Through banks or Common Service Centers",
+        documentsRequired: ["Land records", "Aadhaar", "Sowing details"]
+      },
+      {
+        id: 6,
+        name: "Paramparagat Krishi Vikas Yojana",
+        category: "organic",
+        description: "Promotion of organic farming with cluster approach",
+        subsidyAmount: "₹50,000 per hectare over 3 years",
+        eligibility: "Farmers in clusters of 50 acres",
+        benefits: ["Organic inputs", "Certification support", "Market linkage"],
+        applicationProcess: "Through State Organic Farming Agencies",
+        documentsRequired: ["Cluster formation documents", "Land records"]
+      },
+      {
+        id: 7,
+        name: "Dairy Entrepreneurship Development Scheme",
+        category: "livestock",
+        description: "Subsidy for dairy farming infrastructure and equipment",
+        subsidyAmount: "25-33% subsidy (Max ₹2-3 lakhs per unit)",
+        eligibility: "Individual entrepreneurs, SHGs, FPOs",
+        benefits: ["Milking machines", "Cold storage", "Animal shelter"],
+        applicationProcess: "Through NABARD approved banks",
+        documentsRequired: ["Project report", "Land documents", "Technical quotes"]
+      }
+    ];
+
+    function displaySchemes(schemes) {
+      const container = document.getElementById('schemesContainer');
+      container.innerHTML = '';
+
+      if (schemes.length === 0) {
+        container.innerHTML = '<div class="error">No schemes found for selected category</div>';
+        return;
+      }
+
+      schemes.forEach(scheme => {
+        const schemeCard = document.createElement('div');
+        schemeCard.className = 'scheme-card';
+        schemeCard.innerHTML = `
+          <div class="scheme-name">${scheme.name}</div>
+          <div class="scheme-details">
+            <p><strong>Description:</strong> ${scheme.description}</p>
+            <div class="subsidy-amount">
+              <strong>Subsidy Amount:</strong> ${scheme.subsidyAmount}
+            </div>
+            <div class="eligibility">
+              <strong>Eligibility:</strong> ${scheme.eligibility}
+            </div>
+            <p><strong>Benefits:</strong> ${scheme.benefits.join(', ')}</p>
+            <p><strong>Application Process:</strong> ${scheme.applicationProcess}</p>
+            <p><strong>Documents Required:</strong> ${scheme.documentsRequired.join(', ')}</p>
+          </div>
+        `;
+        container.appendChild(schemeCard);
+      });
+    }
+
+    function showAllSchemes() {
+      displaySchemes(subsidySchemes);
+    }
+
+    function filterSchemes(category) {
+      const filtered = subsidySchemes.filter(scheme => 
+        scheme.category === category
+      );
+      displaySchemes(filtered);
+    }
+
+    // Initialize with all schemes
+    document.addEventListener('DOMContentLoaded', function() {
+      displaySchemes(subsidySchemes);
+    });
+  </script>
+</body>
+</html>
