@@ -433,6 +433,27 @@
             transform: none;
         }
 
+        /* Land Selection Dropdown */
+        .land-selector {
+            margin-bottom: 15px;
+        }
+
+        .land-select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .land-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        }
+
         /* Next Steps Section */
         .next-steps {
             margin-top: 20px;
@@ -647,6 +668,13 @@
             <div class="section-title">
                 <i class="fas fa-map-marked-alt"></i>
                 Select Land & Crop
+            </div>
+            
+            <!-- Land Selection Dropdown -->
+            <div class="land-selector">
+                <select class="land-select" id="landSelect">
+                    <option value="">Loading lands...</option>
+                </select>
             </div>
             
             <div class="map-container">
@@ -930,6 +958,7 @@
         const currentStageDisplay = document.getElementById('currentStageDisplay');
         const stageProgress = document.getElementById('stageProgress');
         const stageDurationDisplay = document.getElementById('stageDurationDisplay');
+        const landSelect = document.getElementById('landSelect');
         const selectedLand = document.getElementById('selectedLand');
         const soilType = document.getElementById('soilType');
         const waterAvailability = document.getElementById('waterAvailability');
@@ -1109,6 +1138,9 @@
                         }
                     }
                     
+                    // Populate land dropdown
+                    populateLandDropdown();
+                    
                     // Load crops for each land
                     for (let land of userLands) {
                         await loadLandCrops(land.land_id);
@@ -1119,10 +1151,27 @@
                     selectedLand.textContent = 'No lands found';
                     prevLandBtn.disabled = true;
                     nextLandBtn.disabled = true;
+                    landSelect.innerHTML = '<option value="">No lands available</option>';
                 }
 
             } catch (error) {
                 showError('User Data Load Failed', 'Failed to load user data. Please refresh the page.', error);
+            }
+        }
+
+        // Populate land dropdown
+        function populateLandDropdown() {
+            landSelect.innerHTML = '';
+            
+            userLands.forEach((land, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${land.land_name} (${land.area_acres} acres)`;
+                landSelect.appendChild(option);
+            });
+            
+            if (userLands.length > 0) {
+                landSelect.value = currentLandIndex;
             }
         }
 
@@ -1223,6 +1272,9 @@
             // Update navigation buttons
             prevLandBtn.disabled = currentLandIndex === 0;
             nextLandBtn.disabled = currentLandIndex === userLands.length - 1;
+            
+            // Update dropdown selection
+            landSelect.value = currentLandIndex;
             
             // Check if this land has crops and update display
             const landId = currentLand.land_id;
@@ -1599,6 +1651,8 @@
             sessionStorage.setItem('currentCropId', currentCrop.crop_id);
             sessionStorage.setItem('currentCropName', currentCrop.crop_name);
             sessionStorage.setItem('currentStage', currentStage);
+            sessionStorage.setItem('currentLandId', userLands[currentLandIndex].land_id);
+            sessionStorage.setItem('currentLandName', userLands[currentLandIndex].land_name);
             
             // Navigate to stage identification page
             window.location.href = 'stage.html';
@@ -1644,6 +1698,15 @@
 
         // Event Listeners
         function setupEventListeners() {
+            // Land selection dropdown
+            landSelect.addEventListener('change', (e) => {
+                const selectedIndex = parseInt(e.target.value);
+                if (!isNaN(selectedIndex) && selectedIndex >= 0 && selectedIndex < userLands.length) {
+                    currentLandIndex = selectedIndex;
+                    updateLandDisplay();
+                }
+            });
+
             // Land navigation
             prevLandBtn.addEventListener('click', () => {
                 if (currentLandIndex > 0) {
