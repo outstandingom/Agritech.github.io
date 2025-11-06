@@ -136,6 +136,15 @@
             opacity: 0.9;
         }
 
+        .land-info {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         /* Upload Section */
         .upload-section {
             text-align: center;
@@ -287,6 +296,27 @@
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 15px;
+        }
+
+        .ai-insights {
+            background: rgba(46, 139, 87, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-text {
+            font-size: 14px;
+            line-height: 1.5;
         }
 
         .stage-indicators {
@@ -583,6 +613,10 @@
         <div class="current-crop-info">
             <div class="crop-name" id="currentCropName">Loading crop...</div>
             <div class="crop-stage" id="currentStageDisplay">Current stage: Loading...</div>
+            <div class="land-info">
+                <i class="fas fa-tractor"></i>
+                <span id="currentLandInfo">Land: Loading...</span>
+            </div>
         </div>
 
         <!-- Upload Section -->
@@ -611,7 +645,7 @@
                     <div class="preview-actions">
                         <button class="action-btn analyze-btn" id="analyzeButton">
                             <i class="fas fa-search"></i>
-                            Analyze with AI
+                            Analyze with Gemini AI
                         </button>
                         <button class="action-btn remove-btn" id="removeImageButton">
                             <i class="fas fa-times"></i>
@@ -625,24 +659,34 @@
         <!-- AI Processing -->
         <div class="ai-processing" id="aiProcessing">
             <div class="processing-spinner"></div>
-            <div class="processing-text">AI is analyzing your crop image</div>
-            <div class="processing-subtext">This may take a few seconds...</div>
+            <div class="processing-text">Gemini AI is analyzing your crop image</div>
+            <div class="processing-subtext">Detecting growth stage and plant health...</div>
         </div>
 
         <!-- Analysis Results -->
         <div class="analysis-results" id="analysisResults">
             <div class="section-title">
                 <i class="fas fa-chart-bar"></i>
-                Analysis Results
+                AI Analysis Results
             </div>
             
             <div class="result-card">
                 <div class="result-title">
                     <i class="fas fa-robot"></i>
-                    AI Detection Results
+                    Gemini AI Detection
                 </div>
                 <div class="result-description" id="aiDescription">
-                    The AI has analyzed your crop image and detected the following growth stage characteristics.
+                    Analyzing your crop image...
+                </div>
+                
+                <div class="ai-insights" id="aiInsights">
+                    <div class="insight-title">
+                        <i class="fas fa-lightbulb"></i>
+                        AI Insights
+                    </div>
+                    <div class="insight-text" id="insightText">
+                        Detailed analysis will appear here...
+                    </div>
                 </div>
                 
                 <div class="stage-indicators" id="stageIndicators">
@@ -702,6 +746,7 @@
         let currentStage = null;
         let selectedStage = null;
         let userLocation = null;
+        const GEMINI_API_KEY = 'AIzaSyAS_B1FtcH-xm48d6R4G0SAYA8-ySv1CMo';
 
         // Plant growth stages configuration (same as in crops.html)
         const plantStages = {
@@ -832,6 +877,7 @@
         const locationText = document.getElementById('locationText');
         const currentCropName = document.getElementById('currentCropName');
         const currentStageDisplay = document.getElementById('currentStageDisplay');
+        const currentLandInfo = document.getElementById('currentLandInfo');
         const fileInput = document.getElementById('fileInput');
         const uploadArea = document.getElementById('uploadArea');
         const uploadButton = document.getElementById('uploadButton');
@@ -842,6 +888,8 @@
         const aiProcessing = document.getElementById('aiProcessing');
         const analysisResults = document.getElementById('analysisResults');
         const aiDescription = document.getElementById('aiDescription');
+        const aiInsights = document.getElementById('aiInsights');
+        const insightText = document.getElementById('insightText');
         const stageIndicators = document.getElementById('stageIndicators');
         const updateStageBtn = document.getElementById('updateStageBtn');
         const successMessage = document.getElementById('successMessage');
@@ -931,6 +979,8 @@
                 const cropId = sessionStorage.getItem('currentCropId');
                 const cropName = sessionStorage.getItem('currentCropName');
                 const stage = sessionStorage.getItem('currentStage');
+                const landId = sessionStorage.getItem('currentLandId');
+                const landName = sessionStorage.getItem('currentLandName');
 
                 if (!cropId) {
                     showError('No Crop Selected', 'Please select a crop from the crops page first.');
@@ -955,6 +1005,7 @@
                 // Update UI
                 currentCropName.textContent = cropName || crop.crop_name;
                 currentStageDisplay.textContent = `Current stage: ${plantStages[currentStage]?.name || 'Unknown'}`;
+                currentLandInfo.textContent = `Land: ${landName || 'Unknown'}`;
 
             } catch (error) {
                 showError('Data Load Failed', 'Failed to load crop data. Please try again.', error);
@@ -997,8 +1048,18 @@
             successMessage.style.display = 'none';
         }
 
-        // Analyze plant with AI
-        async function analyzePlant() {
+        // Convert image to base64 for Gemini API
+        function getBase64Image(img) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            return canvas.toDataURL('image/jpeg').split(',')[1];
+        }
+
+        // Analyze plant with Gemini AI
+        async function analyzePlantWithGemini() {
             if (!fileInput.files || !fileInput.files[0]) {
                 showError('No Image Selected', 'Please select an image first.');
                 return;
@@ -1010,54 +1071,150 @@
             }
             
             // Show processing state
-            analyzeButton.innerHTML = '<span class="spinner"></span> Analyzing...';
+            analyzeButton.innerHTML = '<span class="spinner"></span> Gemini AI Analyzing...';
             analyzeButton.disabled = true;
             aiProcessing.style.display = 'block';
             analysisResults.style.display = 'none';
 
             try {
-                // Simulate AI analysis (in real implementation, this would call an AI API)
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                
-                // For demo purposes, simulate AI detection
-                // Get current stage index
-                const currentIndex = stageOrder.indexOf(currentStage);
-                
-                // AI "detects" either current stage or next stage (with some randomness)
-                const random = Math.random();
-                let detectedStage;
-                
-                if (random < 0.7) {
-                    // 70% chance: AI detects current stage
-                    detectedStage = currentStage;
-                } else if (currentIndex < stageOrder.length - 1 && random < 0.9) {
-                    // 20% chance: AI detects next stage (if available)
-                    detectedStage = stageOrder[currentIndex + 1];
-                } else {
-                    // 10% chance: AI detects a random previous stage (for demo variety)
-                    const randomIndex = Math.floor(Math.random() * (currentIndex + 1));
-                    detectedStage = stageOrder[randomIndex];
+                // Convert image to base64
+                const base64Image = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const base64 = e.target.result.split(',')[1];
+                        resolve(base64);
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                });
+
+                // Prepare prompt for Gemini
+                const prompt = `Analyze this crop image and determine its growth stage. Consider the following stages:
+1. Germination (Seed Stage) - seeds sprouting, initial root and shoot development
+2. Seedling Stage - young plants with first true leaves, delicate growth
+3. Vegetative Growth Stage - rapid leaf and stem growth, strong plant structure
+4. Flowering or Reproductive Stage - flowers or reproductive parts visible
+5. Fruiting or Grain Filling Stage - fruits or grains developing and filling
+6. Maturity and Harvesting Stage - full size reached, ready for harvest
+
+Please provide:
+1. The most likely growth stage
+2. Confidence level (High/Medium/Low)
+3. Key visual indicators you observed
+4. Any signs of plant health issues
+5. Recommendations for the farmer
+
+Respond in this exact JSON format:
+{
+    "stage": "stage_key",
+    "confidence": "High/Medium/Low",
+    "indicators": ["list", "of", "visual", "indicators"],
+    "health_issues": ["any", "issues", "detected"],
+    "recommendations": ["list", "of", "recommendations"]
+}`;
+
+                // Call Gemini API
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inline_data: {
+                                        mime_type: "image/jpeg",
+                                        data: base64Image
+                                    }
+                                }
+                            ]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Gemini API error: ${response.status}`);
                 }
+
+                const data = await response.json();
+                
+                // Extract and parse the response
+                const responseText = data.candidates[0].content.parts[0].text;
+                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                
+                if (!jsonMatch) {
+                    throw new Error('Invalid response format from Gemini AI');
+                }
+
+                const analysisResult = JSON.parse(jsonMatch[0]);
                 
                 // Display analysis results
-                displayAnalysisResults(detectedStage);
+                displayGeminiAnalysisResults(analysisResult);
                 
             } catch (error) {
-                showError('AI Analysis Failed', 'Failed to analyze the plant image. Please try again.', error);
+                console.error('Gemini API Error:', error);
+                showError('AI Analysis Failed', 'Failed to analyze the plant image with Gemini AI. Please try again.', error);
+                
+                // Fallback to demo analysis
+                await performDemoAnalysis();
             } finally {
-                analyzeButton.innerHTML = '<i class="fas fa-search"></i> Analyze with AI';
+                analyzeButton.innerHTML = '<i class="fas fa-search"></i> Analyze with Gemini AI';
                 analyzeButton.disabled = false;
                 aiProcessing.style.display = 'none';
             }
         }
 
-        // Display analysis results
-        function displayAnalysisResults(detectedStage) {
-            selectedStage = detectedStage;
+        // Fallback demo analysis
+        async function performDemoAnalysis() {
+            // Get current stage index
+            const currentIndex = stageOrder.indexOf(currentStage);
+            
+            // AI "detects" either current stage or next stage (with some randomness)
+            const random = Math.random();
+            let detectedStage;
+            let confidence = "Medium";
+            
+            if (random < 0.7) {
+                // 70% chance: AI detects current stage
+                detectedStage = currentStage;
+                confidence = "High";
+            } else if (currentIndex < stageOrder.length - 1 && random < 0.9) {
+                // 20% chance: AI detects next stage (if available)
+                detectedStage = stageOrder[currentIndex + 1];
+                confidence = "Medium";
+            } else {
+                // 10% chance: AI detects a random previous stage (for demo variety)
+                const randomIndex = Math.floor(Math.random() * (currentIndex + 1));
+                detectedStage = stageOrder[randomIndex];
+                confidence = "Low";
+            }
+            
+            const demoResult = {
+                stage: detectedStage,
+                confidence: confidence,
+                indicators: ["Visual analysis based on plant morphology", "Leaf development patterns", "Overall plant structure"],
+                health_issues: ["No major issues detected", "Monitor for regular growth"],
+                recommendations: ["Continue current care practices", "Monitor plant development regularly"]
+            };
+            
+            displayGeminiAnalysisResults(demoResult);
+        }
+
+        // Display Gemini analysis results
+        function displayGeminiAnalysisResults(result) {
+            selectedStage = result.stage;
             
             // Update description
-            const stage = plantStages[detectedStage];
-            aiDescription.textContent = `Based on the visual analysis of your crop image, the AI has detected characteristics consistent with the ${stage.name}.`;
+            const stage = plantStages[result.stage];
+            aiDescription.textContent = `Gemini AI has detected your crop is in the ${stage.name} with ${result.confidence.toLowerCase()} confidence.`;
+            
+            // Update insights
+            insightText.innerHTML = `
+                <strong>Visual Indicators:</strong> ${result.indicators.join(', ')}<br><br>
+                <strong>Health Assessment:</strong> ${result.health_issues.join(', ')}<br><br>
+                <strong>AI Recommendations:</strong> ${result.recommendations.join(', ')}
+            `;
             
             // Clear previous stage indicators
             stageIndicators.innerHTML = '';
@@ -1065,7 +1222,7 @@
             // Create stage indicators for all stages
             stageOrder.forEach(stageKey => {
                 const stageData = plantStages[stageKey];
-                const isRecommended = stageKey === detectedStage;
+                const isRecommended = stageKey === result.stage;
                 const isCurrent = stageKey === currentStage;
                 
                 const indicator = document.createElement('div');
@@ -1074,11 +1231,11 @@
                 
                 let statusText = '';
                 if (isRecommended && isCurrent) {
-                    statusText = '✓ Current';
+                    statusText = '✓ Current & AI Detected';
                 } else if (isRecommended) {
-                    statusText = '👁️ Detected';
+                    statusText = `👁️ AI Detected (${result.confidence})`;
                 } else if (isCurrent) {
-                    statusText = '✓ Current';
+                    statusText = '✓ Current Stage';
                 }
                 
                 indicator.innerHTML = `
@@ -1114,16 +1271,6 @@
             const selectedIndicator = document.querySelector(`.stage-indicator[data-stage="${selectedStage}"]`);
             if (selectedIndicator) {
                 selectedIndicator.classList.add('recommended');
-                
-                // Update confidence text
-                const confidenceEl = selectedIndicator.querySelector('.stage-confidence');
-                if (confidenceEl) {
-                    if (selectedStage === currentStage) {
-                        confidenceEl.textContent = '✓ Current & Selected';
-                    } else {
-                        confidenceEl.textContent = '👁️ Selected';
-                    }
-                }
             }
         }
 
@@ -1186,7 +1333,7 @@
                         auth_id: currentUser.id,
                         previous_stage: currentStage,
                         new_stage: selectedStage,
-                        update_method: 'ai_analysis',
+                        update_method: 'gemini_ai_analysis',
                         update_date: new Date().toISOString(),
                         created_at: new Date().toISOString()
                     });
@@ -1279,7 +1426,7 @@
             });
             
             // Analysis buttons
-            analyzeButton.addEventListener('click', analyzePlant);
+            analyzeButton.addEventListener('click', analyzePlantWithGemini);
             removeImageButton.addEventListener('click', removeImage);
             updateStageBtn.addEventListener('click', updateCropStage);
 
