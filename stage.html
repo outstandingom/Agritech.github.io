@@ -262,16 +262,6 @@
             animation: spin 1s ease-in-out infinite;
             margin-right: 8px;
         }
-
-        .demo-mode {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: var(--radius);
-            padding: 15px;
-            margin: 15px 0;
-            text-align: center;
-            color: #856404;
-        }
     </style>
 </head>
 <body>
@@ -295,7 +285,7 @@
                     <i class="fas fa-camera"></i>
                 </div>
                 <div class="upload-text">Take or upload a photo of your crop</div>
-                <div class="upload-subtext">We'll identify the growth stage using AI</div>
+                <div class="upload-subtext">We'll identify the growth stage using Gemini AI</div>
                 <button class="upload-btn" id="uploadButton">
                     <i class="fas fa-folder-open"></i>
                     Choose Image
@@ -318,17 +308,11 @@
             </div>
         </div>
 
-        <!-- Demo Mode Notice -->
-        <div class="demo-mode" id="demoMode">
-            <i class="fas fa-info-circle"></i>
-            Currently in demo mode. The AI will analyze your image and provide plant stage identification.
-        </div>
-
         <!-- AI Processing -->
         <div class="ai-processing" id="aiProcessing">
             <div class="processing-spinner"></div>
             <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px;">Analyzing Your Plant Image</div>
-            <div style="color: var(--text-light);">Identifying growth stage with AI...</div>
+            <div style="color: var(--text-light);">Identifying growth stage with Gemini AI...</div>
         </div>
 
         <!-- Error Display -->
@@ -345,7 +329,7 @@
             
             <div class="result-card">
                 <div style="text-align: center; margin-bottom: 20px; font-size: 18px; color: var(--primary);">
-                    <i class="fas fa-robot"></i> AI Analysis Complete
+                    <i class="fas fa-robot"></i> Gemini AI Analysis Complete
                 </div>
                 
                 <div class="stage-result" id="stageResult">
@@ -369,41 +353,9 @@
         const stageResult = document.getElementById('stageResult');
         const errorDisplay = document.getElementById('errorDisplay');
         const errorMessage = document.getElementById('errorMessage');
-        const demoMode = document.getElementById('demoMode');
 
-        // Plant stages configuration
-        const plantStages = {
-            germination: {
-                emoji: "🌱",
-                name: "Germination Stage",
-                description: "Seeds are sprouting with initial root and shoot development. This is the beginning of plant growth."
-            },
-            seedling: {
-                emoji: "🌿",
-                name: "Seedling Stage",
-                description: "Young plants with first true leaves developing. The plant is establishing its root system."
-            },
-            vegetative: {
-                emoji: "🌿",
-                name: "Vegetative Stage",
-                description: "Active growth with multiple leaves and strong stem development. Plant is building energy for reproduction."
-            },
-            flowering: {
-                emoji: "🌸",
-                name: "Flowering Stage",
-                description: "Flowers or reproductive structures are visible. Pollination occurs during this stage."
-            },
-            fruiting: {
-                emoji: "🍅",
-                name: "Fruiting Stage",
-                description: "Fruits or grains are developing and growing in size. Plant is directing energy to fruit production."
-            },
-            maturity: {
-                emoji: "🌻",
-                name: "Maturity Stage",
-                description: "Plant has reached full growth. Fruits are ripe and ready for harvest."
-            }
-        };
+        // Gemini API Key
+        const GEMINI_API_KEY = 'AIzaSyAS_B1FtcH-xm48d6R4G0SAYA8-ySv1CMo';
 
         // Error Handling
         function showError(message) {
@@ -451,63 +403,8 @@
             hideError();
         }
 
-        // Simulate AI analysis with realistic responses
-        function simulateAIResponse(imageData) {
-            // This simulates what Gemini AI would return
-            const stages = Object.keys(plantStages);
-            const randomStage = stages[Math.floor(Math.random() * stages.length)];
-            const stage = plantStages[randomStage];
-            
-            // Add some realistic variations based on the stage
-            const descriptions = {
-                germination: [
-                    "I can see seeds sprouting with small roots and shoots emerging from the soil.",
-                    "The germination process is underway with visible seedling emergence.",
-                    "Early growth stage with cotyledons (seed leaves) visible above soil."
-                ],
-                seedling: [
-                    "Young seedlings with first true leaves developing alongside cotyledons.",
-                    "The plant is establishing its root system with delicate young leaves.",
-                    "Early vegetative growth with proper leaf formation beginning."
-                ],
-                vegetative: [
-                    "Healthy vegetative growth with multiple sets of true leaves visible.",
-                    "Strong stem development and active leaf production observed.",
-                    "Plant is in active growth phase with good foliage development."
-                ],
-                flowering: [
-                    "Flower buds or open flowers visible, indicating reproductive stage.",
-                    "The plant has entered flowering phase with visible reproductive structures.",
-                    "Bloom development observed with flower formation."
-                ],
-                fruiting: [
-                    "Fruit development visible with young fruits forming on the plant.",
-                    "The plant is in fruiting stage with developing produce.",
-                    "Fruit set observed with visible fruit growth."
-                ],
-                maturity: [
-                    "Plant has reached maturity with fully developed fruits/grains.",
-                    "Harvest-ready stage with ripe produce visible.",
-                    "Complete growth cycle with mature plant structure."
-                ]
-            };
-            
-            const randomDesc = descriptions[randomStage][Math.floor(Math.random() * descriptions[randomStage].length)];
-            
-            return {
-                stage: randomStage,
-                confidence: "High",
-                description: randomDesc,
-                recommendations: [
-                    "Continue current care practices",
-                    "Monitor plant health regularly",
-                    "Adjust watering based on weather conditions"
-                ]
-            };
-        }
-
-        // Analyze plant with simulated AI
-        async function analyzePlant() {
+        // Analyze plant with real Gemini API
+        async function analyzePlantWithGemini() {
             if (!fileInput.files || !fileInput.files[0]) {
                 showError('Please select an image first.');
                 return;
@@ -521,10 +418,7 @@
             hideError();
 
             try {
-                // Simulate API call delay
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Convert image to base64 for simulation
+                // Convert image to base64
                 const base64Image = await new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -534,15 +428,56 @@
                     reader.readAsDataURL(fileInput.files[0]);
                 });
 
-                // Get simulated AI response
-                const analysisResult = simulateAIResponse(base64Image);
+                // Prepare the prompt for Gemini
+                const prompt = `Analyze this plant image and identify its growth stage. Provide a detailed analysis including:
+1. The specific growth stage (germination, seedling, vegetative, flowering, fruiting, or maturity)
+2. Key visual indicators you observed
+3. Plant health assessment
+4. Recommendations for the farmer
+
+Please provide a clear, structured response.`;
+
+                // Call Gemini API
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inline_data: {
+                                        mime_type: "image/jpeg",
+                                        data: base64Image
+                                    }
+                                }
+                            ]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+                }
+
+                const data = await response.json();
                 
-                // Display results
-                displayAnalysisResults(analysisResult);
+                // Extract the response text
+                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
+                    throw new Error('Invalid response format from Gemini API');
+                }
+
+                const responseText = data.candidates[0].content.parts[0].text;
+                
+                // Display the analysis results
+                displayAnalysisResults(responseText);
                 
             } catch (error) {
-                console.error('Analysis Error:', error);
-                showError('Failed to analyze the image. Please try again.');
+                console.error('Gemini API Error:', error);
+                showError(`Analysis failed: ${error.message}. Please try again with a clear plant image.`);
             } finally {
                 analyzeButton.innerHTML = '<i class="fas fa-search"></i> Identify Plant Stage';
                 analyzeButton.disabled = false;
@@ -551,17 +486,20 @@
         }
 
         // Display analysis results
-        function displayAnalysisResults(result) {
-            const stage = plantStages[result.stage];
-            
+        function displayAnalysisResults(analysisText) {
+            // Get appropriate emoji based on stage keywords
+            let emoji = "🌱";
+            if (analysisText.toLowerCase().includes('flower')) emoji = "🌸";
+            if (analysisText.toLowerCase().includes('fruit')) emoji = "🍅";
+            if (analysisText.toLowerCase().includes('mature') || analysisText.toLowerCase().includes('harvest')) emoji = "🌻";
+            if (analysisText.toLowerCase().includes('seedling')) emoji = "🌿";
+            if (analysisText.toLowerCase().includes('vegetative')) emoji = "🌿";
+
             stageResult.innerHTML = `
-                <div class="stage-emoji">${stage.emoji}</div>
-                <div class="stage-name">${stage.name}</div>
+                <div class="stage-emoji">${emoji}</div>
+                <div class="stage-name">Plant Stage Analysis</div>
                 <div class="stage-description">
-                    <strong>AI Analysis:</strong> ${result.description}<br><br>
-                    <strong>Confidence:</strong> ${result.confidence}<br><br>
-                    <strong>Recommendations:</strong><br>
-                    ${result.recommendations.map(rec => `• ${rec}`).join('<br>')}
+                    ${analysisText.replace(/\n/g, '<br>')}
                 </div>
             `;
             
@@ -598,7 +536,7 @@
             });
             
             // Analysis buttons
-            analyzeButton.addEventListener('click', analyzePlant);
+            analyzeButton.addEventListener('click', analyzePlantWithGemini);
             removeImageButton.addEventListener('click', removeImage);
 
             // Error display close
@@ -608,7 +546,7 @@
         // Initialize the application
         function initApp() {
             setupEventListeners();
-            console.log('Plant Stage Identifier initialized');
+            console.log('Plant Stage Identifier initialized with real Gemini API');
         }
 
         // Start the application
