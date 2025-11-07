@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Crop Advisor - GrowSmart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary: #2E8B57;
+            --primary-light: #3CB371;
+            --primary-dark: #228B22;
+            --secondary: #4682B4;
+            --accent: #FFA500;
+            --warning: #FF6347;
+            --background: #F5F5F5;
+            --surface: #FFFFFF;
+            --text: #2F4F4F;
+            --text-light: #708090;
+            --border: #E0E0E0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --radius: 16px;
+            --gradient: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+            --gradient-weather: linear-gradient(135deg, #4682B4 0%, #87CEEB 100%);
+            --gradient-warning: linear-gradient(135deg, #FF6347 0%, #FFA07A 100%);
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 16px;
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 16px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-title i {
+            font-size: 22px;
+        }
+
+        .time-location {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .time {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .location {
+            font-size: 14px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Land Selection */
+        .land-selection {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .land-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            background-color: var(--surface);
+            color: var(--text);
+        }
+
+        .land-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .land-details {
+            background: rgba(46, 139, 87, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .land-detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .land-detail-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .land-detail-label {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .land-detail-value {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .chat-header {
+            background: var(--gradient);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: #f0f0f0;
+            color: var(--text);
+            border-bottom-left-radius: 6px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .ai-message .message-time {
+            text-align: left;
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+        }
+
+        .send-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .file-upload-button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-button:hover {
+            background: #3a6ea5;
+            transform: scale(1.05);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .ai-typing {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-light);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Crop Advice Card */
+        .crop-advice-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .crop-advice-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .crop-advice-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .crop-advice-content {
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .crop-list {
+            margin-top: 16px;
+        }
+
+        .crop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .crop-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .crop-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .crop-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(46, 139, 87, 0.1);
+            color: var(--primary);
+        }
+
+        .crop-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .crop-profit {
+            text-align: right;
+        }
+
+        .profit-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .profit-label {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-around;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 480px;
+            z-index: 1000;
+            border: 1px solid var(--border);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item.active {
+            opacity: 1;
+            color: var(--primary);
+            background: rgba(46, 139, 87, 0.1);
+        }
+
+        .nav-item:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .nav-item span {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+                padding-bottom: 100px;
+            }
+            
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            
+            .time-location {
+                align-items: flex-end;
+            }
+            
+            .chat-messages {
+                height: 350px;
+            }
+            
+            .bottom-nav {
+                width: calc(100% - 32px);
+                padding: 14px;
+            }
+            
+            .nav-item span {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 350px) {
+            .app-title {
+                font-size: 22px;
+            }
+            
+            .time {
+                font-size: 16px;
+            }
+            
+            .location {
+                font-size: 13px;
+            }
+        }
+
+        /* Error and loading states */
+        .error-message {
+            background: rgba(255, 99, 71, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="app-title">
+                <i class="fas fa-robot"></i>
+                AI Crop Advisor
+            </div>
+            <div class="time-location">
+                <div class="time">10:11 PM</div>
+                <div class="location" id="locationDisplay">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="locationText">Detecting location...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Land Selection -->
+        <div class="land-selection" id="landSelection">
+            <div class="section-title">
+                <i class="fas fa-tractor"></i>
+                Select Your Land
+            </div>
+            <select class="land-select" id="landSelect">
+                <option value="">Choose a land for analysis...</option>
+            </select>
+            
+            <div class="land-details" id="landDetails">
+                <div class="land-detail-item">
+                    <span class="land-detail-label">Soil Type:</span>
+                    <span class="land-detail-value" id="soilType">--</span>
+                </div>
+                <div class="land-detail-item">
+                    <span class="land-detail-label">Area:</span>
+                    <span class="land-detail-value" id="landArea">--</span>
+                </div>
+                <div class="land-detail-item">
+                    <span class="land-detail-label">Water Availability:</span>
+                    <span class="land-detail-value" id="waterAvailability">--</span>
+                </div>
+                <div class="land-detail-item">
+                    <span class="land-detail-label">Current Crops:</span>
+                    <span class="land-detail-value" id="currentCrops">--</span>
+                </div>
+            </div>
+            
+            <button class="btn" id="getAdviceBtn" disabled>
+                <i class="fas fa-robot"></i>
+                Get AI Crop Advice
+            </button>
+        </div>
+
+        <!-- Crop Advice Card -->
+        <div class="crop-advice-card" id="cropAdviceCard">
+            <div class="crop-advice-header">
+                <div class="crop-advice-title">
+                    <i class="fas fa-seedling"></i>
+                    Recommended Crops
+                </div>
+            </div>
+            <div class="crop-advice-content" id="cropAdviceContent">
+                <!-- AI recommendations will appear here -->
+            </div>
+            <div class="crop-list" id="cropList">
+                <!-- Crop list will appear here -->
+            </div>
+            <button class="btn" id="askMoreBtn" style="margin-top: 16px;">
+                <i class="fas fa-comments"></i>
+                Ask More Questions
+            </button>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-header">
+                <button class="back-button" id="backButton">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="chat-title">
+                    <i class="fas fa-robot"></i>
+                    AI Crop Advisor
+                </div>
+                <div style="width: 36px;"></div> <!-- Spacer for alignment -->
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    Hello! I'm your AI Crop Advisor. I can help you with crop selection, pest control, fertilizer recommendations, and more based on your land data. How can I assist you today?
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="file" class="file-input" id="fileInput" accept="image/*">
+                <button class="file-upload-button" id="fileUploadButton">
+                    <i class="fas fa-image"></i>
+                </button>
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask about crops, pests, fertilizers...">
+                <button class="send-button" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="soil.html" class="nav-item">
+                <i class="fas fa-vial"></i>
+                <span>Soil</span>
+            </a>
+            <a href="crops.html" class="nav-item">
+                <i class="fas fa-seedling"></i>
+                <span>Crops</span>
+            </a>
+            <a href="ai.html" class="nav-item active">
+                <i class="fas fa-robot"></i>
+                <span>AI Advisor</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
+
+        // Initialize Supabase client
+        let supabase;
+
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true
+                }
+            });
+            console.log('Supabase client initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Supabase client:', error);
+        }
+
+        // AI Crop Advisor functionality
+        class AICropAdvisor {
+            constructor() {
+                this.lands = [];
+                this.selectedLand = null;
+                this.conversationHistory = [];
+                this.initializeEventListeners();
+                this.loadLands();
+                this.updateTime();
+            }
+
+            // Initialize event listeners
+            initializeEventListeners() {
+                // Land selection
+                document.getElementById('landSelect').addEventListener('change', (e) => {
+                    this.handleLandSelection(e.target.value);
+                });
+
+                // Get advice button
+                document.getElementById('getAdviceBtn').addEventListener('click', () => {
+                    this.getCropAdvice();
+                });
+
+                // Ask more questions button
+                document.getElementById('askMoreBtn').addEventListener('click', () => {
+                    this.showChatInterface();
+                });
+
+                // Back button
+                document.getElementById('backButton').addEventListener('click', () => {
+                    this.hideChatInterface();
+                });
+
+                // Send message button
+                document.getElementById('sendButton').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                // Enter key in chat input
+                document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+
+                // File upload
+                document.getElementById('fileUploadButton').addEventListener('click', () => {
+                    document.getElementById('fileInput').click();
+                });
+
+                document.getElementById('fileInput').addEventListener('change', (e) => {
+                    this.handleFileUpload(e.target.files[0]);
+                });
+            }
+
+            // Update time
+            updateTime() {
+                const now = new Date();
+                const timeElement = document.querySelector('.time');
+                
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                
+                timeElement.textContent = `${hours}:${minutes} ${ampm}`;
+            }
+
+            // Load user's lands
+            async loadLands() {
+                try {
+                    // For demo purposes, we'll use mock data
+                    this.lands = [
+                        {
+                            land_id: '1',
+                            land_name: 'North Field',
+                            soil_type: 'Loamy',
+                            water_availability: 'Good',
+                            current_crops: 'Wheat',
+                            area_hectares: 5.2
+                        },
+                        {
+                            land_id: '2',
+                            land_name: 'South Field',
+                            soil_type: 'Clay',
+                            water_availability: 'Moderate',
+                            current_crops: 'Corn',
+                            area_hectares: 3.8
+                        },
+                        {
+                            land_id: '3',
+                            land_name: 'East Field',
+                            soil_type: 'Sandy',
+                            water_availability: 'Poor',
+                            current_crops: 'None',
+                            area_hectares: 4.5
+                        }
+                    ];
+                    
+                    this.populateLandSelect();
+                } catch (error) {
+                    console.error('Error loading lands:', error);
+                    this.showError('Failed to load lands');
+                }
+            }
+
+            // Populate land select dropdown
+            populateLandSelect() {
+                const landSelect = document.getElementById('landSelect');
+                landSelect.innerHTML = '<option value="">Choose a land for analysis...</option>';
+                
+                this.lands.forEach(land => {
+                    const option = document.createElement('option');
+                    option.value = land.land_id;
+                    option.textContent = `${land.land_name} (${land.area_hectares} ha)`;
+                    landSelect.appendChild(option);
+                });
+            }
+
+            // Handle land selection
+            handleLandSelection(landId) {
+                const landDetails = document.getElementById('landDetails');
+                const getAdviceBtn = document.getElementById('getAdviceBtn');
+                
+                if (!landId) {
+                    landDetails.style.display = 'none';
+                    getAdviceBtn.disabled = true;
+                    this.selectedLand = null;
+                    return;
+                }
+
+                this.selectedLand = this.lands.find(land => land.land_id === landId);
+                
+                if (this.selectedLand) {
+                    document.getElementById('soilType').textContent = this.selectedLand.soil_type || 'Not specified';
+                    document.getElementById('landArea').textContent = `${this.selectedLand.area_hectares} hectares`;
+                    document.getElementById('waterAvailability').textContent = this.selectedLand.water_availability || 'Not specified';
+                    document.getElementById('currentCrops').textContent = this.selectedLand.current_crops || 'None';
+                    
+                    landDetails.style.display = 'block';
+                    getAdviceBtn.disabled = false;
+                }
+            }
+
+            // Get crop advice using Gemini AI
+            async getCropAdvice() {
+                try {
+                    if (!this.selectedLand) {
+                        this.showError('Please select a land first');
+                        return;
+                    }
+
+                    // Show loading state
+                    const getAdviceBtn = document.getElementById('getAdviceBtn');
+                    getAdviceBtn.innerHTML = '<span class="spinner"></span> Analyzing...';
+                    getAdviceBtn.disabled = true;
+
+                    // Prepare data for AI analysis
+                    const landData = {
+                        land: this.selectedLand,
+                        current_weather: await this.getCurrentWeather(),
+                        location: document.getElementById('locationText').textContent
+                    };
+
+                    // Get AI recommendation
+                    const aiAdvice = await this.getAIRecommendation(landData);
+                    
+                    // Display the advice
+                    this.displayCropAdvice(aiAdvice);
+                    
+                    // Reset button
+                    getAdviceBtn.innerHTML = '<i class="fas fa-robot"></i> Get AI Crop Advice';
+                    getAdviceBtn.disabled = false;
+                    
+                } catch (error) {
+                    console.error('Error getting crop advice:', error);
+                    this.showError(error.message || 'Failed to get crop advice');
+                    
+                    // Reset button
+                    const getAdviceBtn = document.getElementById('getAdviceBtn');
+                    getAdviceBtn.innerHTML = '<i class="fas fa-robot"></i> Get AI Crop Advice';
+                    getAdviceBtn.disabled = false;
+                }
+            }
+
+            // Get current weather
+            async getCurrentWeather() {
+                try {
+                    // This would typically come from your weather API
+                    // For now, we'll return mock data
+                    return {
+                        temperature: 28,
+                        humidity: 65,
+                        rainfall: 0,
+                        condition: 'Sunny'
+                    };
+                } catch (error) {
+                    console.error('Error getting weather:', error);
+                    return null;
+                }
+            }
+
+            // Get AI recommendation using Gemini API
+            async getAIRecommendation(landData) {
+                const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
+                const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+                const prompt = `
+                You are an agricultural expert AI. Analyze the following farm data and provide crop recommendations:
+
+                LAND INFORMATION:
+                - Location: ${landData.location}
+                - Soil Type: ${landData.land.soil_type}
+                - Area: ${landData.land.area_hectares} hectares
+                - Water Availability: ${landData.land.water_availability}
+                - Current Crops: ${landData.land.current_crops || 'None'}
+
+                WEATHER CONDITIONS:
+                - Temperature: ${landData.current_weather.temperature}°C
+                - Humidity: ${landData.current_weather.humidity}%
+                - Condition: ${landData.current_weather.condition}
+
+                Based on this information, please provide:
+                1. Top 3-4 crop recommendations suitable for this land
+                2. Expected profitability for each crop
+                3. Key factors influencing your recommendations
+                4. Any immediate actions needed
+
+                Format your response as a JSON object with this structure:
+                {
+                  "summary": "Brief overall assessment",
+                  "recommendations": [
+                    {
+                      "crop": "Crop name",
+                      "profitability": "High/Medium/Low",
+                      "profit_estimate": "Estimated profit per hectare",
+                      "reasoning": "Why this crop is suitable",
+                      "key_requirements": "What's needed for success"
+                    }
+                  ],
+                  "key_factors": ["Factor 1", "Factor 2", ...],
+                  "immediate_actions": ["Action 1", "Action 2", ...]
+                }
+                `;
+
+                const requestBody = {
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                };
+
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                const aiText = data.candidates[0].content.parts[0].text;
+                
+                // Extract JSON from response
+                const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('AI returned invalid format');
+                }
+
+                return JSON.parse(jsonMatch[0]);
+            }
+
+            // Display crop advice
+            displayCropAdvice(advice) {
+                const cropAdviceCard = document.getElementById('cropAdviceCard');
+                const cropAdviceContent = document.getElementById('cropAdviceContent');
+                const cropList = document.getElementById('cropList');
+
+                // Show the card
+                cropAdviceCard.style.display = 'block';
+
+                // Update content
+                cropAdviceContent.innerHTML = `
+                    <p><strong>Summary:</strong> ${advice.summary}</p>
+                    <p style="margin-top: 12px;"><strong>Key Factors:</strong> ${advice.key_factors.join(', ')}</p>
+                `;
+
+                // Update crop list
+                cropList.innerHTML = '';
+                advice.recommendations.forEach(crop => {
+                    const cropItem = document.createElement('div');
+                    cropItem.className = 'crop-item';
+                    
+                    cropItem.innerHTML = `
+                        <div class="crop-info">
+                            <div class="crop-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div>
+                                <div class="crop-name">${crop.crop}</div>
+                                <div style="font-size: 12px; color: var(--text-light);">${crop.reasoning}</div>
+                            </div>
+                        </div>
+                        <div class="crop-profit">
+                            <div class="profit-value">${crop.profit_estimate}</div>
+                            <div class="profit-label">${crop.profitability} Profit</div>
+                        </div>
+                    `;
+                    
+                    cropList.appendChild(cropItem);
+                });
+
+                // Add immediate actions
+                if (advice.immediate_actions && advice.immediate_actions.length > 0) {
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.style.marginTop = '16px';
+                    actionsDiv.style.padding = '12px';
+                    actionsDiv.style.background = 'rgba(255, 165, 0, 0.1)';
+                    actionsDiv.style.borderRadius = '8px';
+                    actionsDiv.style.borderLeft = '4px solid var(--accent)';
+                    
+                    actionsDiv.innerHTML = `
+                        <strong><i class="fas fa-exclamation-circle"></i> Immediate Actions:</strong>
+                        <ul style="margin-top: 8px; margin-left: 16px;">
+                            ${advice.immediate_actions.map(action => `<li>${action}</li>`).join('')}
+                        </ul>
+                    `;
+                    
+                    cropAdviceContent.appendChild(actionsDiv);
+                }
+
+                // Scroll to the advice
+                cropAdviceCard.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            // Show chat interface
+            showChatInterface() {
+                document.getElementById('landSelection').style.display = 'none';
+                document.getElementById('cropAdviceCard').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'block';
+            }
+
+            // Hide chat interface
+            hideChatInterface() {
+                document.getElementById('landSelection').style.display = 'block';
+                document.getElementById('cropAdviceCard').style.display = 'block';
+                document.getElementById('chatContainer').style.display = 'none';
+            }
+
+            // Send message in chat
+            async sendMessage() {
+                const chatInput = document.getElementById('chatInput');
+                const message = chatInput.value.trim();
+                
+                if (!message) return;
+
+                // Add user message to chat
+                this.addMessageToChat(message, 'user');
+                chatInput.value = '';
+
+                // Show typing indicator
+                this.showTypingIndicator();
+
+                try {
+                    // Get AI response
+                    const response = await this.getAIResponse(message);
+                    
+                    // Remove typing indicator and add AI response
+                    this.removeTypingIndicator();
+                    this.addMessageToChat(response, 'ai');
+                    
+                } catch (error) {
+                    console.error('Error getting AI response:', error);
+                    this.removeTypingIndicator();
+                    this.addMessageToChat('Sorry, I encountered an error. Please try again.', 'ai');
+                }
+            }
+
+            // Add message to chat
+            addMessageToChat(message, sender) {
+                const chatMessages = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                messageDiv.innerHTML = `
+                    ${message}
+                    <div class="message-time">${timeString}</div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Add to conversation history
+                this.conversationHistory.push({ sender, message, time: now });
+            }
+
+            // Show typing indicator
+            showTypingIndicator() {
+                const chatMessages = document.getElementById('chatMessages');
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typingIndicator';
+                typingDiv.className = 'ai-typing';
+                
+                typingDiv.innerHTML = `
+                    AI is typing
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Remove typing indicator
+            removeTypingIndicator() {
+                const typingIndicator = document.getElementById('typingIndicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+
+            // Get AI response for chat
+            async getAIResponse(userMessage) {
+                const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
+                const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+                // Prepare context from land data
+                let context = '';
+                if (this.selectedLand) {
+                    context = `
+                    Current Land Context:
+                    - Land: ${this.selectedLand.land_name}
+                    - Soil Type: ${this.selectedLand.soil_type}
+                    - Area: ${this.selectedLand.area_hectares} hectares
+                    - Water Availability: ${this.selectedLand.water_availability}
+                    `;
+                }
+
+                const prompt = `
+                You are an agricultural expert AI assistant. ${context}
+                
+                Previous conversation:
+                ${this.conversationHistory.slice(-5).map(msg => `${msg.sender}: ${msg.message}`).join('\n')}
+                
+                User's question: ${userMessage}
+                
+                Please provide a helpful, accurate response focused on agricultural advice.
+                `;
+
+                const requestBody = {
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                };
+
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            }
+
+            // Handle file upload
+            async handleFileUpload(file) {
+                if (!file) return;
+
+                // For now, we'll just show a message
+                this.addMessageToChat(`Uploaded image: ${file.name}`, 'user');
+                this.showTypingIndicator();
+
+                // Simulate AI analysis of the image
+                setTimeout(() => {
+                    this.removeTypingIndicator();
+                    this.addMessageToChat(`I've analyzed your image. It appears to show healthy crops with no visible signs of disease or pests. For more accurate analysis, please describe what you're seeing or concerned about.`, 'ai');
+                }, 2000);
+            }
+
+            // Show error message
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                
+                document.querySelector('.container').insertBefore(errorDiv, document.getElementById('landSelection'));
+                
+                // Remove error after 5 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AICropAdvisor();
+            
+            // Update time every minute
+            setInterval(() => {
+                document.querySelector('.time').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }, 60000);
+        });
+    </script>
+</body>
+</html>
