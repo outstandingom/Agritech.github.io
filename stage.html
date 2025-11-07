@@ -533,651 +533,747 @@
     <script src="auth-checker.js"></script>
 
     <script>
-        // DOM elements
-        const uploadArea = document.getElementById('upload-area');
-        const fileInput = document.getElementById('file-input');
-        const previewImg = document.getElementById('preview-img');
-        const imagePreview = document.getElementById('image-preview');
-        const identifyBtn = document.getElementById('identify-btn');
-        const loading = document.getElementById('loading');
-        const resultContainer = document.getElementById('result-container');
-        const resultContent = document.getElementById('result-content');
-        const errorMessage = document.getElementById('error-message');
-        const successMessage = document.getElementById('success-message');
-        const confirmBtn = document.getElementById('confirm-btn');
-        const retakeBtn = document.getElementById('retake-btn');
-        
-        // Crop info elements
-        const currentCropName = document.getElementById('currentCropName');
-        const currentLandName = document.getElementById('currentLandName');
-        const currentStage = document.getElementById('currentStage');
-        const plantingDate = document.getElementById('plantingDate');
-        
-        // Stage indicators
-        const stageSeed = document.getElementById('stage-seed');
-        const stageSeedling = document.getElementById('stage-seedling');
-        const stageVegetative = document.getElementById('stage-vegetative');
-        const stageFlowering = document.getElementById('stage-flowering');
-        const stageFruiting = document.getElementById('stage-fruiting');
-        const stageMaturity = document.getElementById('stage-maturity');
-        
-        // Global variables
-        let currentUser = null;
-        let currentCrop = null;
-        let currentLand = null;
-        let currentAnalysis = null;
-        let selectedFile = null;
-        
-        // Plant stage data
-        const plantStages = {
-            germination: {
-                name: "Germination (Seed Stage)",
-                emoji: "🌱",
-                duration: "Few days to 2 weeks",
-                description: "The seed absorbs water and swells. The embryo inside starts to grow. The root (radicle) comes out first, followed by the shoot.",
-                conditions: [
-                    "Adequate moisture",
-                    "Suitable temperature (20-25°C)",
-                    "Proper soil depth"
-                ],
-                recommendations: [
-                    "Maintain consistent soil moisture but avoid overwatering",
-                    "Keep soil temperature between 20-25°C for optimal germination",
-                    "Ensure proper seed depth according to crop type"
-                ],
-                durationDays: 14
-            },
-            seedling: {
-                name: "Seedling Stage",
-                emoji: "🌿",
-                duration: "1–4 weeks",
-                description: "The young plant develops its first true leaves. Roots grow deeper to absorb nutrients and water. The plant is delicate and needs proper care.",
-                conditions: [
-                    "Adequate light (12-16 hours daily)",
-                    "Regular watering",
-                    "Nutrient availability",
-                    "Protection from pests"
-                ],
-                recommendations: [
-                    "Provide adequate light for strong growth",
-                    "Apply balanced, diluted fertilizer",
-                    "Monitor for pests and diseases",
-                    "Maintain consistent soil moisture"
-                ],
-                durationDays: 28
-            },
-            vegetative: {
-                name: "Vegetative Growth Stage",
-                emoji: "🌾",
-                duration: "Several weeks to months",
-                description: "Rapid growth phase — plant produces more leaves, stems, and roots. Focus is on building a strong structure for future flowering and fruiting.",
-                conditions: [
-                    "Adequate space between plants",
-                    "Balanced nutrition",
-                    "Proper pruning",
-                    "Weed control",
-                    "Adequate water supply"
-                ],
-                recommendations: [
-                    "Increase nitrogen-rich fertilizer for leaf growth",
-                    "Ensure proper spacing for air circulation",
-                    "Implement weed control measures",
-                    "Monitor for nutrient deficiencies"
-                ],
-                durationDays: 56
-            },
-            flowering: {
-                name: "Flowering or Reproductive Stage",
-                emoji: "🌸",
-                duration: "1–4 weeks typically",
-                description: "The plant begins to produce flowers or reproductive parts. Pollination occurs (by wind, insects, or manually).",
-                conditions: [
-                    "Proper pollination",
-                    "Adequate light",
-                    "Proper temperature",
-                    "Reduced nitrogen",
-                    "Increased phosphorus"
-                ],
-                recommendations: [
-                    "Reduce nitrogen and increase phosphorus for flowering",
-                    "Ensure pollinators have access",
-                    "Consider manual pollination if needed",
-                    "Maintain optimal temperature range"
-                ],
-                durationDays: 28
-            },
-            fruiting: {
-                name: "Fruiting or Grain Filling Stage",
-                emoji: "🍅",
-                duration: "Varies widely (from weeks to months)",
-                description: "After successful pollination, fruits or grains start developing. Nutrients and energy are directed toward filling seeds or fruits.",
-                conditions: [
-                    "Adequate water supply",
-                    "Nutrient availability",
-                    "Pest control",
-                    "Disease management",
-                    "Proper support for heavy fruits"
-                ],
-                recommendations: [
-                    "Apply potassium-rich fertilizer for fruit development",
-                    "Maintain consistent watering",
-                    "Implement pest control measures",
-                    "Provide support for heavy fruiting plants"
-                ],
-                durationDays: 42
-            },
-            maturity: {
-                name: "Maturity and Harvesting Stage",
-                emoji: "🌻",
-                duration: "Varies by crop",
-                description: "Fruits, grains, or pods reach full size and ripen. Moisture levels drop, and the plant may begin to dry or turn yellow. Crops are ready for harvest.",
-                conditions: [
-                    "Proper harvest timing",
-                    "Dry weather for harvesting",
-                    "Storage preparation",
-                    "Quality assessment"
-                ],
-                recommendations: [
-                    "Reduce watering as harvest approaches",
-                    "Monitor for optimal harvest time",
-                    "Prepare storage facilities",
-                    "Check crop quality before harvest"
-                ],
-                durationDays: 14
-            }
-        };
-        
-        // API configuration
-        const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
-        const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-        
-        // Initialize the application
-        async function initApp() {
-            try {
-                // Check authentication
-                const isAuthenticated = await window.authChecker.requireAuth();
-                if (!isAuthenticated) return;
-                
-                // Get current user
-                currentUser = await window.authChecker.getCurrentUser();
-                if (!currentUser) {
-                    showError('User not found. Please log in again.');
-                    return;
-                }
-                
-                // Load current crop data from session storage
-                await loadCurrentCropData();
-                
-                // Set up event listeners
-                setupEventListeners();
-                
-            } catch (error) {
-                console.error('Error initializing app:', error);
-                showError('Failed to initialize application. Please refresh the page.');
-            }
+
+    // DOM elements
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const previewImg = document.getElementById('preview-img');
+    const imagePreview = document.getElementById('image-preview');
+    const identifyBtn = document.getElementById('identify-btn');
+    const loading = document.getElementById('loading');
+    const resultContainer = document.getElementById('result-container');
+    const resultContent = document.getElementById('result-content');
+    const errorMessage = document.getElementById('error-message');
+    const successMessage = document.getElementById('success-message');
+    const confirmBtn = document.getElementById('confirm-btn');
+    const retakeBtn = document.getElementById('retake-btn');
+
+    // Crop info elements
+    const currentCropName = document.getElementById('currentCropName');
+    const currentLandName = document.getElementById('currentLandName');
+    const currentStage = document.getElementById('currentStage');
+    const plantingDate = document.getElementById('plantingDate');
+
+    // Stage indicators
+    const stageSeed = document.getElementById('stage-seed');
+    const stageSeedling = document.getElementById('stage-seedling');
+    const stageVegetative = document.getElementById('stage-vegetative');
+    const stageFlowering = document.getElementById('stage-flowering');
+    const stageFruiting = document.getElementById('stage-fruiting');
+    const stageMaturity = document.getElementById('stage-maturity');
+
+    // Global variables
+    let currentUser = null;
+    let currentCrop = null;
+    let currentLand = null;
+    let currentAnalysis = null;
+    let selectedFile = null;
+    let blockchainService = null;
+
+    // Plant stage data
+    const plantStages = {
+        germination: {
+            name: "Germination (Seed Stage)",
+            emoji: "🌱",
+            duration: "Few days to 2 weeks",
+            description: "The seed absorbs water and swells. The embryo inside starts to grow. The root (radicle) comes out first, followed by the shoot.",
+            conditions: [
+                "Adequate moisture",
+                "Suitable temperature (20-25°C)",
+                "Proper soil depth"
+            ],
+            recommendations: [
+                "Maintain consistent soil moisture but avoid overwatering",
+                "Keep soil temperature between 20-25°C for optimal germination",
+                "Ensure proper seed depth according to crop type"
+            ],
+            durationDays: 14
+        },
+        seedling: {
+            name: "Seedling Stage",
+            emoji: "🌿",
+            duration: "1–4 weeks",
+            description: "The young plant develops its first true leaves. Roots grow deeper to absorb nutrients and water. The plant is delicate and needs proper care.",
+            conditions: [
+                "Adequate light (12-16 hours daily)",
+                "Regular watering",
+                "Nutrient availability",
+                "Protection from pests"
+            ],
+            recommendations: [
+                "Provide adequate light for strong growth",
+                "Apply balanced, diluted fertilizer",
+                "Monitor for pests and diseases",
+                "Maintain consistent soil moisture"
+            ],
+            durationDays: 28
+        },
+        vegetative: {
+            name: "Vegetative Growth Stage",
+            emoji: "🌾",
+            duration: "Several weeks to months",
+            description: "Rapid growth phase — plant produces more leaves, stems, and roots. Focus is on building a strong structure for future flowering and fruiting.",
+            conditions: [
+                "Adequate space between plants",
+                "Balanced nutrition",
+                "Proper pruning",
+                "Weed control",
+                "Adequate water supply"
+            ],
+            recommendations: [
+                "Increase nitrogen-rich fertilizer for leaf growth",
+                "Ensure proper spacing for air circulation",
+                "Implement weed control measures",
+                "Monitor for nutrient deficiencies"
+            ],
+            durationDays: 56
+        },
+        flowering: {
+            name: "Flowering or Reproductive Stage",
+            emoji: "🌸",
+            duration: "1–4 weeks typically",
+            description: "The plant begins to produce flowers or reproductive parts. Pollination occurs (by wind, insects, or manually).",
+            conditions: [
+                "Proper pollination",
+                "Adequate light",
+                "Proper temperature",
+                "Reduced nitrogen",
+                "Increased phosphorus"
+            ],
+            recommendations: [
+                "Reduce nitrogen and increase phosphorus for flowering",
+                "Ensure pollinators have access",
+                "Consider manual pollination if needed",
+                "Maintain optimal temperature range"
+            ],
+            durationDays: 28
+        },
+        fruiting: {
+            name: "Fruiting or Grain Filling Stage",
+            emoji: "🍅",
+            duration: "Varies widely (from weeks to months)",
+            description: "After successful pollination, fruits or grains start developing. Nutrients and energy are directed toward filling seeds or fruits.",
+            conditions: [
+                "Adequate water supply",
+                "Nutrient availability",
+                "Pest control",
+                "Disease management",
+                "Proper support for heavy fruits"
+            ],
+            recommendations: [
+                "Apply potassium-rich fertilizer for fruit development",
+                "Maintain consistent watering",
+                "Implement pest control measures",
+                "Provide support for heavy fruiting plants"
+            ],
+            durationDays: 42
+        },
+        maturity: {
+            name: "Maturity and Harvesting Stage",
+            emoji: "🌻",
+            duration: "Varies by crop",
+            description: "Fruits, grains, or pods reach full size and ripen. Moisture levels drop, and the plant may begin to dry or turn yellow. Crops are ready for harvest.",
+            conditions: [
+                "Proper harvest timing",
+                "Dry weather for harvesting",
+                "Storage preparation",
+                "Quality assessment"
+            ],
+            recommendations: [
+                "Reduce watering as harvest approaches",
+                "Monitor for optimal harvest time",
+                "Prepare storage facilities",
+                "Check crop quality before harvest"
+            ],
+            durationDays: 14
         }
-        
-        // Load current crop data from session storage
-        async function loadCurrentCropData() {
-            try {
-                const cropId = sessionStorage.getItem('currentCropId');
-                const landId = sessionStorage.getItem('currentLandId');
-                
-                if (!cropId || !landId) {
-                    showError('No crop selected. Please go back to crops page and select a crop.');
-                    return;
-                }
-                
-                // Load crop data from Supabase
-                const { data: crop, error: cropError } = await window.supabaseClient
-                    .from('crops')
-                    .select('*')
-                    .eq('crop_id', cropId)
-                    .eq('auth_id', currentUser.id)
-                    .single();
-                
-                if (cropError) {
-                    showError('Failed to load crop data: ' + cropError.message);
-                    return;
-                }
-                
-                // Load land data
-                const { data: land, error: landError } = await window.supabaseClient
-                    .from('lands')
-                    .select('land_name')
-                    .eq('land_id', landId)
-                    .eq('auth_id', currentUser.id)
-                    .single();
-                
-                if (landError) {
-                    showError('Failed to load land data: ' + landError.message);
-                    return;
-                }
-                
-                currentCrop = crop;
-                currentLand = land;
-                
-                // Update UI with crop information
-                updateCropInfoUI();
-                
-            } catch (error) {
-                console.error('Error loading crop data:', error);
-                showError('Failed to load crop data. Please try again.');
-            }
-        }
-        
-        // Update crop information UI
-        function updateCropInfoUI() {
-            if (!currentCrop || !currentLand) return;
+    };
+
+    // API configuration
+    const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
+    const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+    // Initialize the application
+    async function initApp() {
+        try {
+            // Check authentication
+            const isAuthenticated = await window.authChecker.requireAuth();
+            if (!isAuthenticated) return;
             
-            currentCropName.textContent = currentCrop.crop_name;
-            currentLandName.textContent = currentLand.land_name;
-            
-            const stageData = plantStages[currentCrop.current_stage] || plantStages.germination;
-            currentStage.textContent = stageData.name;
-            
-            if (currentCrop.planting_date) {
-                const plantingDateObj = new Date(currentCrop.planting_date);
-                plantingDate.textContent = plantingDateObj.toLocaleDateString();
-            } else {
-                plantingDate.textContent = 'Not set';
-            }
-        }
-        
-        // Set up event listeners
-        function setupEventListeners() {
-            uploadArea.addEventListener('click', () => fileInput.click());
-            
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                
-                if (e.dataTransfer.files.length) {
-                    fileInput.files = e.dataTransfer.files;
-                    handleFileSelection();
-                }
-            });
-            
-            fileInput.addEventListener('change', handleFileSelection);
-            identifyBtn.addEventListener('click', identifyPlantStage);
-            confirmBtn.addEventListener('click', saveAnalysisToDatabase);
-            retakeBtn.addEventListener('click', resetAnalysis);
-        }
-        
-        function handleFileSelection() {
-            const file = fileInput.files[0];
-            selectedFile = file;
-            
-            if (file) {
-                // Validate file type
-                if (!file.type.startsWith('image/')) {
-                    showError('Please select a valid image file.');
-                    return;
-                }
-                
-                // Validate file size (max 5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    showError('Please select an image smaller than 5MB.');
-                    return;
-                }
-                
-                // Preview image
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    previewImg.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                    identifyBtn.disabled = false;
-                    identifyBtn.style.display = 'block';
-                    hideError();
-                    hideSuccess();
-                    resetStages();
-                    resultContainer.style.display = 'none';
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-        
-        async function identifyPlantStage() {
-            const file = selectedFile;
-            
-            if (!file) {
-                showError('Please select an image first.');
+            // Get current user
+            currentUser = await window.authChecker.getCurrentUser();
+            if (!currentUser) {
+                showError('User not found. Please log in again.');
                 return;
             }
             
-            if (!currentCrop) {
-                showError('No crop selected. Please go back to crops page.');
+            // Initialize blockchain service
+            await initializeBlockchain();
+            
+            // Load current crop data from session storage
+            await loadCurrentCropData();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+        } catch (error) {
+            console.error('Error initializing app:', error);
+            showError('Failed to initialize application. Please refresh the page.');
+        }
+    }
+
+    // Blockchain initialization
+    async function initializeBlockchain() {
+        try {
+            blockchainService = window.blockchainService;
+            await blockchainService.connectToBlockchain();
+            const address = await blockchainService.getCurrentAddress();
+            
+            console.log('Connected to blockchain with address:', address);
+            updateBlockchainStatus(true);
+            showSuccess('Connected to blockchain successfully!');
+            
+        } catch (error) {
+            console.error('Blockchain initialization failed:', error);
+            updateBlockchainStatus(false);
+            showError('Blockchain connection failed: ' + error.message);
+        }
+    }
+
+    // Update blockchain status UI
+    function updateBlockchainStatus(connected) {
+        const statusElement = document.getElementById('blockchainStatus');
+        if (connected) {
+            statusElement.textContent = '🔗 Blockchain: Connected';
+            statusElement.className = 'blockchain-status blockchain-connected';
+        } else {
+            statusElement.textContent = '🔗 Blockchain: Disconnected';
+            statusElement.className = 'blockchain-status blockchain-disconnected';
+        }
+    }
+
+    // Load current crop data from session storage
+    async function loadCurrentCropData() {
+        try {
+            const cropId = sessionStorage.getItem('currentCropId');
+            const landId = sessionStorage.getItem('currentLandId');
+            
+            if (!cropId || !landId) {
+                showError('No crop selected. Please go back to crops page and select a crop.');
                 return;
             }
             
-            // Show loading state
-            loading.style.display = 'block';
-            identifyBtn.disabled = true;
-            hideError();
-            hideSuccess();
-            resultContainer.style.display = 'none';
+            // Load crop data from Supabase
+            const { data: crop, error: cropError } = await window.supabaseClient
+                .from('crops')
+                .select('*')
+                .eq('crop_id', cropId)
+                .eq('auth_id', currentUser.id)
+                .single();
             
-            try {
-                // Convert image to base64
-                const base64Image = await fileToBase64(file);
-                
-                // Prepare the request to Gemini API
-                const requestBody = {
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text: `Analyze this plant image and identify its growth stage. The plant is ${currentCrop.crop_name}. Choose only ONE of these stages: germination, seedling, vegetative, flowering, fruiting, or maturity. Provide the following information in your response as JSON format:\n\n{\n  \"identified_stage\": \"stage_key\",\n  \"confidence_score\": 0.85,\n  \"plant_species\": \"species name if identifiable\",\n  \"key_characteristics\": [\"char1\", \"char2\"],\n  \"care_recommendations\": [\"rec1\", \"rec2\"],\n  \"additional_notes\": \"any additional observations\"\n}\n\nPlease respond with only the JSON object.`
-                                },
-                                {
-                                    inline_data: {
-                                        mime_type: file.type,
-                                        data: base64Image.split(',')[1] // Remove data URL prefix
-                                    }
-                                }
-                            ]
-                        }
-                    ]
-                };
-                
-                // Make API request
-                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`API request failed with status ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                // Extract the response text
-                const responseText = data.candidates[0].content.parts[0].text;
-                
-                // Parse the JSON response
-                let analysisResult;
-                try {
-                    // Extract JSON from response (in case there's additional text)
-                    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) {
-                        analysisResult = JSON.parse(jsonMatch[0]);
-                    } else {
-                        analysisResult = JSON.parse(responseText);
-                    }
-                } catch (parseError) {
-                    console.error('Error parsing JSON response:', parseError);
-                    // Fallback: try to extract stage from text
-                    analysisResult = extractStageFromText(responseText);
-                }
-                
-                // Store analysis result
-                currentAnalysis = {
-                    ...analysisResult,
-                    image_data: base64Image,
-                    analysis_date: new Date().toISOString()
-                };
-                
-                // Display the result
-                displayResult(analysisResult);
-                
-                // Update stage indicator based on the response
-                updateStageIndicator(analysisResult.identified_stage);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Failed to analyze the plant image. Please try again.');
-            } finally {
-                // Hide loading state
-                loading.style.display = 'none';
+            if (cropError) {
+                showError('Failed to load crop data: ' + cropError.message);
+                return;
+            }
+            
+            // Load land data
+            const { data: land, error: landError } = await window.supabaseClient
+                .from('lands')
+                .select('land_name')
+                .eq('land_id', landId)
+                .eq('auth_id', currentUser.id)
+                .single();
+            
+            if (landError) {
+                showError('Failed to load land data: ' + landError.message);
+                return;
+            }
+            
+            currentCrop = crop;
+            currentLand = land;
+            
+            // Update UI with crop information
+            updateCropInfoUI();
+            
+        } catch (error) {
+            console.error('Error loading crop data:', error);
+            showError('Failed to load crop data. Please try again.');
+        }
+    }
+
+    // Update crop information UI
+    function updateCropInfoUI() {
+        if (!currentCrop || !currentLand) return;
+        
+        currentCropName.textContent = currentCrop.crop_name;
+        currentLandName.textContent = currentLand.land_name;
+        
+        const stageData = plantStages[currentCrop.current_stage] || plantStages.germination;
+        currentStage.textContent = stageData.name;
+        
+        if (currentCrop.planting_date) {
+            const plantingDateObj = new Date(currentCrop.planting_date);
+            plantingDate.textContent = plantingDateObj.toLocaleDateString();
+        } else {
+            plantingDate.textContent = 'Not set';
+        }
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelection();
+            }
+        });
+        
+        fileInput.addEventListener('change', handleFileSelection);
+        identifyBtn.addEventListener('click', identifyPlantStage);
+        confirmBtn.addEventListener('click', saveAnalysisToDatabase);
+        retakeBtn.addEventListener('click', resetAnalysis);
+    }
+
+    function handleFileSelection() {
+        const file = fileInput.files[0];
+        selectedFile = file;
+        
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showError('Please select a valid image file.');
+                return;
+            }
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showError('Please select an image smaller than 5MB.');
+                return;
+            }
+            
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                imagePreview.style.display = 'block';
                 identifyBtn.disabled = false;
-            }
-        }
-        
-        function extractStageFromText(text) {
-            const lowerText = text.toLowerCase();
-            let identifiedStage = 'germination';
-            let confidenceScore = 0.7;
-            
-            if (lowerText.includes('seedling')) {
-                identifiedStage = 'seedling';
-            } else if (lowerText.includes('vegetative')) {
-                identifiedStage = 'vegetative';
-            } else if (lowerText.includes('flower') || lowerText.includes('bloom')) {
-                identifiedStage = 'flowering';
-            } else if (lowerText.includes('fruit') || lowerText.includes('berry')) {
-                identifiedStage = 'fruiting';
-            } else if (lowerText.includes('mature') || lowerText.includes('ripe') || lowerText.includes('harvest')) {
-                identifiedStage = 'maturity';
-            }
-            
-            return {
-                identified_stage: identifiedStage,
-                confidence_score: confidenceScore,
-                plant_species: currentCrop.crop_name,
-                key_characteristics: ['Analyzed from image'],
-                care_recommendations: ['Follow standard care practices for this stage'],
-                additional_notes: 'Analysis completed successfully'
+                identifyBtn.style.display = 'block';
+                hideError();
+                hideSuccess();
+                resetStages();
+                resultContainer.style.display = 'none';
             };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    async function identifyPlantStage() {
+        const file = selectedFile;
+        
+        if (!file) {
+            showError('Please select an image first.');
+            return;
         }
         
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
+        if (!currentCrop) {
+            showError('No crop selected. Please go back to crops page.');
+            return;
+        }
+        
+        // Show loading state
+        loading.style.display = 'block';
+        identifyBtn.disabled = true;
+        hideError();
+        hideSuccess();
+        resultContainer.style.display = 'none';
+        
+        try {
+            // Convert image to base64
+            const base64Image = await fileToBase64(file);
+            
+            // Prepare the request to Gemini API
+            const requestBody = {
+                contents: [
+                    {
+                        parts: [
+                            {
+                                text: `Analyze this plant image and identify its growth stage. The plant is ${currentCrop.crop_name}. Choose only ONE of these stages: germination, seedling, vegetative, flowering, fruiting, or maturity. Provide the following information in your response as JSON format:\n\n{\n  \"identified_stage\": \"stage_key\",\n  \"confidence_score\": 0.85,\n  \"plant_species\": \"species name if identifiable\",\n  \"key_characteristics\": [\"char1\", \"char2\"],\n  \"care_recommendations\": [\"rec1\", \"rec2\"],\n  \"additional_notes\": \"any additional observations\"\n}\n\nPlease respond with only the JSON object.`
+                            },
+                            {
+                                inline_data: {
+                                    mime_type: file.type,
+                                    data: base64Image.split(',')[1] // Remove data URL prefix
+                                }
+                            }
+                        ]
+                    }
+                ]
+            };
+            
+            // Make API request
+            const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
             });
-        }
-        
-        function displayResult(analysisResult) {
-            const stageData = plantStages[analysisResult.identified_stage] || plantStages.germination;
             
-            resultContent.innerHTML = `
-                <div class="stage-info">
-                    <div class="stage-name">${stageData.emoji} ${stageData.name}</div>
-                    <div class="stage-duration">Duration: ${stageData.duration}</div>
-                    <div class="stage-duration">Confidence: ${(analysisResult.confidence_score * 100).toFixed(1)}%</div>
-                    <div class="stage-description">${stageData.description}</div>
-                    
-                    <div class="section-title">Identified Characteristics:</div>
-                    <ul class="conditions-list">
-                        ${(analysisResult.key_characteristics || ['Characteristics identified from image analysis']).map(char => `<li>${char}</li>`).join('')}
-                    </ul>
-                    
-                    <div class="section-title">Ideal Conditions:</div>
-                    <ul class="conditions-list">
-                        ${stageData.conditions.map(condition => `<li>${condition}</li>`).join('')}
-                    </ul>
-                    
-                    <div class="section-title">AI Care Recommendations:</div>
-                    <ul class="recommendations-list">
-                        ${(analysisResult.care_recommendations || stageData.recommendations).map(recommendation => `<li>${recommendation}</li>`).join('')}
-                    </ul>
-                    
-                    ${analysisResult.additional_notes ? `
-                        <div class="section-title">Additional Notes:</div>
-                        <div class="stage-description">${analysisResult.additional_notes}</div>
-                    ` : ''}
-                </div>
-            `;
-            
-            resultContainer.style.display = 'block';
-            
-            // Scroll to result
-            resultContainer.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function updateStageIndicator(identifiedStage) {
-            // Reset all stages
-            resetStages();
-            
-            // Activate only the identified stage
-            switch(identifiedStage) {
-                case 'germination':
-                    stageSeed.classList.add('active');
-                    break;
-                case 'seedling':
-                    stageSeedling.classList.add('active');
-                    break;
-                case 'vegetative':
-                    stageVegetative.classList.add('active');
-                    break;
-                case 'flowering':
-                    stageFlowering.classList.add('active');
-                    break;
-                case 'fruiting':
-                    stageFruiting.classList.add('active');
-                    break;
-                case 'maturity':
-                    stageMaturity.classList.add('active');
-                    break;
-            }
-        }
-        
-        async function saveAnalysisToDatabase() {
-            if (!currentAnalysis || !currentCrop || !currentUser) {
-                showError('No analysis data to save.');
-                return;
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
             }
             
+            const data = await response.json();
+            
+            // Extract the response text
+            const responseText = data.candidates[0].content.parts[0].text;
+            
+            // Parse the JSON response
+            let analysisResult;
             try {
-                // Generate unique analysis ID
-                const analysisId = 'ANALYSIS_' + Date.now();
-                
-                // 1. Save to plant_analysis table
-                const { error: analysisError } = await window.supabaseClient
-                    .from('plant_analysis')
-                    .insert({
-                        analysis_id: analysisId,
-                        crop_id: currentCrop.crop_id,
-                        auth_id: currentUser.id,
-                        land_id: sessionStorage.getItem('currentLandId'),
-                        image_url: null, // You could upload to Supabase Storage here
-                        identified_stage: currentAnalysis.identified_stage,
-                        confidence_score: currentAnalysis.confidence_score,
-                        ai_analysis: currentAnalysis,
-                        analysis_date: currentAnalysis.analysis_date
-                    });
-                
-                if (analysisError) {
-                    throw new Error('Failed to save analysis: ' + analysisError.message);
+                // Extract JSON from response (in case there's additional text)
+                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    analysisResult = JSON.parse(jsonMatch[0]);
+                } else {
+                    analysisResult = JSON.parse(responseText);
                 }
-                
-                // 2. Update crop_stages table
-                const stageKey = currentAnalysis.identified_stage;
-                
-                // First, set all stages as not current
-                await window.supabaseClient
-                    .from('crop_stages')
-                    .update({ 
-                        is_current: false,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('crop_id', currentCrop.crop_id);
-                
-                // Then, update the identified stage as current
-                const { error: stageError } = await window.supabaseClient
-                    .from('crop_stages')
-                    .update({ 
-                        is_current: true,
-                        identified_date: new Date().toISOString(),
-                        ai_confidence_score: currentAnalysis.confidence_score,
-                        ai_analysis_result: currentAnalysis,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('crop_id', currentCrop.crop_id)
-                    .eq('stage_key', stageKey);
-                
-                if (stageError) {
-                    console.error('Error updating crop stage:', stageError);
-                    // Continue anyway as the analysis is saved
-                }
-                
-                // 3. Update crops table with current stage
-                const { error: cropError } = await window.supabaseClient
-                    .from('crops')
-                    .update({ 
-                        current_stage: stageKey,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('crop_id', currentCrop.crop_id);
-                
-                if (cropError) {
-                    console.error('Error updating crop:', cropError);
-                    // Continue anyway as the analysis is saved
-                }
-                
-                // Update local state
-                currentCrop.current_stage = stageKey;
-                updateCropInfoUI();
-                
-                showSuccess('Analysis saved successfully! Plant stage updated.');
-                
-                // Redirect back to crops page after 2 seconds
-                setTimeout(() => {
-                    window.location.href = 'crops.html';
-                }, 2000);
-                
-            } catch (error) {
-                console.error('Error saving analysis:', error);
-                showError('Failed to save analysis: ' + error.message);
+            } catch (parseError) {
+                console.error('Error parsing JSON response:', parseError);
+                // Fallback: try to extract stage from text
+                analysisResult = extractStageFromText(responseText);
             }
+            
+            // Store analysis result
+            currentAnalysis = {
+                ...analysisResult,
+                image_data: base64Image,
+                analysis_date: new Date().toISOString()
+            };
+            
+            // Display the result
+            displayResult(analysisResult);
+            
+            // Update stage indicator based on the response
+            updateStageIndicator(analysisResult.identified_stage);
+            
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Failed to analyze the plant image. Please try again.');
+        } finally {
+            // Hide loading state
+            loading.style.display = 'none';
+            identifyBtn.disabled = false;
+        }
+    }
+
+    function extractStageFromText(text) {
+        const lowerText = text.toLowerCase();
+        let identifiedStage = 'germination';
+        let confidenceScore = 0.7;
+        
+        if (lowerText.includes('seedling')) {
+            identifiedStage = 'seedling';
+        } else if (lowerText.includes('vegetative')) {
+            identifiedStage = 'vegetative';
+        } else if (lowerText.includes('flower') || lowerText.includes('bloom')) {
+            identifiedStage = 'flowering';
+        } else if (lowerText.includes('fruit') || lowerText.includes('berry')) {
+            identifiedStage = 'fruiting';
+        } else if (lowerText.includes('mature') || lowerText.includes('ripe') || lowerText.includes('harvest')) {
+            identifiedStage = 'maturity';
         }
         
-        function resetAnalysis() {
-            fileInput.value = '';
-            selectedFile = null;
-            imagePreview.style.display = 'none';
-            identifyBtn.disabled = true;
-            identifyBtn.style.display = 'none';
-            resultContainer.style.display = 'none';
-            resetStages();
-            hideError();
-            hideSuccess();
-        }
+        return {
+            identified_stage: identifiedStage,
+            confidence_score: confidenceScore,
+            plant_species: currentCrop.crop_name,
+            key_characteristics: ['Analyzed from image'],
+            care_recommendations: ['Follow standard care practices for this stage'],
+            additional_notes: 'Analysis completed successfully'
+        };
+    }
+
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    function displayResult(analysisResult) {
+        const stageData = plantStages[analysisResult.identified_stage] || plantStages.germination;
         
-        function resetStages() {
-            stageSeed.classList.remove('active');
-            stageSeedling.classList.remove('active');
-            stageVegetative.classList.remove('active');
-            stageFlowering.classList.remove('active');
-            stageFruiting.classList.remove('active');
-            stageMaturity.classList.remove('active');
-        }
+        resultContent.innerHTML = `
+            <div class="stage-info">
+                <div class="stage-name">${stageData.emoji} ${stageData.name}</div>
+                <div class="stage-duration">Duration: ${stageData.duration}</div>
+                <div class="stage-duration">Confidence: ${(analysisResult.confidence_score * 100).toFixed(1)}%</div>
+                <div class="stage-description">${stageData.description}</div>
+                
+                <div class="section-title">Identified Characteristics:</div>
+                <ul class="conditions-list">
+                    ${(analysisResult.key_characteristics || ['Characteristics identified from image analysis']).map(char => `<li>${char}</li>`).join('')}
+                </ul>
+                
+                <div class="section-title">Ideal Conditions:</div>
+                <ul class="conditions-list">
+                    ${stageData.conditions.map(condition => `<li>${condition}</li>`).join('')}
+                </ul>
+                
+                <div class="section-title">AI Care Recommendations:</div>
+                <ul class="recommendations-list">
+                    ${(analysisResult.care_recommendations || stageData.recommendations).map(recommendation => `<li>${recommendation}</li>`).join('')}
+                </ul>
+                
+                ${analysisResult.additional_notes ? `
+                    <div class="section-title">Additional Notes:</div>
+                    <div class="stage-description">${analysisResult.additional_notes}</div>
+                ` : ''}
+            </div>
+        `;
         
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-        }
+        resultContainer.style.display = 'block';
         
-        function hideError() {
-            errorMessage.style.display = 'none';
-        }
+        // Scroll to result
+        resultContainer.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function updateStageIndicator(identifiedStage) {
+        // Reset all stages
+        resetStages();
         
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
+        // Activate only the identified stage
+        switch(identifiedStage) {
+            case 'germination':
+                stageSeed.classList.add('active');
+                break;
+            case 'seedling':
+                stageSeedling.classList.add('active');
+                break;
+            case 'vegetative':
+                stageVegetative.classList.add('active');
+                break;
+            case 'flowering':
+                stageFlowering.classList.add('active');
+                break;
+            case 'fruiting':
+                stageFruiting.classList.add('active');
+                break;
+            case 'maturity':
+                stageMaturity.classList.add('active');
+                break;
         }
-        
-        function hideSuccess() {
-            successMessage.style.display = 'none';
+    }
+
+    // ENHANCED: Save analysis with blockchain integration
+    async function saveAnalysisToDatabase() {
+        if (!currentAnalysis || !currentCrop || !currentUser) {
+            showError('No analysis data to save.');
+            return;
         }
+
+        try {
+            // Generate unique analysis ID
+            const analysisId = 'ANALYSIS_' + Date.now();
+            
+            // 1. BLOCKCHAIN: Save to blockchain if connected
+            let blockchainRecordId = null;
+            let transactionHash = null;
+            
+            if (blockchainService && blockchainService.isConnected) {
+                try {
+                    blockchainRecordId = window.blockchainUtils.generateRecordId(currentCrop.crop_id);
+                    
+                    const blockchainData = {
+                        recordId: blockchainRecordId,
+                        cropName: currentCrop.crop_name,
+                        landName: currentLand.land_name,
+                        currentStage: currentAnalysis.identified_stage,
+                        plantingDate: window.blockchainUtils.formatPlantingDate(currentCrop.planting_date),
+                        imageHash: await window.blockchainUtils.generateImageHash(currentAnalysis.image_data),
+                        analysisData: JSON.stringify({
+                            identified_stage: currentAnalysis.identified_stage,
+                            confidence_score: currentAnalysis.confidence_score,
+                            plant_species: currentAnalysis.plant_species,
+                            key_characteristics: currentAnalysis.key_characteristics,
+                            care_recommendations: currentAnalysis.care_recommendations,
+                            additional_notes: currentAnalysis.additional_notes,
+                            analysis_date: currentAnalysis.analysis_date
+                        })
+                    };
+
+                    showSuccess('Saving to blockchain... Please confirm the transaction in MetaMask.');
+                    
+                    const receipt = await blockchainService.storePlantRecord(blockchainData);
+                    
+                    if (receipt.status === 1) {
+                        transactionHash = receipt.transactionHash;
+                        showSuccess('Data successfully stored on blockchain! Generating QR code...');
+                        
+                        // Generate and display QR code
+                        await generateAndDisplayQRCode(blockchainRecordId, transactionHash);
+                    } else {
+                        throw new Error('Blockchain transaction failed');
+                    }
+                    
+                } catch (blockchainError) {
+                    console.error('Blockchain save failed:', blockchainError);
+                    showError('Blockchain save failed, but saving to database... ' + blockchainError.message);
+                }
+            }
+
+            // 2. DATABASE: Save to plant_analysis table
+            const { error: analysisError } = await window.supabaseClient
+                .from('plant_analysis')
+                .insert({
+                    analysis_id: analysisId,
+                    crop_id: currentCrop.crop_id,
+                    auth_id: currentUser.id,
+                    land_id: sessionStorage.getItem('currentLandId'),
+                    image_url: null,
+                    identified_stage: currentAnalysis.identified_stage,
+                    confidence_score: currentAnalysis.confidence_score,
+                    ai_analysis: currentAnalysis,
+                    analysis_date: currentAnalysis.analysis_date,
+                    blockchain_record_id: blockchainRecordId,
+                    blockchain_tx_hash: transactionHash
+                });
+
+            if (analysisError) {
+                throw new Error('Failed to save analysis: ' + analysisError.message);
+            }
+
+            // 3. Update crop_stages table
+            const stageKey = currentAnalysis.identified_stage;
+            
+            await window.supabaseClient
+                .from('crop_stages')
+                .update({ 
+                    is_current: false,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('crop_id', currentCrop.crop_id);
+
+            await window.supabaseClient
+                .from('crop_stages')
+                .update({ 
+                    is_current: true,
+                    identified_date: new Date().toISOString(),
+                    ai_confidence_score: currentAnalysis.confidence_score,
+                    ai_analysis_result: currentAnalysis,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('crop_id', currentCrop.crop_id)
+                .eq('stage_key', stageKey);
+
+            // 4. Update crops table with current stage
+            await window.supabaseClient
+                .from('crops')
+                .update({ 
+                    current_stage: stageKey,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('crop_id', currentCrop.crop_id);
+
+            // Update local state
+            currentCrop.current_stage = stageKey;
+            updateCropInfoUI();
+
+            showSuccess('Analysis saved successfully!' + (transactionHash ? ' Blockchain transaction confirmed.' : ''));
+
+            // Redirect back to crops page after 3 seconds
+            setTimeout(() => {
+                window.location.href = 'crops.html';
+            }, 3000);
+            
+        } catch (error) {
+            console.error('Error saving analysis:', error);
+            showError('Failed to save analysis: ' + error.message);
+        }
+    }
+
+    // Generate and display QR code
+    async function generateAndDisplayQRCode(recordId, transactionHash) {
+        const qrCodeHTML = await window.blockchainUtils.generateQRCode(recordId, transactionHash);
         
-        // Initialize the application when DOM is loaded
-        document.addEventListener('DOMContentLoaded', initApp);
+        // Add QR code to result content
+        resultContent.innerHTML += `
+            <div class="qr-container">
+                <h3 style="color: #1b5e20; margin-bottom: 1rem;">🌿 Plant Journey QR Code</h3>
+                <p style="margin-bottom: 1rem; color: #666;">Scan this QR code to verify this plant's complete journey on blockchain</p>
+                <div style="display: inline-block; padding: 1rem; background: white; border-radius: 8px;">
+                    ${qrCodeHTML}
+                </div>
+                <div style="margin-top: 1rem; font-size: 0.8rem; color: #888;">
+                    Record ID: ${recordId}<br>
+                    TX: ${transactionHash.substring(0, 10)}...${transactionHash.substring(transactionHash.length - 8)}
+                </div>
+                <button class="confirm-btn" onclick="window.blockchainUtils.downloadQRCode('${recordId}')" style="margin-top: 1rem;">
+                    Download QR Code
+                </button>
+            </div>
+        `;
+    }
+
+    function resetAnalysis() {
+        fileInput.value = '';
+        selectedFile = null;
+        imagePreview.style.display = 'none';
+        identifyBtn.disabled = true;
+        identifyBtn.style.display = 'none';
+        resultContainer.style.display = 'none';
+        resetStages();
+        hideError();
+        hideSuccess();
+    }
+
+    function resetStages() {
+        stageSeed.classList.remove('active');
+        stageSeedling.classList.remove('active');
+        stageVegetative.classList.remove('active');
+        stageFlowering.classList.remove('active');
+        stageFruiting.classList.remove('active');
+        stageMaturity.classList.remove('active');
+    }
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+    }
+
+    function hideError() {
+        errorMessage.style.display = 'none';
+    }
+
+    function showSuccess(message) {
+        successMessage.textContent = message;
+        successMessage.style.display = 'block';
+    }
+
+    function hideSuccess() {
+        successMessage.style.display = 'none';
+    }
+
+    // Initialize the application when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initApp);
+
     </script>
 </body>
 </html>
