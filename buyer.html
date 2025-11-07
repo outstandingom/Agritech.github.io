@@ -1,107 +1,564 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Find Lands by Crop</title>
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-    }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin-right: 10px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #f4f4f4;
-    }
-    #result {
-      margin-top: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Land Data Search</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-show-all {
+            background: #27ae60;
+        }
+
+        .btn-show-all:hover {
+            background: #219653;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .section-title {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results-count {
+            color: #7f8c8d;
+            font-size: 1rem;
+            font-weight: normal;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #ffeaa7;
+            color: #d35400;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .debug-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        /* Table styles from your working code */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
 </head>
 <body>
-  <h2>🌱 Find Lands Growing a Specific Crop</h2>
+    <div class="container">
+        <header>
+            <h1>🌱 Find Lands by Crop</h1>
+            <p class="subtitle">Search and filter land data by current crops</p>
+        </header>
 
-  <input type="text" id="cropInput" placeholder="Enter Crop Name">
-  <button id="searchBtn">Search</button>
+        <section class="search-section">
+            <h2 class="section-title">Search Parameters</h2>
+            
+            <!-- Your working search form -->
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="cropInput">Enter Crop Name</label>
+                    <input type="text" id="cropInput" placeholder="Enter Crop Name">
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" id="searchBtn" class="btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                        Search Lands
+                    </button>
+                </div>
+            </div>
 
-  <div id="result">Enter a crop name and click Search.</div>
+            <div class="actions">
+                <button type="button" id="showAllBtn" class="btn btn-show-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+                    </svg>
+                    Show All Lands
+                </button>
+            </div>
+            
+            <div class="stats" id="statsContainer">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalLands">0</div>
+                    <div class="stat-label">Total Lands</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalArea">0</div>
+                    <div class="stat-label">Total Area (sq m)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgArea">0</div>
+                    <div class="stat-label">Avg Area (sq m)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="uniqueCrops">0</div>
+                    <div class="stat-label">Unique Crops</div>
+                </div>
+            </div>
 
-  <script>
-    // ✅ Supabase Configuration
-    const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
+            <!-- Debug section -->
+            <div id="debugInfo" class="debug-info hidden">
+                <h3>Debug Information:</h3>
+                <div id="debugContent"></div>
+            </div>
+        </section>
 
-    // ✅ Initialize Supabase Client
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        <section class="results-section">
+            <h2 class="section-title">
+                Search Results
+                <span class="results-count" id="resultsCount">(0 lands)</span>
+            </h2>
+            
+            <div id="errorMessage" class="error-message hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </svg>
+                <span id="errorText"></span>
+            </div>
+            
+            <div id="loadingIndicator" class="loading hidden">
+                <div class="spinner"></div>
+            </div>
+            
+            <div id="resultsContainer" class="results-grid">
+                <div class="no-results">
+                    <p>No search results yet. Use the form above to search for lands.</p>
+                </div>
+            </div>
+        </section>
+    </div>
 
-    // 🧩 Search Lands by Crop
-    document.getElementById("searchBtn").addEventListener("click", async () => {
-      const cropName = document.getElementById("cropInput").value.trim();
-      const resultBox = document.getElementById("result");
-      resultBox.innerHTML = "Searching...";
+    <script>
+        // ✅ Supabase Configuration
+        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
 
-      if (!cropName) {
-        resultBox.textContent = "⚠️ Please enter a crop name.";
-        return;
-      }
+        // ✅ Initialize Supabase Client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // Query the `lands` table where current_crops = cropName
-      const { data, error } = await supabase
-        .from("lands")
-        .select("*")
-        .ilike("current_crops", `%${cropName}%`); // case-insensitive search
+        // DOM elements
+        const cropInput = document.getElementById('cropInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const showAllBtn = document.getElementById('showAllBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const resultsCount = document.getElementById('resultsCount');
+        const totalLandsEl = document.getElementById('totalLands');
+        const totalAreaEl = document.getElementById('totalArea');
+        const avgAreaEl = document.getElementById('avgArea');
+        const uniqueCropsEl = document.getElementById('uniqueCrops');
+        const statsContainer = document.getElementById('statsContainer');
+        const debugInfo = document.getElementById('debugInfo');
+        const debugContent = document.getElementById('debugContent');
 
-      if (error) {
-        resultBox.textContent = "❌ Error: " + error.message;
-        return;
-      }
+        // Function to show debug information
+        function showDebugInfo(message) {
+            debugContent.innerHTML = message;
+            debugInfo.classList.remove('hidden');
+        }
 
-      if (!data || data.length === 0) {
-        resultBox.textContent = `No lands found for crop: ${cropName}`;
-        return;
-      }
+        // Function to display error message
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
 
-      // ✅ Display results in a table
-      let tableHTML = `
-        <table>
-          <tr>
-            <th>Land ID</th>
-            <th>Land Name</th>
-            <th>Current Crop</th>
-            <th>Area</th>
-            <th>Location</th>
-          </tr>
-      `;
+        // Function to hide error message
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
 
-      data.forEach(row => {
-        tableHTML += `
-          <tr>
-            <td>${row.land_id || '-'}</td>
-            <td>${row.user_id || '-'}</td>
-            <td>${row.current_crops || '-'}</td>
-            <td>${row.land_name || '-'}</td>
-            <td>${row.soil_type || '-'}</td>
-          </tr>
-        `;
-      });
+        // Function to display loading indicator
+        function showLoading() {
+            loadingIndicator.classList.remove('hidden');
+            resultsContainer.innerHTML = '';
+        }
 
-      tableHTML += "</table>";
-      resultBox.innerHTML = tableHTML;
-    });
-  </script>
+        // Function to hide loading indicator
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
+        }
+
+        // Function to display results in table format (your working code)
+        function displayResultsTable(data, cropName = '') {
+            hideError();
+            hideLoading();
+            
+            if (!data || data.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <p>No lands found ${cropName ? `for crop: ${cropName}` : 'in the database'}.</p>
+                        <p>Try a different search term or show all lands.</p>
+                    </div>
+                `;
+                resultsCount.textContent = '(0 lands)';
+                statsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Update results count
+            resultsCount.textContent = `(${data.length} land${data.length !== 1 ? 's' : ''})`;
+            
+            // Calculate stats
+            const totalArea = data.reduce((sum, land) => sum + (land.area_sq_meters || 0), 0);
+            const avgArea = Math.round(totalArea / data.length);
+            const uniqueCrops = [...new Set(data.map(land => land.current_crops).filter(Boolean))].length;
+            
+            // Update stats
+            totalLandsEl.textContent = data.length;
+            totalAreaEl.textContent = totalArea.toLocaleString();
+            avgAreaEl.textContent = avgArea.toLocaleString();
+            uniqueCropsEl.textContent = uniqueCrops;
+            statsContainer.style.display = 'flex';
+            
+            // ✅ Display results in a table (your working code)
+            let tableHTML = `
+                <table>
+                  <tr>
+                    <th>Land ID</th>
+                    <th>User ID</th>
+                    <th>Current Crop</th>
+                    <th>Land Name</th>
+                    <th>Soil Type</th>
+                  </tr>
+            `;
+
+            data.forEach(row => {
+                tableHTML += `
+                  <tr>
+                    <td>${row.land_id || '-'}</td>
+                    <td>${row.user_id || '-'}</td>
+                    <td>${row.current_crops || '-'}</td>
+                    <td>${row.land_name || '-'}</td>
+                    <td>${row.soil_type || '-'}</td>
+                  </tr>
+                `;
+            });
+
+            tableHTML += "</table>";
+            resultsContainer.innerHTML = tableHTML;
+            showDebugInfo(`Successfully retrieved ${data.length} records from lands table`);
+        }
+
+        // 🧩 Search Lands by Crop (your working code)
+        async function searchByCrop(cropName) {
+            showLoading();
+            hideError();
+            
+            if (!cropName) {
+                showError("⚠️ Please enter a crop name.");
+                return;
+            }
+
+            // Query the `lands` table where current_crops = cropName
+            const { data, error } = await supabase
+                .from("lands")
+                .select("*")
+                .ilike("current_crops", `%${cropName}%`); // case-insensitive search
+
+            if (error) {
+                showError("❌ Error: " + error.message);
+                return;
+            }
+
+            displayResultsTable(data, cropName);
+        }
+
+        // Show all lands function
+        async function showAllLands() {
+            showLoading();
+            hideError();
+            
+            const { data, error } = await supabase
+                .from("lands")
+                .select("*");
+
+            if (error) {
+                showError("❌ Error: " + error.message);
+                return;
+            }
+
+            displayResultsTable(data);
+        }
+
+        // Event listeners
+        searchBtn.addEventListener("click", () => {
+            const cropName = cropInput.value.trim();
+            searchByCrop(cropName);
+        });
+
+        showAllBtn.addEventListener("click", showAllLands);
+
+        // Allow pressing Enter to search
+        cropInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                const cropName = cropInput.value.trim();
+                searchByCrop(cropName);
+            }
+        });
+
+        // Initial load - show all lands
+        document.addEventListener('DOMContentLoaded', () => {
+            showAllLands();
+        });
+    </script>
 </body>
 </html>
