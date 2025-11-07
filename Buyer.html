@@ -1,532 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farm Data Search</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 20px;
-        }
-
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-        }
-
-        .subtitle {
-            color: #7f8c8d;
-            font-size: 1.2rem;
-        }
-
-        .search-section {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-
-        .search-form {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 15px;
-            align-items: end;
-        }
-
-        @media (max-width: 768px) {
-            .search-form {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        input, select {
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-        }
-
-        .btn {
-            padding: 12px 25px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-clear {
-            background: #e74c3c;
-        }
-
-        .btn-clear:hover {
-            background: #c0392b;
-        }
-
-        .results-section {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-        }
-
-        .section-title {
-            margin-bottom: 20px;
-            color: #2c3e50;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .results-count {
-            color: #7f8c8d;
-            font-size: 1rem;
-            font-weight: normal;
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .result-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            border-left: 5px solid #3498db;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .result-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #2c3e50;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-detail {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #7f8c8d;
-        }
-
-        .detail-value {
-            color: #2c3e50;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 40px;
-            color: #7f8c8d;
-            font-size: 1.1rem;
-        }
-
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error-message {
-            background: #ffeaa7;
-            color: #d35400;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .stats {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            flex: 1;
-            min-width: 150px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #3498db;
-        }
-
-        .stat-label {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Find Lands by Crop</title>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    #result {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Farm Data Search</h1>
-            <p class="subtitle">Search and filter farm data by crops and area</p>
-        </header>
+  <h2>🌱 Find Lands Growing a Specific Crop</h2>
 
-        <section class="search-section">
-            <h2 class="section-title">Search Parameters</h2>
-            <form id="searchForm" class="search-form">
-                <div class="form-group">
-                    <label for="currentCrops">Current Crops</label>
-                    <select id="currentCrops">
-                        <option value="">All Crops</option>
-                        <option value="wheat">Wheat</option>
-                        <option value="corn">Corn</option>
-                        <option value="soybean">Soybean</option>
-                        <option value="rice">Rice</option>
-                        <option value="barley">Barley</option>
-                        <option value="cotton">Cotton</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="areaSqMeters">Area (Square Meters)</label>
-                    <input type="number" id="areaSqMeters" placeholder="Enter area in sq meters">
-                </div>
-                
-                <div class="form-group">
-                    <button type="submit" id="searchBtn" class="btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                        </svg>
-                        Search Farms
-                    </button>
-                </div>
-            </form>
-            
-            <div class="stats" id="statsContainer">
-                <div class="stat-card">
-                    <div class="stat-value" id="totalFarms">0</div>
-                    <div class="stat-label">Total Farms</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="totalArea">0</div>
-                    <div class="stat-label">Total Area (sq m)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="avgArea">0</div>
-                    <div class="stat-label">Avg Area (sq m)</div>
-                </div>
-            </div>
-        </section>
+  <input type="text" id="cropInput" placeholder="Enter Crop Name">
+  <button id="searchBtn">Search</button>
 
-        <section class="results-section">
-            <h2 class="section-title">
-                Search Results
-                <span class="results-count" id="resultsCount">(0 farms)</span>
-            </h2>
-            
-            <div id="errorMessage" class="error-message hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                </svg>
-                <span id="errorText"></span>
-            </div>
-            
-            <div id="loadingIndicator" class="loading hidden">
-                <div class="spinner"></div>
-            </div>
-            
-            <div id="resultsContainer" class="results-grid">
-                <div class="no-results">
-                    <p>No search results yet. Use the form above to search for farms.</p>
-                </div>
-            </div>
-        </section>
-    </div>
+  <div id="result">Enter a crop name and click Search.</div>
 
-    <script>
-        // Initialize Supabase client
-      const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
-      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  <script>
+    // ✅ Supabase Configuration
+    const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
 
-        // DOM elements
-        const searchForm = document.getElementById('searchForm');
-        const currentCropsSelect = document.getElementById('currentCrops');
-        const areaSqMetersInput = document.getElementById('areaSqMeters');
-        const searchBtn = document.getElementById('searchBtn');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const loadingIndicator = document.getElementById('loadingIndicator');
-        const errorMessage = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
-        const resultsCount = document.getElementById('resultsCount');
-        const totalFarmsEl = document.getElementById('totalFarms');
-        const totalAreaEl = document.getElementById('totalArea');
-        const avgAreaEl = document.getElementById('avgArea');
-        const statsContainer = document.getElementById('statsContainer');
+    // ✅ Initialize Supabase Client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Function to search farm data
-        async function searchFarmData(current_crops, area_sq_meters) {
-            try {
-                let query = supabase
-                    .from('farms')
-                    .select('*');
-                
-                // Add filters based on provided parameters
-                if (current_crops) {
-                    query = query.eq('current_crops', current_crops);
-                }
-                
-                if (area_sq_meters) {
-                    query = query.eq('area_sq_meters', parseInt(area_sq_meters));
-                }
-                
-                const { data, error } = await query;
-                
-                if (error) {
-                    throw error;
-                }
-                
-                return data;
-                
-            } catch (error) {
-                console.error('Error searching data:', error.message);
-                showError(error.message);
-                return null;
-            }
-        }
+    // 🧩 Search Lands by Crop
+    document.getElementById("searchBtn").addEventListener("click", async () => {
+      const cropName = document.getElementById("cropInput").value.trim();
+      const resultBox = document.getElementById("result");
+      resultBox.innerHTML = "Searching...";
 
-        // Function to display error message
-        function showError(message) {
-            errorText.textContent = message;
-            errorMessage.classList.remove('hidden');
-        }
+      if (!cropName) {
+        resultBox.textContent = "⚠️ Please enter a crop name.";
+        return;
+      }
 
-        // Function to hide error message
-        function hideError() {
-            errorMessage.classList.add('hidden');
-        }
+      // Query the `lands` table where current_crops = cropName
+      const { data, error } = await supabase
+        .from("lands")
+        .select("*")
+        .ilike("current_crops", `%${cropName}%`); // case-insensitive search
 
-        // Function to display loading indicator
-        function showLoading() {
-            loadingIndicator.classList.remove('hidden');
-            resultsContainer.innerHTML = '';
-        }
+      if (error) {
+        resultBox.textContent = "❌ Error: " + error.message;
+        return;
+      }
 
-        // Function to hide loading indicator
-        function hideLoading() {
-            loadingIndicator.classList.add('hidden');
-        }
+      if (!data || data.length === 0) {
+        resultBox.textContent = `No lands found for crop: ${cropName}`;
+        return;
+      }
 
-        // Function to display results
-        function displayResults(data) {
-            hideError();
-            hideLoading();
-            
-            if (!data || data.length === 0) {
-                resultsContainer.innerHTML = `
-                    <div class="no-results">
-                        <p>No farms found matching your search criteria.</p>
-                        <p>Try adjusting your search parameters.</p>
-                    </div>
-                `;
-                resultsCount.textContent = '(0 farms)';
-                statsContainer.style.display = 'none';
-                return;
-            }
-            
-            // Update results count
-            resultsCount.textContent = `(${data.length} farm${data.length !== 1 ? 's' : ''})`;
-            
-            // Calculate stats
-            const totalArea = data.reduce((sum, farm) => sum + farm.area_sq_meters, 0);
-            const avgArea = Math.round(totalArea / data.length);
-            
-            // Update stats
-            totalFarmsEl.textContent = data.length;
-            totalAreaEl.textContent = totalArea.toLocaleString();
-            avgAreaEl.textContent = avgArea.toLocaleString();
-            statsContainer.style.display = 'flex';
-            
-            // Generate results HTML
-            const resultsHTML = data.map(farm => `
-                <div class="result-card">
-                    <h3 class="card-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 16a6 6 0 0 0 6-6c0-1.655-1.122-2.904-2.432-4.362C10.254 4.176 8.75 2.503 8 0c0 0-6 5.686-6 10a6 6 0 0 0 6 6ZM6.646 4.646l.708.708c-.29.29-.386.704-.278 1.06.115.387.445.63.884.63.522 0 .936-.416.936-.937 0-.439-.243-.77-.63-.884a1.009 1.009 0 0 0-1.06.278l-.708-.708.708-.708-.708-.708Z"/>
-                        </svg>
-                        Farm ID: ${farm.id}
-                    </h3>
-                    <div class="card-detail">
-                        <span class="detail-label">Crops:</span>
-                        <span class="detail-value">${farm.current_crops || 'Not specified'}</span>
-                    </div>
-                    <div class="card-detail">
-                        <span class="detail-label">Area:</span>
-                        <span class="detail-value">${farm.area_sq_meters ? farm.area_sq_meters.toLocaleString() + ' sq m' : 'Not specified'}</span>
-                    </div>
-                    <div class="card-detail">
-                        <span class="detail-label">Status:</span>
-                        <span class="detail-value">${farm.status || 'Active'}</span>
-                    </div>
-                    ${farm.location ? `
-                    <div class="card-detail">
-                        <span class="detail-label">Location:</span>
-                        <span class="detail-value">${farm.location}</span>
-                    </div>
-                    ` : ''}
-                    ${farm.created_at ? `
-                    <div class="card-detail">
-                        <span class="detail-label">Created:</span>
-                        <span class="detail-value">${new Date(farm.created_at).toLocaleDateString()}</span>
-                    </div>
-                    ` : ''}
-                </div>
-            `).join('');
-            
-            resultsContainer.innerHTML = resultsHTML;
-        }
+      // ✅ Display results in a table
+      let tableHTML = `
+        <table>
+          <tr>
+            <th>Land ID</th>
+            <th>Land Name</th>
+            <th>Current Crop</th>
+            <th>Area</th>
+            <th>Location</th>
+          </tr>
+      `;
 
-        // Form submission handler
-        searchForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const currentCrops = currentCropsSelect.value;
-            const areaSqMeters = areaSqMetersInput.value;
-            
-            // Validate inputs
-            if (!currentCrops && !areaSqMeters) {
-                showError('Please select at least one search parameter (crops or area)');
-                return;
-            }
-            
-            if (areaSqMeters && (areaSqMeters < 0 || isNaN(areaSqMeters))) {
-                showError('Please enter a valid area value (positive number)');
-                return;
-            }
-            
-            // Perform search
-            showLoading();
-            hideError();
-            
-            const results = await searchFarmData(currentCrops, areaSqMeters);
-            displayResults(results);
-        });
+      data.forEach(row => {
+        tableHTML += `
+          <tr>
+            <td>${row.land_id || '-'}</td>
+            <td>${row.user_id || '-'}</td>
+            <td>${row.current_crops || '-'}</td>
+            <td>${row.land_name || '-'}</td>
+            <td>${row.soil_type || '-'}</td>
+          </tr>
+        `;
+      });
 
-        // Initial load - show some sample data or instructions
-        document.addEventListener('DOMContentLoaded', () => {
-            // You could load some initial data here if desired
-            // For example: loadAllFarms();
-        });
-
-        // Example function to load all farms (optional)
-        async function loadAllFarms() {
-            showLoading();
-            const results = await searchFarmData(null, null);
-            displayResults(results);
-        }
-    </script>
+      tableHTML += "</table>";
+      resultBox.innerHTML = tableHTML;
+    });
+  </script>
 </body>
 </html>
