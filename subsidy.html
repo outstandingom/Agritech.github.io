@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Farmer Subsidy Schemes - Government of India</title>
+  <title>Farmer Subsidy Schemes & Benefits</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,74 +10,133 @@
       padding: 20px;
       margin: 0;
     }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
     h1 {
       color: #2a7b2a;
       text-align: center;
       margin-bottom: 30px;
     }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .filter-section {
+    .filters {
       background: white;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       margin-bottom: 20px;
     }
+    .filter-group {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    select, input, button {
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
     button {
       background-color: #2a7b2a;
       color: white;
-      padding: 12px 20px;
       border: none;
       cursor: pointer;
-      border-radius: 5px;
-      font-size: 16px;
-      margin: 5px;
+      transition: background-color 0.3s;
     }
     button:hover {
       background-color: #1f5a1f;
     }
-    .scheme-card {
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
       background: white;
       padding: 20px;
-      margin: 15px 0;
       border-radius: 10px;
+      text-align: center;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      border-left: 5px solid #2a7b2a;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2a7b2a;
+    }
+    .schemes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .scheme-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-left: 4px solid #2a7b2a;
     }
     .scheme-name {
-      color: #2a7b2a;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
+      color: #2a7b2a;
       margin-bottom: 10px;
     }
     .scheme-details {
       margin: 10px 0;
     }
-    .subsidy-amount {
+    .scheme-detail {
+      margin: 5px 0;
+      color: #555;
+    }
+    .benefit-amount {
+      font-size: 20px;
+      font-weight: bold;
+      color: #e67c22;
+      margin: 10px 0;
+    }
+    .eligibility {
       background: #e8ffe8;
       padding: 10px;
       border-radius: 5px;
-      font-weight: bold;
-      color: #1f5a1f;
-    }
-    .eligibility {
-      background: #fff8e8;
-      padding: 10px;
-      border-radius: 5px;
       margin: 10px 0;
+      font-size: 14px;
+    }
+    .apply-btn {
+      background: #2a7b2a;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
     }
     .loading {
       text-align: center;
+      padding: 20px;
       color: #2a7b2a;
-      font-style: italic;
     }
     .error {
-      color: #ff0000;
-      text-align: center;
-      margin: 20px 0;
+      background: #ffe8e8;
+      color: #d63031;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    .success {
+      background: #e8ffe8;
+      color: #2a7b2a;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 10px 0;
     }
   </style>
 </head>
@@ -86,149 +144,221 @@
   <div class="container">
     <h1>Government Subsidy Schemes for Farmers</h1>
     
-    <div class="filter-section">
-      <h3>Filter by Category:</h3>
-      <button onclick="showAllSchemes()">All Schemes</button>
-      <button onclick="filterSchemes('equipment')">Farm Equipment</button>
-      <button onclick="filterSchemes('seeds')">Seeds & Fertilizers</button>
-      <button onclick="filterSchemes('irrigation')">Irrigation</button>
-      <button onclick="filterSchemes('crop')">Crop Insurance</button>
-      <button onclick="filterSchemes('organic')">Organic Farming</button>
+    <div class="filters">
+      <div class="filter-group">
+        <select id="stateSelect">
+          <option value="">Select State</option>
+          <option value="maharashtra">Maharashtra</option>
+          <option value="punjab">Punjab</option>
+          <option value="karnataka">Karnataka</option>
+          <option value="up">Uttar Pradesh</option>
+          <option value="gujarat">Gujarat</option>
+        </select>
+        
+        <select id="categorySelect">
+          <option value="">All Categories</option>
+          <option value="crop">Crop Insurance</option>
+          <option value="equipment">Farm Equipment</option>
+          <option value="irrigation">Irrigation</option>
+          <option value="organic">Organic Farming</option>
+          <option value="livestock">Livestock</option>
+        </select>
+        
+        <input type="text" id="searchInput" placeholder="Search schemes...">
+        
+        <button onclick="fetchSubsidies()">Search Subsidies</button>
+      </div>
     </div>
 
-    <div id="schemesContainer">
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalSchemes">0</div>
+        <div>Total Schemes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="activeSchemes">0</div>
+        <div>Active Schemes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">₹50K-₹10L</div>
+        <div>Subsidy Range</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">80%</div>
+        <div>Average Subsidy</div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+
+    <div id="schemesContainer" class="schemes-grid">
       <!-- Schemes will be loaded here -->
     </div>
   </div>
 
   <script>
-    // Sample subsidy scheme data
+    // Sample subsidy data - In real implementation, this would come from APIs
     const subsidySchemes = [
       {
         id: 1,
-        name: "PM-KISAN Scheme",
+        name: "PM-KISAN Samman Nidhi",
         category: "income",
-        description: "Direct income support to all landholding farmers' families",
-        subsidyAmount: "₹6,000 per year in 3 installments",
-        eligibility: "All landholding farmers' families",
-        benefits: ["Direct bank transfer", "No middlemen", "Quarterly payments"],
-        applicationProcess: "Online through PM-KISAN portal",
-        documentsRequired: ["Aadhaar card", "Land records", "Bank account details"]
+        states: ["all"],
+        benefit: "₹6,000/year",
+        description: "Direct income support to farmer families",
+        eligibility: "All farmer families irrespective of land size",
+        lastDate: "31-12-2024",
+        status: "active",
+        link: "https://pmkisan.gov.in"
       },
       {
         id: 2,
-        name: "Subsidy on Agricultural Machinery",
-        category: "equipment",
-        description: "Subsidy for purchase of farm machinery and equipment",
-        subsidyAmount: "Up to 50% of cost (Max ₹1,25,000)",
-        eligibility: "Individual farmers, Farmer Groups, FPOs",
-        benefits: ["Tractor subsidy", "Harvester subsidy", "Power tiller subsidy"],
-        applicationProcess: "Through State Agriculture Department",
-        documentsRequired: ["Aadhaar card", "Land documents", "Quotation from dealer"]
+        name: "Pradhan Mantri Fasal Bima Yojana",
+        category: "crop",
+        states: ["maharashtra", "punjab", "karnataka", "up", "gujarat"],
+        benefit: "Up to 90% subsidy on premium",
+        description: "Crop insurance against natural calamities",
+        eligibility: "All farmers including sharecroppers and tenant farmers",
+        lastDate: "15-03-2024",
+        status: "active",
+        link: "https://pmfby.gov.in"
       },
       {
         id: 3,
-        name: "National Food Security Mission",
-        category: "seeds",
-        description: "Subsidy for seeds, fertilizers and crop production",
-        subsidyAmount: "50-75% subsidy on seeds and inputs",
-        eligibility: "Small and marginal farmers",
-        benefits: ["Quality seeds", "Micro-nutrients", "Soil health cards"],
-        applicationProcess: "Through State Agriculture Department",
-        documentsRequired: ["Land records", "Aadhaar card", "Bank account"]
+        name: "Subsidy on Solar Pumps",
+        category: "irrigation",
+        states: ["maharashtra", "karnataka", "gujarat"],
+        benefit: "Up to 90% subsidy",
+        description: "Installation of solar-powered agricultural pumps",
+        eligibility: "Farmers with minimum 0.5 acre land",
+        lastDate: "30-06-2024",
+        status: "active",
+        link: "https://mnre.gov.in"
       },
       {
         id: 4,
-        name: "Pradhan Mantri Krishi Sinchai Yojana",
-        category: "irrigation",
-        description: "Subsidy for irrigation systems and water conservation",
-        subsidyAmount: "Up to 55% subsidy (Max ₹50,000 per hectare)",
-        eligibility: "Individual farmers and groups",
-        benefits: ["Drip irrigation", "Sprinkler systems", "Water harvesting"],
-        applicationProcess: "Online through State Agriculture Portal",
-        documentsRequired: ["Land proof", "Aadhaar", "Bank details", "Project report"]
+        name: "National Livestock Mission",
+        category: "livestock",
+        states: ["punjab", "up", "gujarat"],
+        benefit: "Up to 50% subsidy",
+        description: "Subsidy for poultry, dairy and small ruminants",
+        eligibility: "Individual farmers, FPOs, SHGs",
+        lastDate: "31-03-2024",
+        status: "active",
+        link: "https://dahd.nic.in"
       },
       {
         id: 5,
-        name: "PM Fasal Bima Yojana",
-        category: "crop",
-        description: "Crop insurance against natural calamities and price fall",
-        subsidyAmount: "Up to 90% premium subsidy for small farmers",
-        eligibility: "All farmers including sharecroppers and tenant farmers",
-        benefits: ["Risk coverage", "Quick claim settlement", "Low premium"],
-        applicationProcess: "Through banks or Common Service Centers",
-        documentsRequired: ["Land records", "Aadhaar", "Sowing details"]
+        name: "Paramparagat Krishi Vikas Yojana",
+        category: "organic",
+        states: ["all"],
+        benefit: "₹50,000/hectare",
+        description: "Promotion of organic farming",
+        eligibility: "Farmers in clusters of 50 acres",
+        lastDate: "28-02-2024",
+        status: "active",
+        link: "https://pgsindia-ncof.gov.in"
       },
       {
         id: 6,
-        name: "Paramparagat Krishi Vikas Yojana",
-        category: "organic",
-        description: "Promotion of organic farming with cluster approach",
-        subsidyAmount: "₹50,000 per hectare over 3 years",
-        eligibility: "Farmers in clusters of 50 acres",
-        benefits: ["Organic inputs", "Certification support", "Market linkage"],
-        applicationProcess: "Through State Organic Farming Agencies",
-        documentsRequired: ["Cluster formation documents", "Land records"]
-      },
-      {
-        id: 7,
-        name: "Dairy Entrepreneurship Development Scheme",
-        category: "livestock",
-        description: "Subsidy for dairy farming infrastructure and equipment",
-        subsidyAmount: "25-33% subsidy (Max ₹2-3 lakhs per unit)",
-        eligibility: "Individual entrepreneurs, SHGs, FPOs",
-        benefits: ["Milking machines", "Cold storage", "Animal shelter"],
-        applicationProcess: "Through NABARD approved banks",
-        documentsRequired: ["Project report", "Land documents", "Technical quotes"]
+        name: "Agricultural Mechanization Subsidy",
+        category: "equipment",
+        states: ["maharashtra", "punjab", "karnataka"],
+        benefit: "25-50% subsidy on equipment",
+        description: "Subsidy on tractors, harvesters and farm implements",
+        eligibility: "Individual farmers and FPOs",
+        lastDate: "31-05-2024",
+        status: "active",
+        link: "https://agricoop.nic.in"
       }
     ];
 
-    function displaySchemes(schemes) {
-      const container = document.getElementById('schemesContainer');
-      container.innerHTML = '';
+    async function fetchSubsidies() {
+      const stateSelect = document.getElementById('stateSelect');
+      const categorySelect = document.getElementById('categorySelect');
+      const searchInput = document.getElementById('searchInput');
+      const schemesContainer = document.getElementById('schemesContainer');
+      const messageDiv = document.getElementById('message');
+      
+      const selectedState = stateSelect.value;
+      const selectedCategory = categorySelect.value;
+      const searchTerm = searchInput.value.toLowerCase();
 
-      if (schemes.length === 0) {
-        container.innerHTML = '<div class="error">No schemes found for selected category</div>';
-        return;
-      }
+      // Show loading
+      schemesContainer.innerHTML = '<div class="loading">Loading subsidy schemes...</div>';
+      messageDiv.innerHTML = '';
 
-      schemes.forEach(scheme => {
-        const schemeCard = document.createElement('div');
-        schemeCard.className = 'scheme-card';
-        schemeCard.innerHTML = `
-          <div class="scheme-name">${scheme.name}</div>
-          <div class="scheme-details">
-            <p><strong>Description:</strong> ${scheme.description}</p>
-            <div class="subsidy-amount">
-              <strong>Subsidy Amount:</strong> ${scheme.subsidyAmount}
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Filter schemes based on selections
+        let filteredSchemes = subsidySchemes.filter(scheme => {
+          const matchesState = selectedState === '' || 
+                             scheme.states.includes('all') || 
+                             scheme.states.includes(selectedState);
+          const matchesCategory = selectedCategory === '' || 
+                                scheme.category === selectedCategory;
+          const matchesSearch = searchTerm === '' || 
+                              scheme.name.toLowerCase().includes(searchTerm) ||
+                              scheme.description.toLowerCase().includes(searchTerm);
+          
+          return matchesState && matchesCategory && matchesSearch;
+        });
+
+        // Update statistics
+        document.getElementById('totalSchemes').textContent = filteredSchemes.length;
+        document.getElementById('activeSchemes').textContent = filteredSchemes.filter(s => s.status === 'active').length;
+
+        // Display schemes
+        if (filteredSchemes.length === 0) {
+          schemesContainer.innerHTML = '<div class="error">No subsidy schemes found matching your criteria.</div>';
+          return;
+        }
+
+        schemesContainer.innerHTML = filteredSchemes.map(scheme => `
+          <div class="scheme-card">
+            <div class="scheme-name">${scheme.name}</div>
+            <div class="scheme-details">
+              <div class="scheme-detail"><strong>Category:</strong> ${scheme.category.toUpperCase()}</div>
+              <div class="scheme-detail"><strong>Description:</strong> ${scheme.description}</div>
+              <div class="benefit-amount">Subsidy: ${scheme.benefit}</div>
+              <div class="eligibility">
+                <strong>Eligibility:</strong> ${scheme.eligibility}
+              </div>
+              <div class="scheme-detail"><strong>Last Date:</strong> ${scheme.lastDate}</div>
+              <div class="scheme-detail"><strong>Status:</strong> <span style="color: green;">${scheme.status.toUpperCase()}</span></div>
             </div>
-            <div class="eligibility">
-              <strong>Eligibility:</strong> ${scheme.eligibility}
-            </div>
-            <p><strong>Benefits:</strong> ${scheme.benefits.join(', ')}</p>
-            <p><strong>Application Process:</strong> ${scheme.applicationProcess}</p>
-            <p><strong>Documents Required:</strong> ${scheme.documentsRequired.join(', ')}</p>
+            <button class="apply-btn" onclick="applyForScheme(${scheme.id})">Apply Now</button>
           </div>
-        `;
-        container.appendChild(schemeCard);
-      });
+        `).join('');
+
+        messageDiv.innerHTML = `<div class="success">Found ${filteredSchemes.length} subsidy schemes matching your criteria</div>`;
+
+      } catch (error) {
+        console.error('Error fetching subsidies:', error);
+        messageDiv.innerHTML = `<div class="error">Error loading subsidy data: ${error.message}</div>`;
+      }
     }
 
-    function showAllSchemes() {
-      displaySchemes(subsidySchemes);
+    function applyForScheme(schemeId) {
+      const scheme = subsidySchemes.find(s => s.id === schemeId);
+      if (scheme && scheme.link) {
+        window.open(scheme.link, '_blank');
+      } else {
+        alert(`Application process for ${scheme.name} will be available soon. Please check the official government website.`);
+      }
     }
 
-    function filterSchemes(category) {
-      const filtered = subsidySchemes.filter(scheme => 
-        scheme.category === category
-      );
-      displaySchemes(filtered);
-    }
-
-    // Initialize with all schemes
+    // Load all schemes on page load
     document.addEventListener('DOMContentLoaded', function() {
-      displaySchemes(subsidySchemes);
+      fetchSubsidies();
     });
+
+    // Add event listeners for real-time filtering
+    document.getElementById('searchInput').addEventListener('input', fetchSubsidies);
+    document.getElementById('stateSelect').addEventListener('change', fetchSubsidies);
+    document.getElementById('categorySelect').addEventListener('change', fetchSubsidies);
   </script>
 </body>
 </html>
