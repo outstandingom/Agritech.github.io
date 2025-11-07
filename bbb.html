@@ -391,6 +391,51 @@
             display: block;
         }
 
+        .lands-table-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .lands-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .lands-table th {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c7744;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .lands-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .lands-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #2c7744;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .action-btn:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 992px) {
             body {
                 flex-direction: column;
@@ -490,6 +535,8 @@
                             <option value="Sandy">Sandy</option>
                             <option value="Clay">Clay</option>
                             <option value="Silty">Silty</option>
+                            <option value="Peaty">Peaty</option>
+                            <option value="Chalky">Chalky</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -510,6 +557,8 @@
                             <option value="Soybean">Soybean</option>
                             <option value="Rice">Rice</option>
                             <option value="Cotton">Cotton</option>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
                         </select>
                     </div>
                 </div>
@@ -542,6 +591,28 @@
             <!-- Loading Indicator -->
             <div class="loading" id="loading-indicator">
                 <i class="fas fa-spinner fa-spin"></i> Loading land data...
+            </div>
+
+            <!-- Lands Table -->
+            <div class="lands-table-container">
+                <h3 style="margin-bottom: 15px; color: #2c7744;">Land Records</h3>
+                <table class="lands-table">
+                    <thead>
+                        <tr>
+                            <th>Land ID</th>
+                            <th>Land Name</th>
+                            <th>Area (Hectares)</th>
+                            <th>Soil Type</th>
+                            <th>Water Availability</th>
+                            <th>Current Crop</th>
+                            <th>Land Use</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lands-table-body">
+                        <!-- Table rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
             </div>
 
             <!-- Map Container -->
@@ -613,6 +684,7 @@
                 lands = landsData || [];
                 updateStats();
                 displayLandsOnMap();
+                populateLandsTable();
                 showLoading(false);
                 
             } catch (error) {
@@ -676,6 +748,42 @@
 
             // Update stats based on displayed lands
             updateStats(landsToDisplay);
+        }
+
+        // Populate lands table
+        function populateLandsTable(filteredLands = null) {
+            const tableBody = document.getElementById('lands-table-body');
+            const landsToDisplay = filteredLands || lands;
+            
+            if (landsToDisplay.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No lands found matching the criteria</td></tr>';
+                return;
+            }
+            
+            tableBody.innerHTML = landsToDisplay.map(land => {
+                // Get current crop if available
+                const currentCrop = land.crops && land.crops.find(crop => crop.is_active);
+                
+                return `
+                    <tr>
+                        <td>${land.land_id}</td>
+                        <td>${land.land_name}</td>
+                        <td>${land.area_hectares}</td>
+                        <td>${land.soil_type}</td>
+                        <td>${land.water_availability}</td>
+                        <td>${currentCrop ? currentCrop.crop_name : 'No active crop'}</td>
+                        <td>${land.land_use || 'Not specified'}</td>
+                        <td>
+                            <button class="action-btn" onclick="showLandDetails('${land.land_id}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="action-btn" onclick="zoomToLand('${land.land_id}')">
+                                <i class="fas fa-map-marker-alt"></i> Locate
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         // Show detailed information for a specific land
@@ -895,6 +1003,36 @@
             });
 
             displayLandsOnMap(filteredLands);
+            populateLandsTable(filteredLands);
+        }
+
+        // Zoom to a specific land on the map
+        function zoomToLand(landId) {
+            const land = lands.find(l => l.land_id === landId);
+            if (land) {
+                let lat, lng;
+                
+                if (land.center_lat && land.center_lng) {
+                    lat = land.center_lat;
+                    lng = land.center_lng;
+                } else if (land.land_coordinates && land.land_coordinates.length > 0) {
+                    lat = land.land_coordinates[0].latitude;
+                    lng = land.land_coordinates[0].longitude;
+                } else {
+                    lat = 20.0;
+                    lng = 77.0;
+                }
+                
+                map.setView([lat, lng], 13);
+                
+                // Open the popup for this land
+                markers.forEach(marker => {
+                    const markerLand = marker.land;
+                    if (markerLand && markerLand.land_id === landId) {
+                        marker.openPopup();
+                    }
+                });
+            }
         }
 
         // Setup event listeners
@@ -912,6 +1050,7 @@
                 document.getElementById('land-use').value = '';
                 
                 displayLandsOnMap();
+                populateLandsTable();
             });
             
             // Close details panel
@@ -928,6 +1067,7 @@
                 
                 if (searchTerm.length < 2) {
                     displayLandsOnMap();
+                    populateLandsTable();
                     return;
                 }
                 
@@ -940,6 +1080,7 @@
                 );
                 
                 displayLandsOnMap(filteredLands);
+                populateLandsTable(filteredLands);
             });
         }
 
@@ -948,8 +1089,9 @@
             document.getElementById('loading-indicator').classList.toggle('active', show);
         }
 
-        // Make showLandDetails function available globally for popup buttons
+        // Make functions available globally for onclick handlers
         window.showLandDetails = showLandDetails;
+        window.zoomToLand = zoomToLand;
     </script>
 </body>
 </html>
