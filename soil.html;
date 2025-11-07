@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soil Analysis - FarmAI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c7744 0%, #5a8f29 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-section, .results-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        select, input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input[type="file"]:focus {
+            outline: none;
+            border-color: #2c7744;
+        }
+
+        .upload-area {
+            border: 3px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .upload-area:hover {
+            border-color: #2c7744;
+            background: #f8fff9;
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .upload-area.active {
+            border-color: #2c7744;
+            background: #e8f5e8;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2c7744 0%, #5a8f29 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(44, 119, 68, 0.3);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2c7744;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .nutrient-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .nutrient-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #2c7744;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nutrient-card.low {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .nutrient-card.optimal {
+            border-left-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .nutrient-card.high {
+            border-left-color: #ffc107;
+            background: #fffef0;
+        }
+
+        .nutrient-name {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .nutrient-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .nutrient-unit {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .recommendations {
+            margin-top: 25px;
+            padding: 20px;
+            background: #e7f3ff;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
+
+        .recommendations h3 {
+            color: #0056b3;
+            margin-bottom: 10px;
+        }
+
+        .recommendations ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .recommendations li {
+            padding: 8px 0;
+            border-bottom: 1px solid #cfe2ff;
+        }
+
+        .recommendations li:last-child {
+            border-bottom: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .success-message {
+            background: #d1edff;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <button class="logout-btn" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-seedling"></i> Soil Analysis</h1>
+            <p>Upload your soil report and get AI-powered nutrient analysis</p>
+        </div>
+
+        <div class="content">
+            <!-- Left Side: Form Section -->
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="landSelect"><i class="fas fa-tractor"></i> Select Land</label>
+                    <select id="landSelect" required>
+                        <option value="">Choose a land...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-file-upload"></i> Upload Soil Report</label>
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Click to upload soil report</h3>
+                        <p>Supported formats: PDF, JPG, PNG (Max 5MB)</p>
+                        <input type="file" id="soilReport" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                        <div id="fileName" style="margin-top: 10px; font-weight: 600;"></div>
+                    </div>
+                </div>
+
+                <button class="btn" id="analyzeBtn" disabled>
+                    <i class="fas fa-microscope"></i> Analyze Soil Report
+                </button>
+
+                <div class="loading" id="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Analyzing soil report with AI...</p>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+            </div>
+
+            <!-- Right Side: Results Section -->
+            <div class="results-section">
+                <h2><i class="fas fa-chart-bar"></i> Analysis Results</h2>
+                <div class="results" id="results">
+                    <p style="text-align: center; color: #6c757d; padding: 40px;">
+                        Upload a soil report to see analysis results here...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
+
+        // Initialize Supabase client
+        let supabase;
+
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true
+                }
+            });
+            console.log('Supabase client initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Supabase client:', error);
+        }
+
+        // Authentication Checker
+        class AuthChecker {
+            constructor() {
+                this.currentUser = null;
+                this.currentUserId = null;
+            }
+
+            // Check if user is authenticated
+            async checkAuth() {
+                try {
+                    if (!supabase) {
+                        console.error('Supabase client not found');
+                        return false;
+                    }
+
+                    const { data: { user }, error } = await supabase.auth.getUser();
+                    
+                    if (error) {
+                        console.error('Error checking auth:', error);
+                        return false;
+                    }
+
+                    if (user) {
+                        this.currentUser = user;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Error in checkAuth:', error);
+                    return false;
+                }
+            }
+
+            // Get current user
+            async getCurrentUser() {
+                if (this.currentUser) {
+                    return this.currentUser;
+                }
+
+                const isAuthenticated = await this.checkAuth();
+                return isAuthenticated ? this.currentUser : null;
+            }
+
+            // Redirect to login if not authenticated
+            async requireAuth(redirectUrl = 'login.html') {
+                const isAuthenticated = await this.checkAuth();
+                
+                if (!isAuthenticated) {
+                    window.location.href = redirectUrl;
+                    return false;
+                }
+                
+                return true;
+            }
+
+            // Sign out user
+            async signOut(redirectUrl = 'login.html') {
+                try {
+                    if (!supabase) {
+                        console.error('Supabase client not found');
+                        return false;
+                    }
+
+                    const { error } = await supabase.auth.signOut();
+                    if (error) {
+                        console.error('Error signing out:', error);
+                        return false;
+                    }
+
+                    this.currentUser = null;
+                    this.currentUserId = null;
+
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl;
+                    }
+
+                    return true;
+                } catch (error) {
+                    console.error('Error in signOut:', error);
+                    return false;
+                }
+            }
+
+            // Get user ID from users table
+            async getUserId() {
+                if (this.currentUserId) {
+                    return this.currentUserId;
+                }
+
+                try {
+                    const user = await this.getCurrentUser();
+                    if (!user) return null;
+
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('user_id')
+                        .eq('auth_id', user.id)
+                        .single();
+
+                    if (error) {
+                        console.error('Error getting user ID:', error);
+                        return null;
+                    }
+
+                    this.currentUserId = data.user_id;
+                    return data.user_id;
+                } catch (error) {
+                    console.error('Error in getUserId:', error);
+                    return null;
+                }
+            }
+        }
+
+        // Soil Analysis functionality
+        class SoilAnalysis {
+            constructor() {
+                this.lands = [];
+                this.selectedLandId = null;
+                this.selectedFile = null;
+                this.authChecker = new AuthChecker();
+                this.initializeEventListeners();
+                this.loadLands();
+            }
+
+            // Initialize event listeners
+            initializeEventListeners() {
+                // Land selection
+                document.getElementById('landSelect').addEventListener('change', (e) => {
+                    this.selectedLandId = e.target.value;
+                    this.updateAnalyzeButton();
+                });
+
+                // File upload
+                const uploadArea = document.getElementById('uploadArea');
+                const fileInput = document.getElementById('soilReport');
+
+                uploadArea.addEventListener('click', () => {
+                    fileInput.click();
+                });
+
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('active');
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.classList.remove('active');
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('active');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.handleFileSelect(files[0]);
+                    }
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        this.handleFileSelect(e.target.files[0]);
+                    }
+                });
+
+                // Analyze button
+                document.getElementById('analyzeBtn').addEventListener('click', () => {
+                    this.analyzeSoilReport();
+                });
+
+                // Logout button
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.authChecker.signOut();
+                });
+            }
+
+            // Handle file selection
+            handleFileSelect(file) {
+                if (file) {
+                    // Check file size (5MB limit)
+                    if (file.size > 5 * 1024 * 1024) {
+                        this.showError('File size must be less than 5MB');
+                        return;
+                    }
+
+                    // Check file type
+                    const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                    if (!validTypes.includes(file.type)) {
+                        this.showError('Please upload a PDF, JPG, or PNG file');
+                        return;
+                    }
+
+                    this.selectedFile = file;
+                    document.getElementById('fileName').textContent = `Selected: ${file.name}`;
+                    document.getElementById('uploadArea').style.borderColor = '#28a745';
+                    this.updateAnalyzeButton();
+                }
+            }
+
+            // Update analyze button state
+            updateAnalyzeButton() {
+                const analyzeBtn = document.getElementById('analyzeBtn');
+                analyzeBtn.disabled = !(this.selectedLandId && this.selectedFile);
+            }
+
+            // Load user's lands
+            async loadLands() {
+                try {
+                    const user = await this.authChecker.getCurrentUser();
+                    if (!user) {
+                        this.showError('Please log in to access this feature');
+                        return;
+                    }
+
+                    const { data, error } = await supabase
+                        .from('lands')
+                        .select('land_id, land_name, soil_type, area_hectares')
+                        .eq('auth_id', user.id)
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+
+                    this.lands = data || [];
+                    this.populateLandSelect();
+                } catch (error) {
+                    console.error('Error loading lands:', error);
+                    this.showError('Failed to load lands');
+                }
+            }
+
+            // Populate land select dropdown
+            populateLandSelect() {
+                const landSelect = document.getElementById('landSelect');
+                landSelect.innerHTML = '<option value="">Choose a land...</option>';
+                
+                this.lands.forEach(land => {
+                    const option = document.createElement('option');
+                    option.value = land.land_id;
+                    option.textContent = `${land.land_name} (${land.area_hectares} ha, ${land.soil_type})`;
+                    landSelect.appendChild(option);
+                });
+            }
+
+            // Analyze soil report
+            async analyzeSoilReport() {
+                try {
+                    this.showLoading(true);
+                    this.hideMessages();
+
+                    // Upload file to Supabase Storage
+                    const fileUrl = await this.uploadFileToStorage();
+                    
+                    // Extract text from the soil report using Gemini AI
+                    const extractedText = await this.extractTextFromReport(fileUrl);
+                    
+                    // Analyze nutrients using Gemini AI
+                    const analysisResult = await this.analyzeNutrientsWithAI(extractedText);
+                    
+                    // Save analysis to database
+                    await this.saveAnalysisToDatabase(analysisResult, fileUrl);
+                    
+                    // Display results
+                    this.displayResults(analysisResult);
+                    
+                    this.showSuccess('Soil analysis completed successfully!');
+                    
+                } catch (error) {
+                    console.error('Error analyzing soil report:', error);
+                    this.showError(error.message || 'Failed to analyze soil report');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            // Upload file to Supabase Storage
+            async uploadFileToStorage() {
+                const fileExt = this.selectedFile.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+                const filePath = `soil-reports/${fileName}`;
+
+                const { data, error } = await supabase.storage
+                    .from('soil-reports')
+                    .upload(filePath, this.selectedFile);
+
+                if (error) throw new Error(`Failed to upload file: ${error.message}`);
+
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('soil-reports')
+                    .getPublicUrl(filePath);
+
+                return publicUrl;
+            }
+
+            // Extract text from report using Gemini AI
+            async extractTextFromReport(fileUrl) {
+                const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
+                const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+                const requestBody = {
+                    contents: [{
+                        parts: [{
+                            text: `Extract all text content from this soil report image. Return ONLY the raw extracted text without any analysis or formatting. Focus on finding nutrient levels, chemical composition, and measurement values:\n\n${fileUrl}`
+                        }]
+                    }]
+                };
+
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI extraction failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            }
+
+            // Analyze nutrients with Gemini AI
+            async analyzeNutrientsWithAI(extractedText) {
+                const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
+                const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+                const prompt = `
+                Analyze this soil report text and extract all nutrient values. Return a JSON object with the following structure:
+
+                {
+                  "macronutrients": {
+                    "nitrogen": {"value": number, "unit": "mg/kg"},
+                    "phosphorus": {"value": number, "unit": "mg/kg"},
+                    "potassium": {"value": number, "unit": "mg/kg"},
+                    "calcium": {"value": number, "unit": "mg/kg"},
+                    "magnesium": {"value": number, "unit": "mg/kg"},
+                    "sulfur": {"value": number, "unit": "mg/kg"}
+                  },
+                  "micronutrients": {
+                    "iron": {"value": number, "unit": "mg/kg"},
+                    "manganese": {"value": number, "unit": "mg/kg"},
+                    "zinc": {"value": number, "unit": "mg/kg"},
+                    "copper": {"value": number, "unit": "mg/kg"},
+                    "boron": {"value": number, "unit": "mg/kg"},
+                    "molybdenum": {"value": number, "unit": "mg/kg"},
+                    "chlorine": {"value": number, "unit": "mg/kg"},
+                    "nickel": {"value": number, "unit": "mg/kg"},
+                    "cobalt": {"value": number, "unit": "mg/kg"}
+                  },
+                  "soil_properties": {
+                    "ph_level": number,
+                    "organic_matter": {"value": number, "unit": "%"},
+                    "soil_texture": "text",
+                    "moisture_content": {"value": number, "unit": "%"}
+                  },
+                  "nutrient_deficiencies": ["deficiency1", "deficiency2"],
+                  "recommendations": ["recommendation1", "recommendation2"],
+                  "overall_health_score": number
+                }
+
+                If a nutrient value is not found in the text, set its value to null.
+
+                Soil report text:
+                ${extractedText.substring(0, 3000)}
+                `;
+
+                const requestBody = {
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                };
+
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI analysis failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                const analysisText = data.candidates[0].content.parts[0].text;
+                
+                // Extract JSON from response
+                const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('AI returned invalid JSON format');
+                }
+
+                return JSON.parse(jsonMatch[0]);
+            }
+
+            // Save analysis to database
+            async saveAnalysisToDatabase(analysisResult, fileUrl) {
+                const analysisId = `soil_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                
+                const { error } = await supabase
+                    .from('soil_analysis')
+                    .insert({
+                        analysis_id: analysisId,
+                        auth_id: this.authChecker.currentUser.id,
+                        land_id: this.selectedLandId,
+                        soil_report_url: fileUrl,
+                        
+                        // Macronutrients
+                        nitrogen: analysisResult.macronutrients?.nitrogen?.value,
+                        phosphorus: analysisResult.macronutrients?.phosphorus?.value,
+                        potassium: analysisResult.macronutrients?.potassium?.value,
+                        calcium: analysisResult.macronutrients?.calcium?.value,
+                        magnesium: analysisResult.macronutrients?.magnesium?.value,
+                        sulfur: analysisResult.macronutrients?.sulfur?.value,
+                        
+                        // Micronutrients
+                        iron: analysisResult.micronutrients?.iron?.value,
+                        manganese: analysisResult.micronutrients?.manganese?.value,
+                        zinc: analysisResult.micronutrients?.zinc?.value,
+                        copper: analysisResult.micronutrients?.copper?.value,
+                        boron: analysisResult.micronutrients?.boron?.value,
+                        molybdenum: analysisResult.micronutrients?.molybdenum?.value,
+                        chlorine: analysisResult.micronutrients?.chlorine?.value,
+                        nickel: analysisResult.micronutrients?.nickel?.value,
+                        cobalt: analysisResult.micronutrients?.cobalt?.value,
+                        
+                        // Soil properties
+                        ph_level: analysisResult.soil_properties?.ph_level,
+                        organic_matter: analysisResult.soil_properties?.organic_matter?.value,
+                        soil_texture: analysisResult.soil_properties?.soil_texture,
+                        moisture_content: analysisResult.soil_properties?.moisture_content?.value,
+                        
+                        // AI Analysis
+                        ai_analysis_result: analysisResult,
+                        nutrient_deficiencies: analysisResult.nutrient_deficiencies || [],
+                        recommendations: analysisResult.recommendations || [],
+                        overall_health_score: analysisResult.overall_health_score
+                    });
+
+                if (error) throw new Error(`Failed to save analysis: ${error.message}`);
+            }
+
+            // Display results
+            displayResults(analysisResult) {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.style.display = 'block';
+
+                let html = `
+                    <div class="soil-properties">
+                        <h3>Soil Properties</h3>
+                        <div class="nutrient-grid">
+                            <div class="nutrient-card ${this.getPHStatus(analysisResult.soil_properties?.ph_level)}">
+                                <div class="nutrient-name">pH Level</div>
+                                <div class="nutrient-value">${analysisResult.soil_properties?.ph_level || 'N/A'}</div>
+                            </div>
+                            <div class="nutrient-card">
+                                <div class="nutrient-name">Organic Matter</div>
+                                <div class="nutrient-value">${analysisResult.soil_properties?.organic_matter?.value || 'N/A'}</div>
+                                <div class="nutrient-unit">${analysisResult.soil_properties?.organic_matter?.unit || ''}</div>
+                            </div>
+                            <div class="nutrient-card">
+                                <div class="nutrient-name">Soil Texture</div>
+                                <div class="nutrient-value">${analysisResult.soil_properties?.soil_texture || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="macronutrients">
+                        <h3>Macronutrients</h3>
+                        <div class="nutrient-grid">
+                `;
+
+                // Macronutrients
+                Object.entries(analysisResult.macronutrients || {}).forEach(([nutrient, data]) => {
+                    if (data && data.value !== null) {
+                        html += `
+                            <div class="nutrient-card ${this.getNutrientStatus(nutrient, data.value)}">
+                                <div class="nutrient-name">${this.formatNutrientName(nutrient)}</div>
+                                <div class="nutrient-value">${data.value}</div>
+                                <div class="nutrient-unit">${data.unit}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                html += `
+                        </div>
+                    </div>
+
+                    <div class="micronutrients">
+                        <h3>Micronutrients</h3>
+                        <div class="nutrient-grid">
+                `;
+
+                // Micronutrients
+                Object.entries(analysisResult.micronutrients || {}).forEach(([nutrient, data]) => {
+                    if (data && data.value !== null) {
+                        html += `
+                            <div class="nutrient-card ${this.getNutrientStatus(nutrient, data.value)}">
+                                <div class="nutrient-name">${this.formatNutrientName(nutrient)}</div>
+                                <div class="nutrient-value">${data.value}</div>
+                                <div class="nutrient-unit">${data.unit}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+
+                // Recommendations
+                if (analysisResult.recommendations && analysisResult.recommendations.length > 0) {
+                    html += `
+                        <div class="recommendations">
+                            <h3><i class="fas fa-lightbulb"></i> Recommendations</h3>
+                            <ul>
+                    `;
+                    
+                    analysisResult.recommendations.forEach(rec => {
+                        html += `<li><i class="fas fa-check-circle"></i> ${rec}</li>`;
+                    });
+
+                    html += `
+                            </ul>
+                        </div>
+                    `;
+                }
+
+                resultsDiv.innerHTML = html;
+            }
+
+            // Helper methods
+            getPHStatus(ph) {
+                if (!ph) return '';
+                if (ph >= 6.0 && ph <= 7.5) return 'optimal';
+                if (ph < 6.0 || ph > 7.5) return 'low';
+                return '';
+            }
+
+            getNutrientStatus(nutrient, value) {
+                // Simplified status calculation
+                if (!value) return '';
+                if (value < 50) return 'low';
+                if (value > 200) return 'high';
+                return 'optimal';
+            }
+
+            formatNutrientName(name) {
+                return name.charAt(0).toUpperCase() + name.slice(1);
+            }
+
+            showLoading(show) {
+                document.getElementById('loading').style.display = show ? 'block' : 'none';
+                document.getElementById('analyzeBtn').disabled = show;
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+
+            showSuccess(message) {
+                const successDiv = document.getElementById('successMessage');
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+            }
+
+            hideMessages() {
+                document.getElementById('errorMessage').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'none';
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authChecker = new AuthChecker();
+            // Check authentication
+            const isAuthenticated = await authChecker.requireAuth();
+            if (isAuthenticated) {
+                new SoilAnalysis();
+            }
+        });
+    </script>
+</body>
+</html>
