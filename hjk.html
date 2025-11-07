@@ -116,8 +116,8 @@
             color: var(--primary);
         }
 
-        /* Location Status */
-        .location-status {
+        /* Status Card */
+        .status-card {
             background: var(--gradient);
             color: white;
             border-radius: var(--radius);
@@ -127,16 +127,36 @@
             text-align: center;
         }
 
-        .location-name {
+        .status-title {
             font-size: 20px;
             font-weight: 800;
             margin-bottom: 8px;
         }
 
-        .coordinates {
+        .status-subtitle {
             font-size: 16px;
             opacity: 0.9;
             margin-bottom: 12px;
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 8px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .status-details {
+            font-size: 14px;
+            opacity: 0.8;
         }
 
         /* Map Container */
@@ -154,36 +174,64 @@
             width: 100%;
         }
 
-        /* Land Information Form */
-        .form-group {
-            margin-bottom: 16px;
+        .map-nav {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
         }
 
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .form-input, .form-select {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: white;
-            font-size: 16px;
+        .map-nav-btn {
+            background: var(--surface);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        .map-nav-btn:hover {
+            background: var(--primary);
+            color: white;
         }
 
-        .form-input::placeholder {
-            color: var(--text-light);
+        /* Land Information */
+        .land-info {
+            margin-top: 15px;
+        }
+
+        .crop-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 15px;
+        }
+
+        .crop-detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .crop-detail-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .crop-detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
         }
 
         /* Crop Recommendation */
@@ -221,34 +269,6 @@
             font-weight: bold;
             position: absolute;
             left: 0;
-        }
-
-        /* Crop Details */
-        .crop-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-top: 15px;
-        }
-
-        .crop-detail-item {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .crop-detail-label {
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .crop-detail-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text);
         }
 
         /* Action Buttons */
@@ -427,106 +447,84 @@
                 GrowSmart
             </div>
             <div class="user-info">
-                <div class="user-name" id="userName">Farmer</div>
+                <div class="user-name" id="userName">Loading...</div>
                 <div class="location">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span id="locationText">Detecting location...</span>
+                    <span id="locationText">Select a land</span>
                 </div>
             </div>
         </div>
 
-        <!-- Location Status -->
-        <div class="location-status">
-            <div class="location-name" id="locationName">Detecting your location...</div>
-            <div class="coordinates" id="coordinatesDisplay">Latitude: --, Longitude: --</div>
+        <!-- Status Card -->
+        <div class="status-card">
+            <div class="status-title" id="statusTitle">Select Your Land</div>
+            <div class="status-subtitle" id="statusSubtitle">Choose a land to get personalized crop recommendations</div>
             <div class="progress-container">
-                <div class="progress-bar" id="locationProgress" style="width: 0%"></div>
+                <div class="progress-bar" id="statusProgress" style="width: 0%"></div>
             </div>
-            <div class="stage-duration" id="locationStatus">Initializing location services</div>
+            <div class="status-details" id="statusDetails">Ready to analyze your land</div>
         </div>
 
-        <!-- Map Display -->
+        <!-- Land Selection -->
         <div class="content-card">
             <div class="section-title">
                 <i class="fas fa-map-marked-alt"></i>
-                Your Location
+                Select Your Land
+            </div>
+            
+            <div class="land-selector">
+                <select class="form-select" id="landSelect">
+                    <option value="">Loading lands...</option>
+                </select>
             </div>
             
             <div class="map-container">
                 <div id="map"></div>
+                <div class="map-nav">
+                    <button class="map-nav-btn" id="prevLandBtn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="map-nav-btn" id="nextLandBtn" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
             
-            <div class="crop-details">
-                <div class="crop-detail-item">
-                    <div class="crop-detail-label">Latitude</div>
-                    <div class="crop-detail-value" id="latitudeValue">--</div>
+            <div class="land-info">
+                <div class="crop-details">
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Land Name</div>
+                        <div class="crop-detail-value" id="selectedLand">No land selected</div>
+                    </div>
+                    
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Soil Type</div>
+                        <div class="crop-detail-value" id="soilType">-</div>
+                    </div>
+                    
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Water Availability</div>
+                        <div class="crop-detail-value" id="waterAvailability">-</div>
+                    </div>
+                    
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Area</div>
+                        <div class="crop-detail-value" id="landArea">-</div>
+                    </div>
                 </div>
                 
-                <div class="crop-detail-item">
-                    <div class="crop-detail-label">Longitude</div>
-                    <div class="crop-detail-value" id="longitudeValue">--</div>
-                </div>
+                <button class="action-btn" id="getRecommendationBtn" disabled>
+                    <i class="fas fa-seedling"></i>
+                    Get AI Crop Recommendations
+                </button>
             </div>
-        </div>
-
-        <!-- Land Information Form -->
-        <div class="content-card">
-            <div class="section-title">
-                <i class="fas fa-tractor"></i>
-                Land Information
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="landArea">Land Area (acres)</label>
-                <input type="number" class="form-input" id="landArea" placeholder="Enter land area in acres">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="soilType">Soil Type</label>
-                <select class="form-select" id="soilType">
-                    <option value="">Select soil type</option>
-                    <option value="sandy">Sandy</option>
-                    <option value="loamy">Loamy</option>
-                    <option value="clay">Clay</option>
-                    <option value="silt">Silt</option>
-                    <option value="peaty">Peaty</option>
-                    <option value="chalky">Chalky</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="waterAvailability">Water Availability</label>
-                <select class="form-select" id="waterAvailability">
-                    <option value="">Select water availability</option>
-                    <option value="high">High (Irrigation available)</option>
-                    <option value="medium">Medium (Seasonal water)</option>
-                    <option value="low">Low (Rainfed only)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="climateZone">Climate Zone</label>
-                <select class="form-select" id="climateZone">
-                    <option value="">Select climate zone</option>
-                    <option value="tropical">Tropical</option>
-                    <option value="subtropical">Subtropical</option>
-                    <option value="temperate">Temperate</option>
-                    <option value="arid">Arid</option>
-                    <option value="semi-arid">Semi-arid</option>
-                </select>
-            </div>
-            
-            <button class="action-btn" id="getRecommendationBtn" disabled>
-                <i class="fas fa-seedling"></i>
-                Get Crop Recommendations
-            </button>
         </div>
 
         <!-- Crop Recommendation -->
         <div class="content-card" id="recommendationCard" style="display: none;">
             <div class="section-title">
                 <i class="fas fa-chart-line"></i>
-                Recommended Crops
+                AI Crop Recommendations
             </div>
             
             <div class="crop-recommendation" id="cropRecommendation">
@@ -573,7 +571,7 @@
             
             <button class="action-btn" id="saveRecommendationBtn">
                 <i class="fas fa-save"></i>
-                Save Recommendation
+                Start Crop Journey
             </button>
         </div>
     </div>
@@ -604,11 +602,17 @@
 
     <!-- Include external scripts -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth-checker.js"></script>
+
     <script>
         // Global variables
         let map;
-        let userLocation = null;
-        let locationMarker = null;
+        let currentUser = null;
+        let userLands = [];
+        let currentLandIndex = 0;
+        let selectedLand = null;
         let cropRecommendations = null;
 
         // DOM Elements
@@ -617,16 +621,17 @@
         const errorDetails = document.getElementById('errorDetails');
         const userName = document.getElementById('userName');
         const locationText = document.getElementById('locationText');
-        const locationName = document.getElementById('locationName');
-        const coordinatesDisplay = document.getElementById('coordinatesDisplay');
-        const locationProgress = document.getElementById('locationProgress');
-        const locationStatus = document.getElementById('locationStatus');
-        const latitudeValue = document.getElementById('latitudeValue');
-        const longitudeValue = document.getElementById('longitudeValue');
-        const landArea = document.getElementById('landArea');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusSubtitle = document.getElementById('statusSubtitle');
+        const statusProgress = document.getElementById('statusProgress');
+        const statusDetails = document.getElementById('statusDetails');
+        const landSelect = document.getElementById('landSelect');
+        const selectedLandElement = document.getElementById('selectedLand');
         const soilType = document.getElementById('soilType');
         const waterAvailability = document.getElementById('waterAvailability');
-        const climateZone = document.getElementById('climateZone');
+        const landArea = document.getElementById('landArea');
+        const prevLandBtn = document.getElementById('prevLandBtn');
+        const nextLandBtn = document.getElementById('nextLandBtn');
         const getRecommendationBtn = document.getElementById('getRecommendationBtn');
         const recommendationCard = document.getElementById('recommendationCard');
         const cropRecommendation = document.getElementById('cropRecommendation');
@@ -665,159 +670,230 @@
             }
         }
 
-        // Update map with user location
-        function updateMapWithLocation(lat, lng) {
+        // Update map with land coordinates
+        function updateMapWithLand(land) {
             try {
-                // Remove existing marker if any
-                if (locationMarker) {
-                    map.removeLayer(locationMarker);
+                // Clear existing layers
+                map.eachLayer(layer => {
+                    if (layer instanceof L.Marker || layer instanceof L.Polygon) {
+                        map.removeLayer(layer);
+                    }
+                });
+
+                if (land && land.coordinates && land.coordinates.length > 0) {
+                    // Create polygon from coordinates
+                    const polygon = L.polygon(land.coordinates, {
+                        color: '#2E8B57',
+                        fillColor: '#3CB371',
+                        fillOpacity: 0.3,
+                        weight: 3
+                    }).addTo(map);
+                    
+                    // Fit map to the polygon bounds
+                    map.fitBounds(polygon.getBounds());
+                    
+                    // Add marker at center
+                    L.marker([land.center_lat, land.center_lng])
+                        .addTo(map)
+                        .bindPopup(`<b>${land.land_name}</b><br>${land.area_acres} acres`)
+                        .openPopup();
+                        
+                    // Update location text
+                    locationText.textContent = land.land_name;
+                } else if (land && land.center_lat && land.center_lng) {
+                    // If no polygon coordinates, just show center point
+                    map.setView([land.center_lat, land.center_lng], 13);
+                    L.marker([land.center_lat, land.center_lng])
+                        .addTo(map)
+                        .bindPopup(`<b>${land.land_name}</b><br>${land.area_acres} acres`)
+                        .openPopup();
+                        
+                    // Update location text
+                    locationText.textContent = land.land_name;
                 }
-                
-                // Add new marker
-                locationMarker = L.marker([lat, lng]).addTo(map)
-                    .bindPopup('Your Location')
-                    .openPopup();
-                
-                // Center map on user location
-                map.setView([lat, lng], 13);
-                
-                // Update coordinates display
-                latitudeValue.textContent = lat.toFixed(4);
-                longitudeValue.textContent = lng.toFixed(4);
-                coordinatesDisplay.textContent = `Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
-                
             } catch (error) {
-                showError('Map Update Failed', 'Failed to update map with your location.');
+                console.error('Error updating map:', error);
+                showError('Map Update Failed', 'Failed to update map with land coordinates.');
             }
         }
 
-        // Get user location
-        function getUserLocation() {
-            return new Promise((resolve, reject) => {
-                if (!navigator.geolocation) {
-                    reject(new Error('Geolocation is not supported by this browser.'));
+        // Load user data from Supabase
+        async function loadUserData() {
+            try {
+                statusProgress.style.width = '30%';
+                statusDetails.textContent = 'Loading user profile...';
+
+                // Check authentication first
+                const isAuthenticated = await window.authChecker.requireAuth();
+                if (!isAuthenticated) {
+                    showError('Authentication Required', 'Please log in to access this feature.');
                     return;
                 }
 
-                locationStatus.textContent = 'Getting your location...';
-                locationProgress.style.width = '30%';
-
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        try {
-                            const lat = position.coords.latitude;
-                            const lng = position.coords.longitude;
-                            
-                            userLocation = { lat, lng };
-                            
-                            locationProgress.style.width = '70%';
-                            locationStatus.textContent = 'Getting location details...';
-                            
-                            // Get location name using reverse geocoding
-                            const locationName = await getLocationName(lat, lng);
-                            
-                            locationProgress.style.width = '100%';
-                            locationStatus.textContent = 'Location detected successfully!';
-                            
-                            // Update UI with location details
-                            updateLocationUI(lat, lng, locationName);
-                            
-                            resolve({ lat, lng, locationName });
-                        } catch (error) {
-                            reject(error);
-                        }
-                    },
-                    (error) => {
-                        let errorMessage = 'Unknown error occurred';
-                        
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                errorMessage = 'Location access denied. Please enable location permissions.';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                errorMessage = 'Location information is unavailable.';
-                                break;
-                            case error.TIMEOUT:
-                                errorMessage = 'Location request timed out.';
-                                break;
-                        }
-                        
-                        reject(new Error(errorMessage));
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 60000
-                    }
-                );
-            });
-        }
-
-        // Get location name from coordinates
-        async function getLocationName(lat, lng) {
-            try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-                const data = await response.json();
-                
-                if (data && data.address) {
-                    const city = data.address.city || data.address.town || data.address.village || data.address.county;
-                    const state = data.address.state;
-                    const country = data.address.country;
-                    
-                    if (city && state) {
-                        return `${city}, ${state}, ${country}`;
-                    } else if (state) {
-                        return `${state}, ${country}`;
-                    } else {
-                        return country || 'Unknown location';
-                    }
-                } else {
-                    return 'Unknown location';
+                // Get current user
+                currentUser = await window.authChecker.getCurrentUser();
+                if (!currentUser) {
+                    showError('User Not Found', 'No authenticated user found. Please log in again.');
+                    return;
                 }
+
+                statusProgress.style.width = '50%';
+                statusDetails.textContent = 'Loading user profile...';
+
+                // Load user profile
+                const { data: userProfile, error: userError } = await window.supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('auth_id', currentUser.id)
+                    .single();
+                
+                if (userError) {
+                    showError('Profile Load Failed', 'Failed to load user profile from database.', userError);
+                } else if (userProfile) {
+                    userName.textContent = userProfile.full_name;
+                }
+
+                statusProgress.style.width = '70%';
+                statusDetails.textContent = 'Loading your lands...';
+
+                // Load user lands
+                const { data: lands, error: landsError } = await window.supabaseClient
+                    .from('lands')
+                    .select('*')
+                    .eq('auth_id', currentUser.id);
+                
+                if (landsError) {
+                    showError('Lands Load Failed', 'Failed to load user lands from database.', landsError);
+                } else if (lands && lands.length > 0) {
+                    userLands = lands;
+                    
+                    statusProgress.style.width = '90%';
+                    statusDetails.textContent = 'Loading land coordinates...';
+
+                    // Load coordinates for each land
+                    for (let land of userLands) {
+                        try {
+                            const { data: coordinates, error: coordsError } = await window.supabaseClient
+                                .from('land_coordinates')
+                                .select('latitude, longitude, corner_index')
+                                .eq('land_id', land.land_id)
+                                .order('corner_index');
+                            
+                            if (!coordsError && coordinates && coordinates.length > 0) {
+                                land.coordinates = coordinates.map(coord => [coord.latitude, coord.longitude]);
+                            }
+                        } catch (error) {
+                            console.error('Error loading coordinates:', error);
+                        }
+                    }
+                    
+                    // Populate land dropdown
+                    populateLandDropdown();
+                    updateLandDisplay();
+                    
+                    statusProgress.style.width = '100%';
+                    statusDetails.textContent = 'Ready! Select a land to get recommendations';
+                    statusTitle.textContent = 'Land Loaded Successfully';
+                    statusSubtitle.textContent = `${userLands.length} lands found`;
+
+                } else {
+                    selectedLandElement.textContent = 'No lands found';
+                    prevLandBtn.disabled = true;
+                    nextLandBtn.disabled = true;
+                    landSelect.innerHTML = '<option value="">No lands available</option>';
+                    
+                    statusProgress.style.width = '100%';
+                    statusDetails.textContent = 'No lands found. Please add a land first.';
+                    statusTitle.textContent = 'No Lands Available';
+                    statusSubtitle.textContent = 'Add a land to get started';
+                }
+
             } catch (error) {
-                console.error('Error getting location name:', error);
-                return 'Location found';
+                showError('User Data Load Failed', 'Failed to load user data. Please refresh the page.', error);
             }
         }
 
-        // Update UI with location details
-        function updateLocationUI(lat, lng, locationName) {
-            locationNameElement.textContent = locationName;
-            locationText.textContent = locationName;
-            updateMapWithLocation(lat, lng);
+        // Populate land dropdown
+        function populateLandDropdown() {
+            landSelect.innerHTML = '';
             
-            // Enable recommendation button if land info is provided
-            checkFormCompletion();
+            userLands.forEach((land, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${land.land_name} (${land.area_acres} acres)`;
+                landSelect.appendChild(option);
+            });
+            
+            if (userLands.length > 0) {
+                landSelect.value = currentLandIndex;
+            }
         }
 
-        // Check if form is complete to enable recommendation button
-        function checkFormCompletion() {
-            const isLandAreaValid = landArea.value && parseFloat(landArea.value) > 0;
-            const isSoilTypeValid = soilType.value !== '';
-            const isWaterAvailabilityValid = waterAvailability.value !== '';
+        // Update land display
+        function updateLandDisplay() {
+            if (userLands.length === 0) {
+                selectedLandElement.textContent = 'No lands found';
+                soilType.textContent = '-';
+                waterAvailability.textContent = '-';
+                landArea.textContent = '-';
+                prevLandBtn.disabled = true;
+                nextLandBtn.disabled = true;
+                getRecommendationBtn.disabled = true;
+                return;
+            }
             
-            getRecommendationBtn.disabled = !(isLandAreaValid && isSoilTypeValid && isWaterAvailabilityValid && userLocation);
+            const currentLand = userLands[currentLandIndex];
+            selectedLand = currentLand;
+            
+            selectedLandElement.textContent = currentLand.land_name;
+            soilType.textContent = currentLand.soil_type || 'Not specified';
+            waterAvailability.textContent = currentLand.water_availability || 'Not specified';
+            landArea.textContent = currentLand.area_acres ? `${currentLand.area_acres} acres` : 'Not specified';
+            
+            // Update map
+            updateMapWithLand(currentLand);
+            
+            // Update navigation buttons
+            prevLandBtn.disabled = currentLandIndex === 0;
+            nextLandBtn.disabled = currentLandIndex === userLands.length - 1;
+            
+            // Update dropdown selection
+            landSelect.value = currentLandIndex;
+            
+            // Enable recommendation button
+            getRecommendationBtn.disabled = false;
         }
 
-        // Get crop recommendations based on location and land info
+        // Get crop recommendations based on selected land
         async function getCropRecommendations() {
+            if (!selectedLand) {
+                showError('No Land Selected', 'Please select a land first.');
+                return;
+            }
+            
             try {
                 // Show loading state
-                getRecommendationBtn.innerHTML = '<span class="spinner"></span> Analyzing your land...';
+                getRecommendationBtn.innerHTML = '<span class="spinner"></span> Analyzing your land with AI...';
                 getRecommendationBtn.disabled = true;
                 
-                // Prepare request data
+                // Get additional data for better recommendations
+                const soilAnalysis = await getSoilAnalysis(selectedLand.land_id);
+                const weatherData = await getWeatherData(selectedLand.land_id);
+                
+                // Prepare request data for Gemini API
                 const requestData = {
-                    location: {
-                        latitude: userLocation.lat,
-                        longitude: userLocation.lng
+                    land: {
+                        name: selectedLand.land_name,
+                        soilType: selectedLand.soil_type,
+                        waterAvailability: selectedLand.water_availability,
+                        area: selectedLand.area_acres,
+                        coordinates: {
+                            lat: selectedLand.center_lat,
+                            lng: selectedLand.center_lng
+                        }
                     },
-                    landInfo: {
-                        area: parseFloat(landArea.value),
-                        soilType: soilType.value,
-                        waterAvailability: waterAvailability.value,
-                        climateZone: climateZone.value || 'auto'
-                    }
+                    soilAnalysis: soilAnalysis,
+                    weatherData: weatherData
                 };
                 
                 // Call Gemini API for crop recommendations
@@ -827,7 +903,7 @@
                 displayCropRecommendations(recommendations);
                 
                 // Reset button state
-                getRecommendationBtn.innerHTML = '<i class="fas fa-seedling"></i> Get Crop Recommendations';
+                getRecommendationBtn.innerHTML = '<i class="fas fa-seedling"></i> Get AI Crop Recommendations';
                 getRecommendationBtn.disabled = false;
                 
             } catch (error) {
@@ -835,8 +911,48 @@
                 console.error('Error getting recommendations:', error);
                 
                 // Reset button state
-                getRecommendationBtn.innerHTML = '<i class="fas fa-seedling"></i> Get Crop Recommendations';
+                getRecommendationBtn.innerHTML = '<i class="fas fa-seedling"></i> Get AI Crop Recommendations';
                 getRecommendationBtn.disabled = false;
+            }
+        }
+
+        // Get soil analysis data
+        async function getSoilAnalysis(landId) {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('soil_analysis')
+                    .select('*')
+                    .eq('land_id', landId)
+                    .order('analysis_date', { ascending: false })
+                    .limit(1);
+                
+                if (!error && data && data.length > 0) {
+                    return data[0];
+                }
+                return null;
+            } catch (error) {
+                console.error('Error getting soil analysis:', error);
+                return null;
+            }
+        }
+
+        // Get weather data
+        async function getWeatherData(landId) {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('weather_reports')
+                    .select('*')
+                    .eq('land_id', landId)
+                    .order('report_date', { ascending: false })
+                    .limit(1);
+                
+                if (!error && data && data.length > 0) {
+                    return data[0];
+                }
+                return null;
+            } catch (error) {
+                console.error('Error getting weather data:', error);
+                return null;
             }
         }
 
@@ -847,39 +963,53 @@
             
             // Prepare the prompt for Gemini
             const prompt = `
-                Based on the following agricultural information, provide detailed crop recommendations:
+                As an agricultural expert, analyze this land data and provide crop recommendations:
                 
-                Location: Latitude ${requestData.location.latitude}, Longitude ${requestData.location.longitude}
-                Land Area: ${requestData.landInfo.area} acres
-                Soil Type: ${requestData.landInfo.soilType}
-                Water Availability: ${requestData.landInfo.waterAvailability}
-                Climate Zone: ${requestData.landInfo.climateZone}
+                LAND INFORMATION:
+                - Name: ${requestData.land.name}
+                - Soil Type: ${requestData.land.soilType}
+                - Water Availability: ${requestData.land.waterAvailability}
+                - Area: ${requestData.land.area} acres
+                - Location: Latitude ${requestData.land.coordinates.lat}, Longitude ${requestData.land.coordinates.lng}
+                
+                ${requestData.soilAnalysis ? `
+                SOIL ANALYSIS:
+                - pH Level: ${requestData.soilAnalysis.ph_level}
+                - Nitrogen: ${requestData.soilAnalysis.nitrogen}
+                - Phosphorus: ${requestData.soilAnalysis.phosphorus}
+                - Potassium: ${requestData.soilAnalysis.potassium}
+                - Organic Matter: ${requestData.soilAnalysis.organic_matter}%
+                ` : 'No recent soil analysis available'}
+                
+                ${requestData.weatherData ? `
+                WEATHER CONDITIONS:
+                - Temperature: ${requestData.weatherData.current_temperature}°C
+                - Rainfall: ${requestData.weatherData.rainfall_amount} mm
+                - Humidity: ${requestData.weatherData.humidity}%
+                ` : 'No recent weather data available'}
                 
                 Please provide:
-                1. Top 3-5 recommended crops for this location and land conditions
-                2. For each crop, include:
-                   - Suitability score (out of 10)
-                   - Best growing season
-                   - Expected yield potential
-                   - Water requirements
-                   - Key advantages for this specific location
+                1. Top 3-5 recommended crops for this specific land
+                2. For each crop, include suitability score, growing season, yield potential, and water requirements
                 3. Detailed explanation of why these crops are recommended
-                4. Any specific considerations for this region
+                4. Specific agricultural practices for this land
+                5. Potential challenges and solutions
                 
-                Format the response as a JSON object with the following structure:
+                Format the response as a JSON object with this structure:
                 {
                     "bestCrops": [
                         {
                             "name": "Crop Name",
                             "suitability": 9,
-                            "season": "Growing season",
-                            "yield": "Yield potential",
-                            "water": "Water needs",
+                            "season": "Rabi/Kharif/Zaid",
+                            "yield": "High/Medium/Low",
+                            "water": "High/Medium/Low",
                             "advantages": ["Advantage 1", "Advantage 2"]
                         }
                     ],
                     "explanation": "Detailed explanation here",
-                    "considerations": ["Consideration 1", "Consideration 2"]
+                    "practices": ["Practice 1", "Practice 2"],
+                    "challenges": ["Challenge 1 with solution", "Challenge 2 with solution"]
                 }
             `;
             
@@ -927,72 +1057,71 @@
                         return JSON.parse(jsonMatch[0]);
                     } else {
                         // Fallback: create a structured response from the text
-                        return createStructuredResponse(responseText);
+                        return createStructuredResponse(responseText, requestData);
                     }
                 } catch (parseError) {
                     console.error('Error parsing JSON response:', parseError);
                     // Fallback: create a structured response from the text
-                    return createStructuredResponse(responseText);
+                    return createStructuredResponse(responseText, requestData);
                 }
                 
             } catch (error) {
                 console.error('API call failed:', error);
-                // Return fallback recommendations based on location and soil type
+                // Return fallback recommendations based on land data
                 return getFallbackRecommendations(requestData);
             }
         }
 
         // Create structured response from text (fallback)
-        function createStructuredResponse(text) {
-            // This is a simple fallback - in a real app, you'd want more sophisticated parsing
+        function createStructuredResponse(text, requestData) {
+            // Simple fallback parsing
             const crops = [];
             const lines = text.split('\n');
-            let currentCrop = null;
             
             for (const line of lines) {
                 const trimmedLine = line.trim();
                 
-                if (trimmedLine && !trimmedLine.startsWith('**') && !trimmedLine.includes('Explanation') && !trimmedLine.includes('Considerations')) {
-                    if (trimmedLine.match(/^\d+\./)) {
-                        // New crop entry
-                        if (currentCrop) {
-                            crops.push(currentCrop);
-                        }
-                        currentCrop = {
-                            name: trimmedLine.replace(/^\d+\.\s*/, ''),
+                if (trimmedLine && /^\d+\./.test(trimmedLine)) {
+                    const cropName = trimmedLine.replace(/^\d+\.\s*/, '').split(':')[0];
+                    if (cropName && cropName.length < 50) { // Basic validation
+                        crops.push({
+                            name: cropName,
                             suitability: 8,
-                            season: 'Varies',
+                            season: getSeasonFromSoil(requestData.land.soilType),
                             yield: 'Good',
-                            water: 'Medium',
-                            advantages: ['Suitable for your region']
-                        };
-                    } else if (currentCrop) {
-                        // Add details to current crop
-                        if (trimmedLine.toLowerCase().includes('season')) {
-                            currentCrop.season = trimmedLine;
-                        } else if (trimmedLine.toLowerCase().includes('yield')) {
-                            currentCrop.yield = trimmedLine;
-                        } else if (trimmedLine.toLowerCase().includes('water')) {
-                            currentCrop.water = trimmedLine;
-                        }
+                            water: requestData.land.waterAvailability === 'high' ? 'Medium' : 'Low',
+                            advantages: ['Well-suited to your soil type', 'Good market potential']
+                        });
                     }
                 }
-            }
-            
-            if (currentCrop) {
-                crops.push(currentCrop);
+                
+                if (crops.length >= 3) break;
             }
             
             return {
-                bestCrops: crops.slice(0, 3),
-                explanation: "Based on your location and land characteristics, these crops are recommended for optimal yield and sustainability.",
-                considerations: ["Consider local market demand", "Check for pest prevalence in your area"]
+                bestCrops: crops.length > 0 ? crops : getFallbackRecommendations(requestData).bestCrops,
+                explanation: "Based on your land characteristics, these crops are recommended for optimal yield and sustainability.",
+                practices: ["Test soil pH before planting", "Implement proper irrigation scheduling"],
+                challenges: ["Monitor for pest outbreaks - use integrated pest management", "Manage water efficiently - consider drip irrigation"]
             };
+        }
+
+        // Helper function to determine season from soil type
+        function getSeasonFromSoil(soilType) {
+            const soilSeasonMap = {
+                'sandy': 'Kharif',
+                'loamy': 'Rabi/Kharif',
+                'clay': 'Kharif',
+                'silt': 'Rabi',
+                'peaty': 'Kharif',
+                'chalky': 'Rabi'
+            };
+            return soilSeasonMap[soilType] || 'Rabi/Kharif';
         }
 
         // Fallback recommendations if API fails
         function getFallbackRecommendations(requestData) {
-            // Simple fallback based on soil type and location
+            // Simple fallback based on soil type and water availability
             const soilBasedCrops = {
                 sandy: ['Pearl Millet', 'Groundnut', 'Watermelon'],
                 loamy: ['Wheat', 'Maize', 'Soybean', 'Cotton'],
@@ -1002,19 +1131,20 @@
                 chalky: ['Spinach', 'Beets', 'Sweet Corn', 'Cabbage']
             };
             
-            const crops = soilBasedCrops[requestData.landInfo.soilType] || ['Wheat', 'Maize', 'Rice'];
+            const crops = soilBasedCrops[requestData.land.soilType] || ['Wheat', 'Maize', 'Rice'];
             
             return {
                 bestCrops: crops.map((crop, index) => ({
                     name: crop,
                     suitability: 9 - index,
-                    season: 'Rabi/Kharif based on crop',
+                    season: getSeasonFromSoil(requestData.land.soilType),
                     yield: 'High with proper management',
-                    water: requestData.landInfo.waterAvailability === 'high' ? 'Medium' : 'Low',
+                    water: requestData.land.waterAvailability === 'high' ? 'Medium' : 'Low',
                     advantages: ['Well-suited to your soil type', 'Good market demand']
                 })),
-                explanation: `Based on your ${requestData.landInfo.soilType} soil and ${requestData.landInfo.waterAvailability} water availability, these crops are traditionally successful in your region.`,
-                considerations: ['Consult with local agricultural experts for specific varieties', 'Test soil pH before planting']
+                explanation: `Based on your ${requestData.land.soilType} soil and ${requestData.land.waterAvailability} water availability, these crops are traditionally successful in your region.`,
+                practices: ['Consult with local agricultural experts for specific varieties', 'Test soil pH before planting'],
+                challenges: ['Monitor water usage carefully', 'Check for local pest advisories']
             };
         }
 
@@ -1028,7 +1158,7 @@
             // Add crops to recommendation list
             recommendations.bestCrops.forEach((crop, index) => {
                 const li = document.createElement('li');
-                li.innerHTML = `<strong>${crop.name}</strong> - Suitability: ${crop.suitability}/10`;
+                li.innerHTML = `<strong>${crop.name}</strong> - Suitability: ${crop.suitability}/10 - Season: ${crop.season}`;
                 recommendationList.appendChild(li);
             });
             
@@ -1041,13 +1171,19 @@
                 waterNeeds.textContent = bestCropData.water;
             }
             
-            // Update explanation
+            // Update explanation and details
             recommendationDetails.innerHTML = `
                 <p>${recommendations.explanation}</p>
-                ${recommendations.considerations ? `
-                <p><strong>Important Considerations:</strong></p>
+                ${recommendations.practices ? `
+                <p style="margin-top: 10px;"><strong>Recommended Practices:</strong></p>
                 <ul>
-                    ${recommendations.considerations.map(consideration => `<li>${consideration}</li>`).join('')}
+                    ${recommendations.practices.map(practice => `<li>${practice}</li>`).join('')}
+                </ul>
+                ` : ''}
+                ${recommendations.challenges ? `
+                <p style="margin-top: 10px;"><strong>Potential Challenges & Solutions:</strong></p>
+                <ul>
+                    ${recommendations.challenges.map(challenge => `<li>${challenge}</li>`).join('')}
                 </ul>
                 ` : ''}
             `;
@@ -1060,21 +1196,87 @@
             recommendationCard.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Save recommendation
-        function saveRecommendation() {
-            if (!cropRecommendations) return;
+        // Save recommendation and start crop journey
+        async function saveRecommendation() {
+            if (!cropRecommendations || !selectedLand) return;
             
-            // In a real app, you would save this to a database
-            // For now, we'll just show a confirmation
-            showNotification('Crop recommendations saved successfully!');
-            
-            // You could also redirect to the crop management page
-            // window.location.href = 'crops.html';
+            try {
+                saveRecommendationBtn.innerHTML = '<span class="spinner"></span> Creating crop...';
+                saveRecommendationBtn.disabled = true;
+                
+                const bestCropName = cropRecommendations.bestCrops[0].name;
+                
+                // Create a new crop in the database
+                const cropId = 'CROP_' + Date.now();
+                const plantingDate = new Date().toISOString().split('T')[0];
+                
+                // Calculate expected harvest date (add default duration)
+                const harvestDate = new Date();
+                harvestDate.setDate(harvestDate.getDate() + 120);
+                const expectedHarvestDate = harvestDate.toISOString().split('T')[0];
+                
+                // Insert crop into database
+                const { data: crop, error } = await window.supabaseClient
+                    .from('crops')
+                    .insert({
+                        crop_id: cropId,
+                        auth_id: currentUser.id,
+                        land_id: selectedLand.land_id,
+                        crop_name: bestCropName,
+                        crop_type: 'custom',
+                        planting_date: plantingDate,
+                        expected_harvest_date: expectedHarvestDate,
+                        area_allocated: selectedLand.area_acres,
+                        current_stage: 'germination',
+                        is_active: true,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    })
+                    .select()
+                    .single();
+                
+                if (error) {
+                    throw new Error('Failed to create crop: ' + error.message);
+                }
+                
+                // Create initial crop stages
+                const stages = ['germination', 'seedling', 'vegetative', 'flowering', 'fruiting', 'maturity'];
+                
+                for (let i = 0; i < stages.length; i++) {
+                    const stageKey = stages[i];
+                    await window.supabaseClient
+                        .from('crop_stages')
+                        .insert({
+                            crop_id: cropId,
+                            auth_id: currentUser.id,
+                            stage_key: stageKey,
+                            stage_name: stageKey.charAt(0).toUpperCase() + stageKey.slice(1),
+                            stage_order: i,
+                            ai_verified_conditions: [],
+                            is_current: i === 0,
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        });
+                }
+                
+                showNotification(`Crop journey started for ${bestCropName}!`);
+                
+                // Redirect to crop management page after a delay
+                setTimeout(() => {
+                    window.location.href = 'crops.html';
+                }, 2000);
+                
+            } catch (error) {
+                showError('Crop Creation Failed', 'Failed to start crop journey. Please try again.');
+                console.error('Error saving recommendation:', error);
+                
+                saveRecommendationBtn.innerHTML = '<i class="fas fa-save"></i> Start Crop Journey';
+                saveRecommendationBtn.disabled = false;
+            }
         }
 
         // Show notification
         function showNotification(message) {
-            // Create a simple notification
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
@@ -1099,7 +1301,6 @@
             
             document.body.appendChild(notification);
             
-            // Remove after 3 seconds
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.3s ease-in';
                 setTimeout(() => {
@@ -1112,16 +1313,34 @@
 
         // Event Listeners
         function setupEventListeners() {
-            // Form inputs
-            landArea.addEventListener('input', checkFormCompletion);
-            soilType.addEventListener('change', checkFormCompletion);
-            waterAvailability.addEventListener('change', checkFormCompletion);
-            climateZone.addEventListener('change', checkFormCompletion);
-            
+            // Land selection dropdown
+            landSelect.addEventListener('change', (e) => {
+                const selectedIndex = parseInt(e.target.value);
+                if (!isNaN(selectedIndex) && selectedIndex >= 0 && selectedIndex < userLands.length) {
+                    currentLandIndex = selectedIndex;
+                    updateLandDisplay();
+                }
+            });
+
+            // Land navigation
+            prevLandBtn.addEventListener('click', () => {
+                if (currentLandIndex > 0) {
+                    currentLandIndex--;
+                    updateLandDisplay();
+                }
+            });
+
+            nextLandBtn.addEventListener('click', () => {
+                if (currentLandIndex < userLands.length - 1) {
+                    currentLandIndex++;
+                    updateLandDisplay();
+                }
+            });
+
             // Buttons
             getRecommendationBtn.addEventListener('click', getCropRecommendations);
             saveRecommendationBtn.addEventListener('click', saveRecommendation);
-            
+
             // Error display close
             errorDisplay.addEventListener('click', hideError);
         }
@@ -1135,13 +1354,11 @@
                 // Initialize map
                 initializeMap();
                 
-                // Get user location
-                await getUserLocation();
+                // Load user data
+                await loadUserData();
                 
             } catch (error) {
-                showError('Location Detection Failed', error.message);
-                locationStatus.textContent = 'Location detection failed';
-                locationProgress.style.width = '0%';
+                showError('App Initialization Failed', 'Failed to initialize the application.');
             }
         }
 
