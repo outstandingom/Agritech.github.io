@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowSmart - Blockchain Verification</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary: #2E8B57;
+            --primary-light: #3CB371;
+            --primary-dark: #228B22;
+            --secondary: #4682B4;
+            --accent: #FFA500;
+            --warning: #FF6347;
+            --error: #DC143C;
+            --background: #F5F5F5;
+            --surface: #FFFFFF;
+            --text: #2F4F4F;
+            --text-light: #708090;
+            --border: #E0E0E0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --radius: 16px;
+            --gradient: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 16px;
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 12px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-title i {
+            font-size: 22px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .location {
+            font-size: 14px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Content Cards */
+        .content-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* Blockchain Status */
+        .blockchain-status {
+            background: var(--gradient);
+            color: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .status-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .status-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4CAF50;
+        }
+
+        .status-dot.pending {
+            background: #FFA500;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Verification Cards */
+        .verification-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .verification-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .verification-title {
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .verification-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-verified {
+            background: rgba(46, 139, 87, 0.1);
+            color: var(--primary);
+        }
+
+        .status-pending {
+            background: rgba(255, 165, 0, 0.1);
+            color: #FF8C00;
+        }
+
+        .verification-details {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .verification-hash {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .verification-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verify-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .verify-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .view-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #3a6ea5;
+        }
+
+        /* Blockchain Info */
+        .blockchain-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        /* Simulated Blockchain */
+        .simulated-chain {
+            margin-top: 20px;
+        }
+
+        .chain-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 3px solid var(--primary);
+        }
+
+        .chain-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .chain-title {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .chain-timestamp {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .chain-hash {
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-light);
+            word-break: break-all;
+        }
+
+        /* Demo Mode Notice */
+        .demo-notice {
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .demo-title {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .demo-text {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        /* Error Display */
+        .error-display {
+            background: rgba(220, 20, 60, 0.1);
+            border: 1px solid var(--error);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .error-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        .error-details {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-around;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 480px;
+            z-index: 1000;
+            border: 1px solid var(--border);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item.active {
+            opacity: 1;
+            color: var(--primary);
+            background: rgba(46, 139, 87, 0.1);
+        }
+
+        .nav-item:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .nav-item span {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+                padding-bottom: 100px;
+            }
+            
+            .header {
+                margin-bottom: 16px;
+                padding: 10px 0;
+            }
+            
+            .blockchain-info {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .verification-actions {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .bottom-nav {
+                width: calc(100% - 32px);
+                padding: 14px;
+            }
+            
+            .nav-item span {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Error Display -->
+        <div class="error-display" id="errorDisplay">
+            <div class="error-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="errorTitle">Error Occurred</span>
+            </div>
+            <div class="error-details" id="errorDetails">
+                An error occurred while processing your request.
+            </div>
+        </div>
+
+        <!-- Demo Mode Notice -->
+        <div class="demo-notice">
+            <div class="demo-title">
+                <i class="fas fa-info-circle"></i>
+                Demo Mode Active
+            </div>
+            <div class="demo-text">
+                Blockchain verification is running in demo mode. No real cryptocurrency or external services required.
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="app-title">
+                <i class="fas fa-link"></i>
+                GrowSmart Blockchain
+            </div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="locationText">Local Network</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blockchain Status -->
+        <div class="blockchain-status">
+            <div class="status-title">Crop Verification Network</div>
+            <div class="status-subtitle">All your crop data is securely verified</div>
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Blockchain Synchronized</span>
+            </div>
+            <div class="status-details" id="statusDetails">Local verification network active</div>
+        </div>
+
+        <!-- Verification Cards -->
+        <div class="content-card">
+            <div class="section-title">
+                <i class="fas fa-shield-alt"></i>
+                Crop Verifications
+            </div>
+            
+            <div id="verificationCards">
+                <!-- Verification cards will be populated here -->
+            </div>
+
+            <div class="blockchain-info">
+                <div class="info-card">
+                    <div class="info-value" id="verifiedCount">0</div>
+                    <div class="info-label">Verified Records</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-value" id="pendingCount">0</div>
+                    <div class="info-label">Pending Verifications</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-value" id="totalBlocks">0</div>
+                    <div class="info-label">Total Blocks</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-value" id="successRate">100%</div>
+                    <div class="info-label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulated Blockchain -->
+        <div class="content-card">
+            <div class="section-title">
+                <i class="fas fa-cubes"></i>
+                Local Verification Chain
+            </div>
+            
+            <div class="simulated-chain" id="blockchainView">
+                <!-- Blockchain items will be populated here -->
+            </div>
+            
+            <button class="action-btn verify-btn" id="verifyAllBtn" style="width: 100%; margin-top: 15px;">
+                <i class="fas fa-sync-alt"></i>
+                Verify All Pending Records
+            </button>
+        </div>
+
+        <!-- Add New Record -->
+        <div class="content-card">
+            <div class="section-title">
+                <i class="fas fa-plus-circle"></i>
+                Add New Verification
+            </div>
+            
+            <div style="display: grid; gap: 12px;">
+                <input type="text" class="crop-input" id="recordTitle" placeholder="Record Title (e.g., Harvest Data, Soil Test)">
+                <textarea class="crop-input" id="recordData" placeholder="Record Data (e.g., test results, observations)" rows="3"></textarea>
+                <button class="action-btn verify-btn" id="addRecordBtn" style="width: 100%;">
+                    <i class="fas fa-plus"></i>
+                    Add to Verification Queue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="soil.html" class="nav-item">
+            <i class="fas fa-vial"></i>
+            <span>Soil</span>
+        </a>
+        <a href="crops.html" class="nav-item">
+            <i class="fas fa-seedling"></i>
+            <span>Crops</span>
+        </a>
+        <a href="blockchain.html" class="nav-item active">
+            <i class="fas fa-link"></i>
+            <span>Blockchain</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <!-- Include external scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth-checker.js"></script>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let blockchainRecords = [];
+        let simulatedBlockchain = [];
+
+        // DOM Elements
+        const errorDisplay = document.getElementById('errorDisplay');
+        const errorTitle = document.getElementById('errorTitle');
+        const errorDetails = document.getElementById('errorDetails');
+        const userName = document.getElementById('userName');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const statusDetails = document.getElementById('statusDetails');
+        const verificationCards = document.getElementById('verificationCards');
+        const verifiedCount = document.getElementById('verifiedCount');
+        const pendingCount = document.getElementById('pendingCount');
+        const totalBlocks = document.getElementById('totalBlocks');
+        const successRate = document.getElementById('successRate');
+        const blockchainView = document.getElementById('blockchainView');
+        const verifyAllBtn = document.getElementById('verifyAllBtn');
+        const recordTitle = document.getElementById('recordTitle');
+        const recordData = document.getElementById('recordData');
+        const addRecordBtn = document.getElementById('addRecordBtn');
+
+        // Error Handling Functions
+        function showError(title, message, error = null) {
+            console.error(`Error: ${title}`, message, error);
+            
+            errorTitle.textContent = title;
+            errorDetails.textContent = message;
+            
+            errorDisplay.style.display = 'block';
+        }
+
+        function hideError() {
+            errorDisplay.style.display = 'none';
+        }
+
+        // Generate random hash (simulated blockchain hash)
+        function generateHash() {
+            return '0x' + Math.random().toString(16).substring(2, 18) + Math.random().toString(16).substring(2, 18);
+        }
+
+        // Generate timestamp
+        function getTimestamp() {
+            return new Date().toISOString();
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                // Check authentication first
+                const isAuthenticated = await window.authChecker.requireAuth();
+                if (!isAuthenticated) {
+                    showError('Authentication Required', 'Please log in to access this feature.');
+                    return;
+                }
+
+                // Get current user
+                currentUser = await window.authChecker.getCurrentUser();
+                if (!currentUser) {
+                    showError('User Not Found', 'No authenticated user found. Please log in again.');
+                    return;
+                }
+
+                // Load user profile
+                const { data: userProfile, error: userError } = await window.supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('auth_id', currentUser.id)
+                    .single();
+                
+                if (userError) {
+                    showError('Profile Load Failed', 'Failed to load user profile from database.', userError);
+                } else if (userProfile) {
+                    userName.textContent = userProfile.full_name;
+                }
+
+                // Load blockchain records
+                await loadBlockchainRecords();
+
+            } catch (error) {
+                showError('User Data Load Failed', 'Failed to load user data. Please refresh the page.', error);
+            }
+        }
+
+        // Load blockchain records from database
+        async function loadBlockchainRecords() {
+            try {
+                const { data: records, error } = await window.supabaseClient
+                    .from('blockchain_records')
+                    .select('*')
+                    .eq('auth_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    showError('Records Load Failed', 'Failed to load blockchain records.', error);
+                    return;
+                }
+
+                blockchainRecords = records || [];
+                
+                // Initialize simulated blockchain if no records exist
+                if (blockchainRecords.length === 0) {
+                    await initializeSimulatedBlockchain();
+                } else {
+                    // Convert database records to simulated blockchain format
+                    simulatedBlockchain = blockchainRecords.map(record => ({
+                        hash: record.block_hash,
+                        previousHash: record.previous_hash,
+                        timestamp: record.created_at,
+                        data: JSON.parse(record.record_data),
+                        verified: record.verified
+                    }));
+                }
+                
+                updateBlockchainDisplay();
+                
+            } catch (error) {
+                showError('Blockchain Load Failed', 'Failed to load blockchain data.', error);
+            }
+        }
+
+        // Initialize simulated blockchain with genesis block
+        async function initializeSimulatedBlockchain() {
+            const genesisBlock = {
+                hash: generateHash(),
+                previousHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+                timestamp: getTimestamp(),
+                data: {
+                    type: 'genesis',
+                    message: 'GrowSmart Blockchain Initialized',
+                    user: currentUser.id
+                },
+                verified: true
+            };
+
+            simulatedBlockchain = [genesisBlock];
+            
+            // Save genesis block to database
+            await saveBlockToDatabase(genesisBlock);
+            
+            // Create some sample records
+            await createSampleRecords();
+        }
+
+        // Create sample blockchain records
+        async function createSampleRecords() {
+            const sampleRecords = [
+                {
+                    title: 'First Crop Planting',
+                    data: 'Cotton planted in Field A - Initial planting record',
+                    type: 'planting'
+                },
+                {
+                    title: 'Soil Analysis Report',
+                    data: 'pH: 6.8, Nitrogen: High, Phosphorus: Medium, Potassium: High',
+                    type: 'soil_test'
+                },
+                {
+                    title: 'AI Stage Verification',
+                    data: 'Gemini AI confirmed Vegetative stage with 92% confidence',
+                    type: 'ai_verification'
+                }
+            ];
+
+            for (let record of sampleRecords) {
+                await addBlockchainRecord(record.title, record.data, record.type);
+            }
+        }
+
+        // Add a new blockchain record
+        async function addBlockchainRecord(title, data, type = 'custom') {
+            try {
+                const previousBlock = simulatedBlockchain[simulatedBlockchain.length - 1];
+                
+                const newBlock = {
+                    hash: generateHash(),
+                    previousHash: previousBlock.hash,
+                    timestamp: getTimestamp(),
+                    data: {
+                        type: type,
+                        title: title,
+                        content: data,
+                        user: currentUser.id
+                    },
+                    verified: Math.random() > 0.3 // 70% chance of being pre-verified for demo
+                };
+
+                simulatedBlockchain.push(newBlock);
+                
+                // Save to database
+                await saveBlockToDatabase(newBlock);
+                
+                // Update display
+                updateBlockchainDisplay();
+                
+                showNotification(`Record "${title}" added to verification queue!`);
+                
+                return newBlock;
+                
+            } catch (error) {
+                showError('Record Creation Failed', 'Failed to create new blockchain record.', error);
+                return null;
+            }
+        }
+
+        // Save block to database
+        async function saveBlockToDatabase(block) {
+            try {
+                const recordId = 'REC_' + Date.now();
+                
+                const { error } = await window.supabaseClient
+                    .from('blockchain_records')
+                    .insert({
+                        record_id: recordId,
+                        auth_id: currentUser.id,
+                        block_hash: block.hash,
+                        previous_hash: block.previousHash,
+                        record_data: JSON.stringify(block.data),
+                        verified: block.verified,
+                        created_at: block.timestamp
+                    });
+
+                if (error) {
+                    console.error('Error saving block to database:', error);
+                }
+                
+            } catch (error) {
+                console.error('Error in saveBlockToDatabase:', error);
+            }
+        }
+
+        // Verify a specific record
+        async function verifyRecord(recordHash) {
+            try {
+                // Find the record in simulated blockchain
+                const recordIndex = simulatedBlockchain.findIndex(block => block.hash === recordHash);
+                
+                if (recordIndex === -1) {
+                    showError('Record Not Found', 'The specified record was not found.');
+                    return;
+                }
+
+                // Simulate verification process
+                statusDot.classList.add('pending');
+                statusText.textContent = 'Verifying Record...';
+                statusDetails.textContent = 'Processing cryptographic verification';
+                
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+                
+                // Mark as verified
+                simulatedBlockchain[recordIndex].verified = true;
+                
+                // Update database
+                const { error } = await window.supabaseClient
+                    .from('blockchain_records')
+                    .update({ 
+                        verified: true,
+                        verified_at: new Date().toISOString()
+                    })
+                    .eq('block_hash', recordHash);
+
+                if (error) {
+                    console.error('Error updating verification status:', error);
+                }
+                
+                // Update display
+                updateBlockchainDisplay();
+                
+                statusDot.classList.remove('pending');
+                statusText.textContent = 'Blockchain Synchronized';
+                statusDetails.textContent = 'Record successfully verified';
+                
+                showNotification('Record verified and added to blockchain!');
+                
+            } catch (error) {
+                showError('Verification Failed', 'Failed to verify the record.', error);
+                
+                statusDot.classList.remove('pending');
+                statusText.textContent = 'Blockchain Synchronized';
+                statusDetails.textContent = 'Local verification network active';
+            }
+        }
+
+        // Verify all pending records
+        async function verifyAllRecords() {
+            const pendingRecords = simulatedBlockchain.filter(block => !block.verified);
+            
+            if (pendingRecords.length === 0) {
+                showNotification('All records are already verified!');
+                return;
+            }
+
+            verifyAllBtn.innerHTML = '<span class="spinner"></span> Verifying All Records...';
+            verifyAllBtn.disabled = true;
+            
+            statusDot.classList.add('pending');
+            statusText.textContent = 'Bulk Verification in Progress';
+            statusDetails.textContent = `Verifying ${pendingRecords.length} records`;
+            
+            try {
+                // Verify records one by one with delays
+                for (let i = 0; i < pendingRecords.length; i++) {
+                    const record = pendingRecords[i];
+                    
+                    statusDetails.textContent = `Verifying record ${i + 1} of ${pendingRecords.length}`;
+                    
+                    // Find and update the record
+                    const recordIndex = simulatedBlockchain.findIndex(block => block.hash === record.hash);
+                    if (recordIndex !== -1) {
+                        simulatedBlockchain[recordIndex].verified = true;
+                        
+                        // Update database
+                        await window.supabaseClient
+                            .from('blockchain_records')
+                            .update({ 
+                                verified: true,
+                                verified_at: new Date().toISOString()
+                            })
+                            .eq('block_hash', record.hash);
+                    }
+                    
+                    // Small delay between verifications
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                }
+                
+                // Update display
+                updateBlockchainDisplay();
+                
+                showNotification(`Successfully verified ${pendingRecords.length} records!`);
+                
+            } catch (error) {
+                showError('Bulk Verification Failed', 'Some records failed to verify.', error);
+            } finally {
+                verifyAllBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Verify All Pending Records';
+                verifyAllBtn.disabled = false;
+                
+                statusDot.classList.remove('pending');
+                statusText.textContent = 'Blockchain Synchronized';
+                statusDetails.textContent = 'Local verification network active';
+            }
+        }
+
+        // Update blockchain display
+        function updateBlockchainDisplay() {
+            updateVerificationCards();
+            updateBlockchainView();
+            updateStatistics();
+        }
+
+        // Update verification cards
+        function updateVerificationCards() {
+            verificationCards.innerHTML = '';
+            
+            // Show latest 5 records
+            const displayRecords = [...simulatedBlockchain]
+                .reverse()
+                .slice(0, 5);
+            
+            displayRecords.forEach(block => {
+                const card = document.createElement('div');
+                card.className = 'verification-card';
+                
+                card.innerHTML = `
+                    <div class="verification-header">
+                        <div class="verification-title">
+                            <i class="fas fa-${getRecordIcon(block.data.type)}"></i>
+                            ${block.data.title || 'Blockchain Record'}
+                        </div>
+                        <div class="verification-status ${block.verified ? 'status-verified' : 'status-pending'}">
+                            ${block.verified ? 'Verified' : 'Pending'}
+                        </div>
+                    </div>
+                    <div class="verification-details">
+                        ${block.data.content || 'No additional data'}
+                    </div>
+                    <div class="verification-hash">
+                        Hash: ${block.hash}
+                    </div>
+                    <div class="verification-actions">
+                        ${!block.verified ? `
+                            <button class="action-btn verify-btn" onclick="verifyRecord('${block.hash}')">
+                                <i class="fas fa-check-circle"></i>
+                                Verify Now
+                            </button>
+                        ` : ''}
+                        <button class="action-btn view-btn" onclick="viewRecordDetails('${block.hash}')">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </button>
+                    </div>
+                `;
+                
+                verificationCards.appendChild(card);
+            });
+        }
+
+        // Update blockchain view
+        function updateBlockchainView() {
+            blockchainView.innerHTML = '';
+            
+            // Show all blocks in chronological order
+            simulatedBlockchain.forEach((block, index) => {
+                const chainItem = document.createElement('div');
+                chainItem.className = 'chain-item';
+                
+                chainItem.innerHTML = `
+                    <div class="chain-header">
+                        <div class="chain-title">
+                            Block #${index} • ${block.data.type.replace('_', ' ').toUpperCase()}
+                        </div>
+                        <div class="chain-timestamp">
+                            ${new Date(block.timestamp).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="chain-hash">
+                        Hash: ${block.hash}
+                    </div>
+                    <div style="font-size: 12px; color: ${block.verified ? '#2E8B57' : '#FF8C00'}; margin-top: 5px;">
+                        <i class="fas fa-${block.verified ? 'check-circle' : 'clock'}"></i>
+                        ${block.verified ? 'Verified' : 'Pending Verification'}
+                    </div>
+                `;
+                
+                blockchainView.appendChild(chainItem);
+            });
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const verifiedRecords = simulatedBlockchain.filter(block => block.verified).length;
+            const pendingRecords = simulatedBlockchain.filter(block => !block.verified).length;
+            const totalRecords = simulatedBlockchain.length;
+            const rate = totalRecords > 0 ? Math.round((verifiedRecords / totalRecords) * 100) : 100;
+            
+            verifiedCount.textContent = verifiedRecords;
+            pendingCount.textContent = pendingRecords;
+            totalBlocks.textContent = totalRecords;
+            successRate.textContent = `${rate}%`;
+        }
+
+        // Get appropriate icon for record type
+        function getRecordIcon(type) {
+            const icons = {
+                'genesis': 'seedling',
+                'planting': 'seedling',
+                'soil_test': 'vial',
+                'ai_verification': 'robot',
+                'harvest': 'tractor',
+                'custom': 'file-alt'
+            };
+            
+            return icons[type] || 'file-alt';
+        }
+
+        // View record details
+        function viewRecordDetails(hash) {
+            const record = simulatedBlockchain.find(block => block.hash === hash);
+            if (!record) return;
+            
+            const details = `
+Record Type: ${record.data.type.toUpperCase()}
+Title: ${record.data.title || 'N/A'}
+Content: ${record.data.content || 'N/A'}
+Timestamp: ${new Date(record.timestamp).toLocaleString()}
+Block Hash: ${record.hash}
+Previous Hash: ${record.previousHash}
+Status: ${record.verified ? 'Verified' : 'Pending Verification'}
+            `.trim();
+            
+            alert('Blockchain Record Details:\n\n' + details);
+        }
+
+        // Helper function to show notifications
+        function showNotification(message) {
+            // Create a simple notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--primary);
+                color: white;
+                padding: 12px 20px;
+                border-radius: var(--radius);
+                box-shadow: var(--shadow-hover);
+                z-index: 10000;
+                max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Add record button
+            addRecordBtn.addEventListener('click', async () => {
+                const title = recordTitle.value.trim();
+                const data = recordData.value.trim();
+                
+                if (!title || !data) {
+                    showError('Input Required', 'Please provide both title and data for the record.');
+                    return;
+                }
+                
+                await addBlockchainRecord(title, data);
+                
+                // Clear inputs
+                recordTitle.value = '';
+                recordData.value = '';
+            });
+
+            // Verify all button
+            verifyAllBtn.addEventListener('click', verifyAllRecords);
+
+            // Error display close
+            errorDisplay.addEventListener('click', hideError);
+        }
+
+        // Initialize the application
+        async function initApp() {
+            try {
+                // Set up event listeners
+                setupEventListeners();
+                
+                // Load user data
+                await loadUserData();
+                
+            } catch (error) {
+                showError('App Initialization Failed', 'Failed to initialize the application.', error);
+            }
+        }
+
+        // Start the application
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
