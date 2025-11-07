@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FarmLand Admin Panel</title>
+    <title>FarmLand Admin - Farmer Search</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -275,7 +275,7 @@
             background-color: #f5f5f5;
         }
 
-        .land-details {
+        .farmer-details {
             background-color: white;
             border-radius: 10px;
             padding: 20px;
@@ -283,7 +283,7 @@
             display: none;
         }
 
-        .land-details.active {
+        .farmer-details.active {
             display: block;
         }
 
@@ -391,7 +391,7 @@
             display: block;
         }
 
-        .lands-table-container {
+        .farmers-table-container {
             background-color: white;
             border-radius: 10px;
             padding: 20px;
@@ -400,12 +400,12 @@
             overflow-x: auto;
         }
 
-        .lands-table {
+        .farmers-table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .lands-table th {
+        .farmers-table th {
             background-color: #f8f9fa;
             padding: 12px 15px;
             text-align: left;
@@ -414,12 +414,12 @@
             border-bottom: 2px solid #e9ecef;
         }
 
-        .lands-table td {
+        .farmers-table td {
             padding: 12px 15px;
             border-bottom: 1px solid #e9ecef;
         }
 
-        .lands-table tr:hover {
+        .farmers-table tr:hover {
             background-color: #f8f9fa;
         }
 
@@ -434,6 +434,38 @@
 
         .action-btn:hover {
             text-decoration: underline;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+        }
+
+        .toast {
+            background-color: #2c7744;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.error {
+            background-color: #d63031;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         @media (max-width: 992px) {
@@ -481,7 +513,7 @@
         <div class="header">
             <div class="search-bar">
                 <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="Search for lands, crops, farmers...">
+                <input type="text" id="search-input" placeholder="Search for farmers, lands, crops...">
             </div>
             <div class="user-info">
                 <img src="https://ui-avatars.com/api/?name=Admin+User&background=2c7744&color=fff" alt="Admin User">
@@ -495,12 +527,17 @@
         <!-- Content Area -->
         <div class="content">
             <div class="dashboard-title">
-                <h2>FarmLand Management Dashboard</h2>
+                <h2>Farmer Search & Land Management</h2>
                 <button class="btn btn-primary" id="refresh-data"><i class="fas fa-sync-alt"></i> Refresh Data</button>
             </div>
 
             <!-- Stats Cards -->
             <div class="stats-container">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <h3>TOTAL FARMERS</h3>
+                    <div class="value" id="total-farmers">0</div>
+                </div>
                 <div class="stat-card">
                     <i class="fas fa-map-marked-alt"></i>
                     <h3>TOTAL LANDS</h3>
@@ -513,35 +550,18 @@
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-tint"></i>
-                    <h3>WATER AVAILABILITY</h3>
-                    <div class="value" id="water-availability">0%</div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-cloud-sun"></i>
-                    <h3>OPTIMAL CONDITIONS</h3>
-                    <div class="value" id="optimal-conditions">0%</div>
+                    <h3>HIGH WATER AVAILABILITY</h3>
+                    <div class="value" id="high-water">0</div>
                 </div>
             </div>
 
             <!-- Filters -->
             <div class="filters-container">
-                <h3 class="filters-title">Search & Filter Lands</h3>
+                <h3 class="filters-title">Search & Filter Farmers</h3>
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label for="soil-type">Soil Type</label>
-                        <select id="soil-type">
-                            <option value="">All Soil Types</option>
-                            <option value="Loamy">Loamy</option>
-                            <option value="Sandy">Sandy</option>
-                            <option value="Clay">Clay</option>
-                            <option value="Silty">Silty</option>
-                            <option value="Peaty">Peaty</option>
-                            <option value="Chalky">Chalky</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
                         <label for="water-availability">Water Availability</label>
-                        <select id="water-availability-filter">
+                        <select id="water-availability">
                             <option value="">All Levels</option>
                             <option value="High">High</option>
                             <option value="Medium">Medium</option>
@@ -549,8 +569,8 @@
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label for="current-crop">Current Crop</label>
-                        <select id="current-crop">
+                        <label for="current-crops">Current Crops</label>
+                        <select id="current-crops">
                             <option value="">All Crops</option>
                             <option value="Corn">Corn</option>
                             <option value="Wheat">Wheat</option>
@@ -560,16 +580,6 @@
                             <option value="Vegetables">Vegetables</option>
                             <option value="Fruits">Fruits</option>
                         </select>
-                    </div>
-                </div>
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label for="area-min">Area Min (Hectares)</label>
-                        <input type="number" id="area-min" placeholder="0">
-                    </div>
-                    <div class="filter-group">
-                        <label for="area-max">Area Max (Hectares)</label>
-                        <input type="number" id="area-max" placeholder="100">
                     </div>
                     <div class="filter-group">
                         <label for="land-use">Land Use</label>
@@ -582,6 +592,28 @@
                         </select>
                     </div>
                 </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="area-min">Area Min (Sq Meters)</label>
+                        <input type="number" id="area-min" placeholder="0">
+                    </div>
+                    <div class="filter-group">
+                        <label for="area-max">Area Max (Sq Meters)</label>
+                        <input type="number" id="area-max" placeholder="100000">
+                    </div>
+                    <div class="filter-group">
+                        <label for="soil-type">Soil Type</label>
+                        <select id="soil-type">
+                            <option value="">All Soil Types</option>
+                            <option value="Loamy">Loamy</option>
+                            <option value="Sandy">Sandy</option>
+                            <option value="Clay">Clay</option>
+                            <option value="Silty">Silty</option>
+                            <option value="Peaty">Peaty</option>
+                            <option value="Chalky">Chalky</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="filter-actions">
                     <button class="btn btn-outline" id="reset-filters"><i class="fas fa-redo"></i> Reset Filters</button>
                     <button class="btn btn-primary" id="apply-filters"><i class="fas fa-filter"></i> Apply Filters</button>
@@ -590,26 +622,25 @@
 
             <!-- Loading Indicator -->
             <div class="loading" id="loading-indicator">
-                <i class="fas fa-spinner fa-spin"></i> Loading land data...
+                <i class="fas fa-spinner fa-spin"></i> Loading farmer data...
             </div>
 
-            <!-- Lands Table -->
-            <div class="lands-table-container">
-                <h3 style="margin-bottom: 15px; color: #2c7744;">Land Records</h3>
-                <table class="lands-table">
+            <!-- Farmers Table -->
+            <div class="farmers-table-container">
+                <h3 style="margin-bottom: 15px; color: #2c7744;">Farmer Records</h3>
+                <table class="farmers-table">
                     <thead>
                         <tr>
-                            <th>Land ID</th>
-                            <th>Land Name</th>
-                            <th>Area (Hectares)</th>
-                            <th>Soil Type</th>
+                            <th>Farmer Name</th>
+                            <th>Contact</th>
+                            <th>Total Lands</th>
+                            <th>Total Area (Hectares)</th>
                             <th>Water Availability</th>
-                            <th>Current Crop</th>
-                            <th>Land Use</th>
+                            <th>Current Crops</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="lands-table-body">
+                    <tbody id="farmers-table-body">
                         <!-- Table rows will be populated by JavaScript -->
                     </tbody>
                 </table>
@@ -620,10 +651,10 @@
                 <div id="map"></div>
             </div>
 
-            <!-- Land Details Panel -->
-            <div class="land-details" id="land-details">
+            <!-- Farmer Details Panel -->
+            <div class="farmer-details" id="farmer-details">
                 <div class="details-header">
-                    <h3>Land Details</h3>
+                    <h3>Farmer Details</h3>
                     <button class="close-details" id="close-details"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="details-grid" id="details-content">
@@ -633,23 +664,39 @@
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <script>
         // Supabase configuration
         const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
 
         // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true
+                }
+            });
+            console.log('Supabase client initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Supabase client:', error);
+        }
 
         // Global variables
-        let map;
+        let map = null;
         let lands = [];
+        let farmers = [];
         let markers = [];
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             initializeMap();
-            loadLandsData();
+            loadFarmersData();
             setupEventListeners();
         });
 
@@ -663,18 +710,19 @@
             }).addTo(map);
         }
 
-        // Load lands data from Supabase
-        async function loadLandsData() {
+        // Load farmers data from Supabase
+        async function loadFarmersData() {
             try {
                 showLoading(true);
                 
-                // Fetch lands data with coordinates
+                // Fetch lands data with user information
                 const { data: landsData, error } = await supabase
                     .from('lands')
                     .select(`
                         *,
                         land_coordinates(*),
-                        crops(*)
+                        crops(*),
+                        users!lands_auth_id_fkey(full_name, phone, email, user_id)
                     `);
 
                 if (error) {
@@ -682,16 +730,65 @@
                 }
 
                 lands = landsData || [];
+                processFarmersData();
                 updateStats();
                 displayLandsOnMap();
-                populateLandsTable();
+                populateFarmersTable();
                 showLoading(false);
                 
             } catch (error) {
-                console.error('Error loading lands data:', error);
-                alert('Error loading lands data. Please check the console for details.');
+                console.error('Error loading farmers data:', error);
+                showToast('Error loading farmers data. Please check the console for details.', 'error');
                 showLoading(false);
             }
+        }
+
+        // Process lands data to group by farmers
+        function processFarmersData() {
+            farmers = [];
+            
+            // Group lands by user
+            const farmerMap = new Map();
+            
+            lands.forEach(land => {
+                if (!land.users) return;
+                
+                const userId = land.users.user_id;
+                
+                if (!farmerMap.has(userId)) {
+                    farmerMap.set(userId, {
+                        user_id: userId,
+                        full_name: land.users.full_name,
+                        phone: land.users.phone,
+                        email: land.users.email,
+                        lands: [],
+                        total_area_hectares: 0,
+                        water_availability_counts: { High: 0, Medium: 0, Low: 0 },
+                        current_crops: new Set()
+                    });
+                }
+                
+                const farmer = farmerMap.get(userId);
+                farmer.lands.push(land);
+                farmer.total_area_hectares += land.area_hectares;
+                
+                // Count water availability
+                if (land.water_availability in farmer.water_availability_counts) {
+                    farmer.water_availability_counts[land.water_availability]++;
+                }
+                
+                // Add current crops
+                if (land.crops && land.crops.length > 0) {
+                    land.crops.forEach(crop => {
+                        if (crop.is_active) {
+                            farmer.current_crops.add(crop.crop_name);
+                        }
+                    });
+                }
+            });
+            
+            // Convert Map to array
+            farmers = Array.from(farmerMap.values());
         }
 
         // Display lands on the map
@@ -718,9 +815,14 @@
                     lng = 77.0 + Math.random() * 10;
                 }
 
-                // Determine marker color based on active status
-                const isActive = land.crops && land.crops.some(crop => crop.is_active);
-                const markerColor = isActive ? 'green' : 'red';
+                // Determine marker color based on water availability
+                let markerColor;
+                switch(land.water_availability) {
+                    case 'High': markerColor = 'blue'; break;
+                    case 'Medium': markerColor = 'orange'; break;
+                    case 'Low': markerColor = 'red'; break;
+                    default: markerColor = 'gray';
+                }
                 
                 // Create custom icon
                 const icon = L.divIcon({
@@ -730,54 +832,57 @@
                     iconAnchor: [10, 10]
                 });
                 
+                // Get current crop if available
+                const currentCrop = land.crops && land.crops.find(crop => crop.is_active);
+                
                 const marker = L.marker([lat, lng], { icon: icon })
                     .addTo(map)
                     .bindPopup(`
                         <div style="min-width: 200px;">
                             <h3 style="margin: 0 0 10px; color: #2c7744;">${land.land_name}</h3>
-                            <p><strong>ID:</strong> ${land.land_id}</p>
+                            <p><strong>Farmer:</strong> ${land.users ? land.users.full_name : 'Unknown'}</p>
                             <p><strong>Area:</strong> ${land.area_hectares} Hectares</p>
-                            <p><strong>Soil Type:</strong> ${land.soil_type}</p>
                             <p><strong>Water:</strong> ${land.water_availability}</p>
-                            <button onclick="showLandDetails('${land.land_id}')" style="background: #2c7744; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-top: 10px;">More Info</button>
+                            <p><strong>Current Crop:</strong> ${currentCrop ? currentCrop.crop_name : 'None'}</p>
+                            <button onclick="showFarmerDetails('${land.users ? land.users.user_id : ''}')" style="background: #2c7744; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-top: 10px;">View Farmer</button>
                         </div>
                     `);
                 
                 markers.push(marker);
             });
-
-            // Update stats based on displayed lands
-            updateStats(landsToDisplay);
         }
 
-        // Populate lands table
-        function populateLandsTable(filteredLands = null) {
-            const tableBody = document.getElementById('lands-table-body');
-            const landsToDisplay = filteredLands || lands;
+        // Populate farmers table
+        function populateFarmersTable(filteredFarmers = null) {
+            const tableBody = document.getElementById('farmers-table-body');
+            const farmersToDisplay = filteredFarmers || farmers;
             
-            if (landsToDisplay.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No lands found matching the criteria</td></tr>';
+            if (farmersToDisplay.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No farmers found matching the criteria</td></tr>';
                 return;
             }
             
-            tableBody.innerHTML = landsToDisplay.map(land => {
-                // Get current crop if available
-                const currentCrop = land.crops && land.crops.find(crop => crop.is_active);
+            tableBody.innerHTML = farmersToDisplay.map(farmer => {
+                // Get dominant water availability
+                const waterAvailability = Object.entries(farmer.water_availability_counts)
+                    .reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                
+                // Get crops as string
+                const cropsString = Array.from(farmer.current_crops).join(', ') || 'No active crops';
                 
                 return `
                     <tr>
-                        <td>${land.land_id}</td>
-                        <td>${land.land_name}</td>
-                        <td>${land.area_hectares}</td>
-                        <td>${land.soil_type}</td>
-                        <td>${land.water_availability}</td>
-                        <td>${currentCrop ? currentCrop.crop_name : 'No active crop'}</td>
-                        <td>${land.land_use || 'Not specified'}</td>
+                        <td>${farmer.full_name}</td>
+                        <td>${farmer.phone}<br><small>${farmer.email}</small></td>
+                        <td>${farmer.lands.length}</td>
+                        <td>${farmer.total_area_hectares.toFixed(2)}</td>
+                        <td>${waterAvailability}</td>
+                        <td>${cropsString}</td>
                         <td>
-                            <button class="action-btn" onclick="showLandDetails('${land.land_id}')">
+                            <button class="action-btn" onclick="showFarmerDetails('${farmer.user_id}')">
                                 <i class="fas fa-eye"></i> View
                             </button>
-                            <button class="action-btn" onclick="zoomToLand('${land.land_id}')">
+                            <button class="action-btn" onclick="zoomToFarmerLands('${farmer.user_id}')">
                                 <i class="fas fa-map-marker-alt"></i> Locate
                             </button>
                         </td>
@@ -786,230 +891,170 @@
             }).join('');
         }
 
-        // Show detailed information for a specific land
-        async function showLandDetails(landId) {
-            try {
-                showLoading(true);
-                
-                // Fetch detailed land information
-                const { data: landData, error } = await supabase
-                    .from('lands')
-                    .select(`
-                        *,
-                        land_coordinates(*),
-                        crops(*),
-                        users(full_name, phone, email),
-                        soil_analysis(*),
-                        weather_insights(*)
-                    `)
-                    .eq('land_id', landId)
-                    .single();
-
-                if (error) {
-                    throw error;
-                }
-
-                populateLandDetails(landData);
-                document.getElementById('land-details').classList.add('active');
-                showLoading(false);
-                
-            } catch (error) {
-                console.error('Error loading land details:', error);
-                alert('Error loading land details. Please check the console for details.');
-                showLoading(false);
-            }
+        // Show detailed information for a specific farmer
+        function showFarmerDetails(userId) {
+            const farmer = farmers.find(f => f.user_id === userId);
+            if (!farmer) return;
+            
+            populateFarmerDetails(farmer);
+            document.getElementById('farmer-details').classList.add('active');
         }
 
-        // Populate land details in the details panel
-        function populateLandDetails(land) {
+        // Populate farmer details in the details panel
+        function populateFarmerDetails(farmer) {
             const detailsContent = document.getElementById('details-content');
             
-            // Get current crop if available
-            const currentCrop = land.crops && land.crops.find(crop => crop.is_active);
+            // Calculate statistics
+            const totalArea = farmer.total_area_hectares;
+            const avgLandSize = totalArea / farmer.lands.length;
+            const highWaterLands = farmer.lands.filter(land => land.water_availability === 'High').length;
             
-            // Get latest soil analysis if available
-            const latestSoilAnalysis = land.soil_analysis && land.soil_analysis.length > 0 
-                ? land.soil_analysis[land.soil_analysis.length - 1] 
-                : null;
-                
-            // Get latest weather insights if available
-            const latestWeatherInsights = land.weather_insights && land.weather_insights.length > 0 
-                ? land.weather_insights[land.weather_insights.length - 1] 
-                : null;
-
             detailsContent.innerHTML = `
                 <div class="detail-card">
-                    <h4><i class="fas fa-info-circle"></i> Basic Information</h4>
+                    <h4><i class="fas fa-user"></i> Farmer Information</h4>
                     <div class="detail-item">
-                        <span class="detail-label">Land ID:</span>
-                        <span class="detail-value">${land.land_id}</span>
+                        <span class="detail-label">Full Name:</span>
+                        <span class="detail-value">${farmer.full_name}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Land Name:</span>
-                        <span class="detail-value">${land.land_name}</span>
+                        <span class="detail-label">Phone:</span>
+                        <span class="detail-value">${farmer.phone}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Area:</span>
-                        <span class="detail-value">${land.area_hectares} Hectares</span>
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">${farmer.email}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Soil Type:</span>
-                        <span class="detail-value">${land.soil_type}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Water Availability:</span>
-                        <span class="detail-value">${land.water_availability}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Land Use:</span>
-                        <span class="detail-value">${land.land_use || 'Not specified'}</span>
+                        <span class="detail-label">User ID:</span>
+                        <span class="detail-value">${farmer.user_id}</span>
                     </div>
                 </div>
 
                 <div class="detail-card">
-                    <h4><i class="fas fa-user"></i> Farmer Information</h4>
+                    <h4><i class="fas fa-chart-bar"></i> Land Statistics</h4>
                     <div class="detail-item">
-                        <span class="detail-label">Farmer Name:</span>
-                        <span class="detail-value">${land.users ? land.users.full_name : 'Not available'}</span>
+                        <span class="detail-label">Total Lands:</span>
+                        <span class="detail-value">${farmer.lands.length}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Contact:</span>
-                        <span class="detail-value">${land.users ? land.users.phone : 'Not available'}</span>
+                        <span class="detail-label">Total Area:</span>
+                        <span class="detail-value">${totalArea.toFixed(2)} Hectares</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Email:</span>
-                        <span class="detail-value">${land.users ? land.users.email : 'Not available'}</span>
+                        <span class="detail-label">Average Land Size:</span>
+                        <span class="detail-value">${avgLandSize.toFixed(2)} Hectares</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">High Water Lands:</span>
+                        <span class="detail-value">${highWaterLands}</span>
                     </div>
                 </div>
 
                 <div class="detail-card">
                     <h4><i class="fas fa-seedling"></i> Current Crops</h4>
-                    ${currentCrop ? `
-                        <div class="detail-item">
-                            <span class="detail-label">Crop Name:</span>
-                            <span class="detail-value">${currentCrop.crop_name}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Crop Type:</span>
-                            <span class="detail-value">${currentCrop.crop_type}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Planting Date:</span>
-                            <span class="detail-value">${new Date(currentCrop.planting_date).toLocaleDateString()}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Current Stage:</span>
-                            <span class="detail-value">${currentCrop.current_stage}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Status:</span>
-                            <span class="crop-status status-active">Active</span>
-                        </div>
-                    ` : `
-                        <div class="detail-item">
-                            <span class="detail-label">No active crops</span>
-                        </div>
-                    `}
+                    ${Array.from(farmer.current_crops).length > 0 ? 
+                        Array.from(farmer.current_crops).map(crop => `
+                            <div class="detail-item">
+                                <span class="detail-label">${crop}:</span>
+                                <span class="crop-status status-active">Active</span>
+                            </div>
+                        `).join('') : 
+                        '<div class="detail-item"><span class="detail-label">No active crops</span></div>'
+                    }
                 </div>
 
                 <div class="detail-card">
-                    <h4><i class="fas fa-chart-line"></i> Analysis & Insights</h4>
-                    ${latestSoilAnalysis ? `
-                        <div class="detail-item">
-                            <span class="detail-label">Soil Health:</span>
-                            <span class="detail-value">${latestSoilAnalysis.overall_health_score ? latestSoilAnalysis.overall_health_score + '/100' : 'Not assessed'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">pH Level:</span>
-                            <span class="detail-value">${latestSoilAnalysis.ph_level || 'Not measured'}</span>
-                        </div>
-                    ` : `
-                        <div class="detail-item">
-                            <span class="detail-label">Soil Analysis:</span>
-                            <span class="detail-value">Not available</span>
-                        </div>
-                    `}
-                    
-                    ${latestWeatherInsights ? `
-                        <div class="detail-item">
-                            <span class="detail-label">Growth Score:</span>
-                            <span class="detail-value">${latestWeatherInsights.growth_score || 'N/A'}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Risk Score:</span>
-                            <span class="detail-value">${latestWeatherInsights.risk_score || 'N/A'}</span>
-                        </div>
-                    ` : `
-                        <div class="detail-item">
-                            <span class="detail-label">Weather Insights:</span>
-                            <span class="detail-value">Not available</span>
-                        </div>
-                    `}
-                    
+                    <h4><i class="fas fa-tint"></i> Water Availability</h4>
                     <div class="detail-item">
-                        <span class="detail-label">Last Updated:</span>
-                        <span class="detail-value">${new Date(land.updated_at).toLocaleDateString()}</span>
+                        <span class="detail-label">High:</span>
+                        <span class="detail-value">${farmer.water_availability_counts.High} lands</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Medium:</span>
+                        <span class="detail-value">${farmer.water_availability_counts.Medium} lands</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Low:</span>
+                        <span class="detail-value">${farmer.water_availability_counts.Low} lands</span>
                     </div>
                 </div>
             `;
         }
 
         // Update dashboard statistics
-        function updateStats(landsData = null) {
-            const data = landsData || lands;
+        function updateStats() {
+            // Total farmers
+            document.getElementById('total-farmers').textContent = farmers.length;
             
             // Total lands
-            document.getElementById('total-lands').textContent = data.length;
+            document.getElementById('total-lands').textContent = lands.length;
             
             // Active crops
-            const activeCropsCount = data.reduce((count, land) => {
+            const activeCropsCount = lands.reduce((count, land) => {
                 return count + (land.crops ? land.crops.filter(crop => crop.is_active).length : 0);
             }, 0);
             document.getElementById('active-crops').textContent = activeCropsCount;
             
-            // Water availability (percentage of lands with high/medium water availability)
-            const waterAvailabilityCount = data.filter(land => 
-                land.water_availability === 'High' || land.water_availability === 'Medium'
-            ).length;
-            const waterAvailabilityPercentage = data.length > 0 
-                ? Math.round((waterAvailabilityCount / data.length) * 100) 
-                : 0;
-            document.getElementById('water-availability').textContent = `${waterAvailabilityPercentage}%`;
-            
-            // Optimal conditions (placeholder - would need more complex calculation)
-            document.getElementById('optimal-conditions').textContent = `${Math.round(waterAvailabilityPercentage * 0.8)}%`;
+            // High water availability lands
+            const highWaterLands = lands.filter(land => land.water_availability === 'High').length;
+            document.getElementById('high-water').textContent = highWaterLands;
         }
 
-        // Filter lands based on selected criteria
-        function filterLands() {
-            const soilType = document.getElementById('soil-type').value;
-            const waterAvailability = document.getElementById('water-availability-filter').value;
-            const currentCrop = document.getElementById('current-crop').value;
+        // Filter farmers based on selected criteria
+        function filterFarmers() {
+            const waterAvailability = document.getElementById('water-availability').value;
+            const currentCrops = document.getElementById('current-crops').value;
+            const landUse = document.getElementById('land-use').value;
             const areaMin = parseFloat(document.getElementById('area-min').value) || 0;
             const areaMax = parseFloat(document.getElementById('area-max').value) || Infinity;
-            const landUse = document.getElementById('land-use').value;
+            const soilType = document.getElementById('soil-type').value;
 
-            const filteredLands = lands.filter(land => {
-                const matchesSoilType = !soilType || land.soil_type === soilType;
-                const matchesWaterAvailability = !waterAvailability || land.water_availability === waterAvailability;
-                const matchesCurrentCrop = !currentCrop || 
-                    (land.crops && land.crops.some(crop => 
-                        crop.is_active && crop.crop_name === currentCrop));
-                const matchesArea = land.area_hectares >= areaMin && land.area_hectares <= areaMax;
-                const matchesLandUse = !landUse || land.land_use === landUse;
+            const filteredFarmers = farmers.filter(farmer => {
+                // Check if farmer has lands matching the criteria
+                const matchingLands = farmer.lands.filter(land => {
+                    const matchesWaterAvailability = !waterAvailability || land.water_availability === waterAvailability;
+                    const matchesCurrentCrops = !currentCrops || 
+                        (land.crops && land.crops.some(crop => 
+                            crop.is_active && crop.crop_name === currentCrops));
+                    const matchesLandUse = !landUse || land.land_use === landUse;
+                    const matchesArea = land.area_sq_meters >= areaMin && land.area_sq_meters <= areaMax;
+                    const matchesSoilType = !soilType || land.soil_type === soilType;
 
-                return matchesSoilType && matchesWaterAvailability && matchesCurrentCrop && 
-                       matchesArea && matchesLandUse;
+                    return matchesWaterAvailability && matchesCurrentCrops && 
+                           matchesLandUse && matchesArea && matchesSoilType;
+                });
+
+                return matchingLands.length > 0;
             });
 
+            // Also filter lands for map display
+            const filteredLands = lands.filter(land => {
+                const matchesWaterAvailability = !waterAvailability || land.water_availability === waterAvailability;
+                const matchesCurrentCrops = !currentCrops || 
+                    (land.crops && land.crops.some(crop => 
+                        crop.is_active && crop.crop_name === currentCrops));
+                const matchesLandUse = !landUse || land.land_use === landUse;
+                const matchesArea = land.area_sq_meters >= areaMin && land.area_sq_meters <= areaMax;
+                const matchesSoilType = !soilType || land.soil_type === soilType;
+
+                return matchesWaterAvailability && matchesCurrentCrops && 
+                       matchesLandUse && matchesArea && matchesSoilType;
+            });
+
+            populateFarmersTable(filteredFarmers);
             displayLandsOnMap(filteredLands);
-            populateLandsTable(filteredLands);
         }
 
-        // Zoom to a specific land on the map
-        function zoomToLand(landId) {
-            const land = lands.find(l => l.land_id === landId);
-            if (land) {
+        // Zoom to a specific farmer's lands on the map
+        function zoomToFarmerLands(userId) {
+            const farmerLands = lands.filter(land => land.users && land.users.user_id === userId);
+            
+            if (farmerLands.length === 0) return;
+            
+            // Create a bounds object to contain all farmer's lands
+            const group = new L.featureGroup();
+            
+            farmerLands.forEach(land => {
                 let lat, lng;
                 
                 if (land.center_lat && land.center_lng) {
@@ -1019,68 +1064,75 @@
                     lat = land.land_coordinates[0].latitude;
                     lng = land.land_coordinates[0].longitude;
                 } else {
-                    lat = 20.0;
-                    lng = 77.0;
+                    return;
                 }
                 
-                map.setView([lat, lng], 13);
-                
-                // Open the popup for this land
-                markers.forEach(marker => {
-                    const markerLand = marker.land;
-                    if (markerLand && markerLand.land_id === landId) {
-                        marker.openPopup();
-                    }
-                });
-            }
+                const marker = L.marker([lat, lng]);
+                group.addLayer(marker);
+            });
+            
+            map.fitBounds(group.getBounds());
+            
+            // Highlight farmer's lands
+            markers.forEach(marker => {
+                const markerLand = marker.land;
+                if (markerLand && markerLand.users && markerLand.users.user_id === userId) {
+                    marker.openPopup();
+                }
+            });
         }
 
         // Setup event listeners
         function setupEventListeners() {
             // Apply filters
-            document.getElementById('apply-filters').addEventListener('click', filterLands);
+            document.getElementById('apply-filters').addEventListener('click', filterFarmers);
             
             // Reset filters
             document.getElementById('reset-filters').addEventListener('click', function() {
-                document.getElementById('soil-type').value = '';
-                document.getElementById('water-availability-filter').value = '';
-                document.getElementById('current-crop').value = '';
+                document.getElementById('water-availability').value = '';
+                document.getElementById('current-crops').value = '';
+                document.getElementById('land-use').value = '';
                 document.getElementById('area-min').value = '';
                 document.getElementById('area-max').value = '';
-                document.getElementById('land-use').value = '';
+                document.getElementById('soil-type').value = '';
                 
+                populateFarmersTable();
                 displayLandsOnMap();
-                populateLandsTable();
             });
             
             // Close details panel
             document.getElementById('close-details').addEventListener('click', function() {
-                document.getElementById('land-details').classList.remove('active');
+                document.getElementById('farmer-details').classList.remove('active');
             });
             
             // Refresh data
-            document.getElementById('refresh-data').addEventListener('click', loadLandsData);
+            document.getElementById('refresh-data').addEventListener('click', loadFarmersData);
             
             // Search functionality
             document.getElementById('search-input').addEventListener('input', function(e) {
                 const searchTerm = e.target.value.toLowerCase();
                 
                 if (searchTerm.length < 2) {
+                    populateFarmersTable();
                     displayLandsOnMap();
-                    populateLandsTable();
                     return;
                 }
                 
+                const filteredFarmers = farmers.filter(farmer => 
+                    farmer.full_name.toLowerCase().includes(searchTerm) ||
+                    farmer.phone.includes(searchTerm) ||
+                    farmer.email.toLowerCase().includes(searchTerm)
+                );
+                
                 const filteredLands = lands.filter(land => 
-                    land.land_name.toLowerCase().includes(searchTerm) ||
-                    land.land_id.toLowerCase().includes(searchTerm) ||
                     (land.users && land.users.full_name.toLowerCase().includes(searchTerm)) ||
+                    land.land_name.toLowerCase().includes(searchTerm) ||
                     (land.crops && land.crops.some(crop => 
                         crop.crop_name.toLowerCase().includes(searchTerm)))
                 );
                 
+                populateFarmersTable(filteredFarmers);
                 displayLandsOnMap(filteredLands);
-                populateLandsTable(filteredLands);
             });
         }
 
@@ -1089,9 +1141,23 @@
             document.getElementById('loading-indicator').classList.toggle('active', show);
         }
 
+        // Show toast message
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+            toast.textContent = message;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
         // Make functions available globally for onclick handlers
-        window.showLandDetails = showLandDetails;
-        window.zoomToLand = zoomToLand;
+        window.showFarmerDetails = showFarmerDetails;
+        window.zoomToFarmerLands = zoomToFarmerLands;
     </script>
 </body>
 </html>
