@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowSmart - Crop Recommendation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary: #2E8B57;
+            --primary-light: #3CB371;
+            --primary-dark: #228B22;
+            --secondary: #4682B4;
+            --accent: #FFA500;
+            --warning: #FF6347;
+            --error: #DC143C;
+            --background: #F5F5F5;
+            --surface: #FFFFFF;
+            --text: #2F4F4F;
+            --text-light: #708090;
+            --border: #E0E0E0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --radius: 16px;
+            --gradient: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 16px;
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 12px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-title i {
+            font-size: 22px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .location {
+            font-size: 14px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Content Cards */
+        .content-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* Location Status */
+        .location-status {
+            background: var(--gradient);
+            color: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .location-name {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .coordinates {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        /* Map Container */
+        .map-container {
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            height: 200px;
+            position: relative;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Land Information Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-light);
+        }
+
+        /* Crop Recommendation */
+        .crop-recommendation {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(70, 130, 180, 0.1);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation-list {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .recommendation-list li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .recommendation-list li:before {
+            content: "•";
+            color: var(--primary);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Crop Details */
+        .crop-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 15px;
+        }
+
+        .crop-detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .crop-detail-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .crop-detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            background: var(--border);
+            color: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error Display */
+        .error-display {
+            background: rgba(220, 20, 60, 0.1);
+            border: 1px solid var(--error);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .error-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        .error-details {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-around;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 480px;
+            z-index: 1000;
+            border: 1px solid var(--border);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item.active {
+            opacity: 1;
+            color: var(--primary);
+            background: rgba(46, 139, 87, 0.1);
+        }
+
+        .nav-item:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .nav-item span {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+                padding-bottom: 100px;
+            }
+            
+            .header {
+                margin-bottom: 16px;
+                padding: 10px 0;
+            }
+            
+            .crop-details {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .bottom-nav {
+                width: calc(100% - 32px);
+                padding: 14px;
+            }
+            
+            .nav-item span {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Error Display -->
+        <div class="error-display" id="errorDisplay">
+            <div class="error-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="errorTitle">Error Occurred</span>
+            </div>
+            <div class="error-details" id="errorDetails">
+                An error occurred while processing your request.
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="app-title">
+                <i class="fas fa-leaf"></i>
+                GrowSmart
+            </div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Farmer</div>
+                <div class="location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="locationText">Detecting location...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Status -->
+        <div class="location-status">
+            <div class="location-name" id="locationName">Detecting your location...</div>
+            <div class="coordinates" id="coordinatesDisplay">Latitude: --, Longitude: --</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="locationProgress" style="width: 0%"></div>
+            </div>
+            <div class="stage-duration" id="locationStatus">Initializing location services</div>
+        </div>
+
+        <!-- Map Display -->
+        <div class="content-card">
+            <div class="section-title">
+                <i class="fas fa-map-marked-alt"></i>
+                Your Location
+            </div>
+            
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            
+            <div class="crop-details">
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Latitude</div>
+                    <div class="crop-detail-value" id="latitudeValue">--</div>
+                </div>
+                
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Longitude</div>
+                    <div class="crop-detail-value" id="longitudeValue">--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Land Information Form -->
+        <div class="content-card">
+            <div class="section-title">
+                <i class="fas fa-tractor"></i>
+                Land Information
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="landArea">Land Area (acres)</label>
+                <input type="number" class="form-input" id="landArea" placeholder="Enter land area in acres">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="soilType">Soil Type</label>
+                <select class="form-select" id="soilType">
+                    <option value="">Select soil type</option>
+                    <option value="sandy">Sandy</option>
+                    <option value="loamy">Loamy</option>
+                    <option value="clay">Clay</option>
+                    <option value="silt">Silt</option>
+                    <option value="peaty">Peaty</option>
+                    <option value="chalky">Chalky</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="waterAvailability">Water Availability</label>
+                <select class="form-select" id="waterAvailability">
+                    <option value="">Select water availability</option>
+                    <option value="high">High (Irrigation available)</option>
+                    <option value="medium">Medium (Seasonal water)</option>
+                    <option value="low">Low (Rainfed only)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="climateZone">Climate Zone</label>
+                <select class="form-select" id="climateZone">
+                    <option value="">Select climate zone</option>
+                    <option value="tropical">Tropical</option>
+                    <option value="subtropical">Subtropical</option>
+                    <option value="temperate">Temperate</option>
+                    <option value="arid">Arid</option>
+                    <option value="semi-arid">Semi-arid</option>
+                </select>
+            </div>
+            
+            <button class="action-btn" id="getRecommendationBtn" disabled>
+                <i class="fas fa-seedling"></i>
+                Get Crop Recommendations
+            </button>
+        </div>
+
+        <!-- Crop Recommendation -->
+        <div class="content-card" id="recommendationCard" style="display: none;">
+            <div class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Recommended Crops
+            </div>
+            
+            <div class="crop-recommendation" id="cropRecommendation">
+                <div class="recommendation-title">
+                    <i class="fas fa-check-circle"></i>
+                    Best Crops for Your Land
+                </div>
+                <ul class="recommendation-list" id="recommendationList">
+                    <!-- Recommendations will be populated here -->
+                </ul>
+            </div>
+            
+            <div class="crop-details">
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Best Match</div>
+                    <div class="crop-detail-value" id="bestCrop">-</div>
+                </div>
+                
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Season</div>
+                    <div class="crop-detail-value" id="growingSeason">-</div>
+                </div>
+                
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Yield Potential</div>
+                    <div class="crop-detail-value" id="yieldPotential">-</div>
+                </div>
+                
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Water Needs</div>
+                    <div class="crop-detail-value" id="waterNeeds">-</div>
+                </div>
+            </div>
+            
+            <div class="crop-recommendation" style="margin-top: 15px;">
+                <div class="recommendation-title">
+                    <i class="fas fa-info-circle"></i>
+                    Why These Crops?
+                </div>
+                <div class="recommendation-details" id="recommendationDetails">
+                    <!-- Detailed explanation will be populated here -->
+                </div>
+            </div>
+            
+            <button class="action-btn" id="saveRecommendationBtn">
+                <i class="fas fa-save"></i>
+                Save Recommendation
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="soil.html" class="nav-item">
+            <i class="fas fa-vial"></i>
+            <span>Soil</span>
+        </a>
+        <a href="crops.html" class="nav-item active">
+            <i class="fas fa-seedling"></i>
+            <span>Crops</span>
+        </a>
+        <a href="blockchain.html" class="nav-item">
+            <i class="fas fa-link"></i>
+            <span>Blockchain</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <!-- Include external scripts -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Global variables
+        let map;
+        let userLocation = null;
+        let locationMarker = null;
+        let cropRecommendations = null;
+
+        // DOM Elements
+        const errorDisplay = document.getElementById('errorDisplay');
+        const errorTitle = document.getElementById('errorTitle');
+        const errorDetails = document.getElementById('errorDetails');
+        const userName = document.getElementById('userName');
+        const locationText = document.getElementById('locationText');
+        const locationName = document.getElementById('locationName');
+        const coordinatesDisplay = document.getElementById('coordinatesDisplay');
+        const locationProgress = document.getElementById('locationProgress');
+        const locationStatus = document.getElementById('locationStatus');
+        const latitudeValue = document.getElementById('latitudeValue');
+        const longitudeValue = document.getElementById('longitudeValue');
+        const landArea = document.getElementById('landArea');
+        const soilType = document.getElementById('soilType');
+        const waterAvailability = document.getElementById('waterAvailability');
+        const climateZone = document.getElementById('climateZone');
+        const getRecommendationBtn = document.getElementById('getRecommendationBtn');
+        const recommendationCard = document.getElementById('recommendationCard');
+        const cropRecommendation = document.getElementById('cropRecommendation');
+        const recommendationList = document.getElementById('recommendationList');
+        const recommendationDetails = document.getElementById('recommendationDetails');
+        const bestCrop = document.getElementById('bestCrop');
+        const growingSeason = document.getElementById('growingSeason');
+        const yieldPotential = document.getElementById('yieldPotential');
+        const waterNeeds = document.getElementById('waterNeeds');
+        const saveRecommendationBtn = document.getElementById('saveRecommendationBtn');
+
+        // Error Handling Functions
+        function showError(title, message) {
+            console.error(`Error: ${title}`, message);
+            
+            errorTitle.textContent = title;
+            errorDetails.textContent = message;
+            errorDisplay.style.display = 'block';
+        }
+
+        function hideError() {
+            errorDisplay.style.display = 'none';
+        }
+
+        // Initialize map
+        function initializeMap() {
+            try {
+                // Default to India center
+                map = L.map('map').setView([22.7196, 75.8577], 5);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+            } catch (error) {
+                showError('Map Initialization Failed', 'Failed to initialize the map. Please check your internet connection.');
+            }
+        }
+
+        // Update map with user location
+        function updateMapWithLocation(lat, lng) {
+            try {
+                // Remove existing marker if any
+                if (locationMarker) {
+                    map.removeLayer(locationMarker);
+                }
+                
+                // Add new marker
+                locationMarker = L.marker([lat, lng]).addTo(map)
+                    .bindPopup('Your Location')
+                    .openPopup();
+                
+                // Center map on user location
+                map.setView([lat, lng], 13);
+                
+                // Update coordinates display
+                latitudeValue.textContent = lat.toFixed(4);
+                longitudeValue.textContent = lng.toFixed(4);
+                coordinatesDisplay.textContent = `Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
+                
+            } catch (error) {
+                showError('Map Update Failed', 'Failed to update map with your location.');
+            }
+        }
+
+        // Get user location
+        function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation is not supported by this browser.'));
+                    return;
+                }
+
+                locationStatus.textContent = 'Getting your location...';
+                locationProgress.style.width = '30%';
+
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        try {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            
+                            userLocation = { lat, lng };
+                            
+                            locationProgress.style.width = '70%';
+                            locationStatus.textContent = 'Getting location details...';
+                            
+                            // Get location name using reverse geocoding
+                            const locationName = await getLocationName(lat, lng);
+                            
+                            locationProgress.style.width = '100%';
+                            locationStatus.textContent = 'Location detected successfully!';
+                            
+                            // Update UI with location details
+                            updateLocationUI(lat, lng, locationName);
+                            
+                            resolve({ lat, lng, locationName });
+                        } catch (error) {
+                            reject(error);
+                        }
+                    },
+                    (error) => {
+                        let errorMessage = 'Unknown error occurred';
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Location access denied. Please enable location permissions.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'Location request timed out.';
+                                break;
+                        }
+                        
+                        reject(new Error(errorMessage));
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            });
+        }
+
+        // Get location name from coordinates
+        async function getLocationName(lat, lng) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                const data = await response.json();
+                
+                if (data && data.address) {
+                    const city = data.address.city || data.address.town || data.address.village || data.address.county;
+                    const state = data.address.state;
+                    const country = data.address.country;
+                    
+                    if (city && state) {
+                        return `${city}, ${state}, ${country}`;
+                    } else if (state) {
+                        return `${state}, ${country}`;
+                    } else {
+                        return country || 'Unknown location';
+                    }
+                } else {
+                    return 'Unknown location';
+                }
+            } catch (error) {
+                console.error('Error getting location name:', error);
+                return 'Location found';
+            }
+        }
+
+        // Update UI with location details
+        function updateLocationUI(lat, lng, locationName) {
+            locationNameElement.textContent = locationName;
+            locationText.textContent = locationName;
+            updateMapWithLocation(lat, lng);
+            
+            // Enable recommendation button if land info is provided
+            checkFormCompletion();
+        }
+
+        // Check if form is complete to enable recommendation button
+        function checkFormCompletion() {
+            const isLandAreaValid = landArea.value && parseFloat(landArea.value) > 0;
+            const isSoilTypeValid = soilType.value !== '';
+            const isWaterAvailabilityValid = waterAvailability.value !== '';
+            
+            getRecommendationBtn.disabled = !(isLandAreaValid && isSoilTypeValid && isWaterAvailabilityValid && userLocation);
+        }
+
+        // Get crop recommendations based on location and land info
+        async function getCropRecommendations() {
+            try {
+                // Show loading state
+                getRecommendationBtn.innerHTML = '<span class="spinner"></span> Analyzing your land...';
+                getRecommendationBtn.disabled = true;
+                
+                // Prepare request data
+                const requestData = {
+                    location: {
+                        latitude: userLocation.lat,
+                        longitude: userLocation.lng
+                    },
+                    landInfo: {
+                        area: parseFloat(landArea.value),
+                        soilType: soilType.value,
+                        waterAvailability: waterAvailability.value,
+                        climateZone: climateZone.value || 'auto'
+                    }
+                };
+                
+                // Call Gemini API for crop recommendations
+                const recommendations = await callGeminiAPI(requestData);
+                
+                // Process and display recommendations
+                displayCropRecommendations(recommendations);
+                
+                // Reset button state
+                getRecommendationBtn.innerHTML = '<i class="fas fa-seedling"></i> Get Crop Recommendations';
+                getRecommendationBtn.disabled = false;
+                
+            } catch (error) {
+                showError('Recommendation Failed', 'Failed to get crop recommendations. Please try again.');
+                console.error('Error getting recommendations:', error);
+                
+                // Reset button state
+                getRecommendationBtn.innerHTML = '<i class="fas fa-seedling"></i> Get Crop Recommendations';
+                getRecommendationBtn.disabled = false;
+            }
+        }
+
+        // Call Gemini API for crop recommendations
+        async function callGeminiAPI(requestData) {
+            const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
+            const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+            
+            // Prepare the prompt for Gemini
+            const prompt = `
+                Based on the following agricultural information, provide detailed crop recommendations:
+                
+                Location: Latitude ${requestData.location.latitude}, Longitude ${requestData.location.longitude}
+                Land Area: ${requestData.landInfo.area} acres
+                Soil Type: ${requestData.landInfo.soilType}
+                Water Availability: ${requestData.landInfo.waterAvailability}
+                Climate Zone: ${requestData.landInfo.climateZone}
+                
+                Please provide:
+                1. Top 3-5 recommended crops for this location and land conditions
+                2. For each crop, include:
+                   - Suitability score (out of 10)
+                   - Best growing season
+                   - Expected yield potential
+                   - Water requirements
+                   - Key advantages for this specific location
+                3. Detailed explanation of why these crops are recommended
+                4. Any specific considerations for this region
+                
+                Format the response as a JSON object with the following structure:
+                {
+                    "bestCrops": [
+                        {
+                            "name": "Crop Name",
+                            "suitability": 9,
+                            "season": "Growing season",
+                            "yield": "Yield potential",
+                            "water": "Water needs",
+                            "advantages": ["Advantage 1", "Advantage 2"]
+                        }
+                    ],
+                    "explanation": "Detailed explanation here",
+                    "considerations": ["Consideration 1", "Consideration 2"]
+                }
+            `;
+            
+            const requestBody = {
+                contents: [
+                    {
+                        parts: [
+                            {
+                                text: prompt
+                            }
+                        ]
+                    }
+                ],
+                generationConfig: {
+                    temperature: 0.2,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 1024,
+                }
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Extract the text from the response
+                const responseText = data.candidates[0].content.parts[0].text;
+                
+                // Try to parse the JSON from the response
+                try {
+                    // Extract JSON from the response (in case there's additional text)
+                    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        return JSON.parse(jsonMatch[0]);
+                    } else {
+                        // Fallback: create a structured response from the text
+                        return createStructuredResponse(responseText);
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing JSON response:', parseError);
+                    // Fallback: create a structured response from the text
+                    return createStructuredResponse(responseText);
+                }
+                
+            } catch (error) {
+                console.error('API call failed:', error);
+                // Return fallback recommendations based on location and soil type
+                return getFallbackRecommendations(requestData);
+            }
+        }
+
+        // Create structured response from text (fallback)
+        function createStructuredResponse(text) {
+            // This is a simple fallback - in a real app, you'd want more sophisticated parsing
+            const crops = [];
+            const lines = text.split('\n');
+            let currentCrop = null;
+            
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                
+                if (trimmedLine && !trimmedLine.startsWith('**') && !trimmedLine.includes('Explanation') && !trimmedLine.includes('Considerations')) {
+                    if (trimmedLine.match(/^\d+\./)) {
+                        // New crop entry
+                        if (currentCrop) {
+                            crops.push(currentCrop);
+                        }
+                        currentCrop = {
+                            name: trimmedLine.replace(/^\d+\.\s*/, ''),
+                            suitability: 8,
+                            season: 'Varies',
+                            yield: 'Good',
+                            water: 'Medium',
+                            advantages: ['Suitable for your region']
+                        };
+                    } else if (currentCrop) {
+                        // Add details to current crop
+                        if (trimmedLine.toLowerCase().includes('season')) {
+                            currentCrop.season = trimmedLine;
+                        } else if (trimmedLine.toLowerCase().includes('yield')) {
+                            currentCrop.yield = trimmedLine;
+                        } else if (trimmedLine.toLowerCase().includes('water')) {
+                            currentCrop.water = trimmedLine;
+                        }
+                    }
+                }
+            }
+            
+            if (currentCrop) {
+                crops.push(currentCrop);
+            }
+            
+            return {
+                bestCrops: crops.slice(0, 3),
+                explanation: "Based on your location and land characteristics, these crops are recommended for optimal yield and sustainability.",
+                considerations: ["Consider local market demand", "Check for pest prevalence in your area"]
+            };
+        }
+
+        // Fallback recommendations if API fails
+        function getFallbackRecommendations(requestData) {
+            // Simple fallback based on soil type and location
+            const soilBasedCrops = {
+                sandy: ['Pearl Millet', 'Groundnut', 'Watermelon'],
+                loamy: ['Wheat', 'Maize', 'Soybean', 'Cotton'],
+                clay: ['Rice', 'Sugarcane', 'Lentils', 'Chickpea'],
+                silt: ['Wheat', 'Barley', 'Oats', 'Potato'],
+                peaty: ['Rice', 'Cabbage', 'Celery', 'Onions'],
+                chalky: ['Spinach', 'Beets', 'Sweet Corn', 'Cabbage']
+            };
+            
+            const crops = soilBasedCrops[requestData.landInfo.soilType] || ['Wheat', 'Maize', 'Rice'];
+            
+            return {
+                bestCrops: crops.map((crop, index) => ({
+                    name: crop,
+                    suitability: 9 - index,
+                    season: 'Rabi/Kharif based on crop',
+                    yield: 'High with proper management',
+                    water: requestData.landInfo.waterAvailability === 'high' ? 'Medium' : 'Low',
+                    advantages: ['Well-suited to your soil type', 'Good market demand']
+                })),
+                explanation: `Based on your ${requestData.landInfo.soilType} soil and ${requestData.landInfo.waterAvailability} water availability, these crops are traditionally successful in your region.`,
+                considerations: ['Consult with local agricultural experts for specific varieties', 'Test soil pH before planting']
+            };
+        }
+
+        // Display crop recommendations
+        function displayCropRecommendations(recommendations) {
+            cropRecommendations = recommendations;
+            
+            // Clear previous recommendations
+            recommendationList.innerHTML = '';
+            
+            // Add crops to recommendation list
+            recommendations.bestCrops.forEach((crop, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${crop.name}</strong> - Suitability: ${crop.suitability}/10`;
+                recommendationList.appendChild(li);
+            });
+            
+            // Update crop details
+            if (recommendations.bestCrops.length > 0) {
+                const bestCropData = recommendations.bestCrops[0];
+                bestCrop.textContent = bestCropData.name;
+                growingSeason.textContent = bestCropData.season;
+                yieldPotential.textContent = bestCropData.yield;
+                waterNeeds.textContent = bestCropData.water;
+            }
+            
+            // Update explanation
+            recommendationDetails.innerHTML = `
+                <p>${recommendations.explanation}</p>
+                ${recommendations.considerations ? `
+                <p><strong>Important Considerations:</strong></p>
+                <ul>
+                    ${recommendations.considerations.map(consideration => `<li>${consideration}</li>`).join('')}
+                </ul>
+                ` : ''}
+            `;
+            
+            // Show recommendation card
+            recommendationCard.style.display = 'block';
+            cropRecommendation.style.display = 'block';
+            
+            // Scroll to recommendations
+            recommendationCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Save recommendation
+        function saveRecommendation() {
+            if (!cropRecommendations) return;
+            
+            // In a real app, you would save this to a database
+            // For now, we'll just show a confirmation
+            showNotification('Crop recommendations saved successfully!');
+            
+            // You could also redirect to the crop management page
+            // window.location.href = 'crops.html';
+        }
+
+        // Show notification
+        function showNotification(message) {
+            // Create a simple notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--primary);
+                color: white;
+                padding: 12px 20px;
+                border-radius: var(--radius);
+                box-shadow: var(--shadow-hover);
+                z-index: 10000;
+                max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Form inputs
+            landArea.addEventListener('input', checkFormCompletion);
+            soilType.addEventListener('change', checkFormCompletion);
+            waterAvailability.addEventListener('change', checkFormCompletion);
+            climateZone.addEventListener('change', checkFormCompletion);
+            
+            // Buttons
+            getRecommendationBtn.addEventListener('click', getCropRecommendations);
+            saveRecommendationBtn.addEventListener('click', saveRecommendation);
+            
+            // Error display close
+            errorDisplay.addEventListener('click', hideError);
+        }
+
+        // Initialize the application
+        async function initApp() {
+            try {
+                // Set up event listeners
+                setupEventListeners();
+                
+                // Initialize map
+                initializeMap();
+                
+                // Get user location
+                await getUserLocation();
+                
+            } catch (error) {
+                showError('Location Detection Failed', error.message);
+                locationStatus.textContent = 'Location detection failed';
+                locationProgress.style.width = '0%';
+            }
+        }
+
+        // Start the application
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
