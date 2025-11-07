@@ -1,1 +1,153 @@
-uygfuyg
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Land Crop Manager</title>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f9fafb;
+      color: #333;
+    }
+    h2 {
+      color: #2e7d32;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background-color: #43a047;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    #result {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🌱 Add New Land</h2>
+  <input type="text" id="landId" placeholder="Land ID">
+  <input type="text" id="userId" placeholder="User ID">
+  <input type="text" id="landName" placeholder="Land Name">
+  <input type="text" id="cropName" placeholder="Current Crop">
+  <input type="text" id="soilType" placeholder="Soil Type">
+  <button id="insertBtn">Add Land</button>
+
+  <h2>🔍 Search Lands by Crop</h2>
+  <input type="text" id="searchCrop" placeholder="Enter Crop Name">
+  <button id="searchBtn">Search</button>
+
+  <div id="result">Enter a crop name and click Search.</div>
+
+  <script>
+    const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ✅ Insert Land
+    document.getElementById("insertBtn").addEventListener("click", async () => {
+      const land_id = document.getElementById("landId").value.trim();
+      const user_id = document.getElementById("userId").value.trim();
+      const land_name = document.getElementById("landName").value.trim();
+      const current_crops = document.getElementById("cropName").value.trim();
+      const soil_type = document.getElementById("soilType").value.trim();
+
+      if (!land_id || !user_id || !land_name || !current_crops || !soil_type) {
+        alert("⚠️ Please fill all fields.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("lands")
+        .insert([{ land_id, user_id, land_name, current_crops, soil_type }]);
+
+      if (error) {
+        alert("❌ Insert Error: " + error.message);
+      } else {
+        alert("✅ Land added successfully!");
+      }
+    });
+
+    // 🔍 Search Lands by Crop
+    document.getElementById("searchBtn").addEventListener("click", async () => {
+      const cropName = document.getElementById("searchCrop").value.trim();
+      const resultBox = document.getElementById("result");
+      resultBox.innerHTML = "Searching...";
+
+      if (!cropName) {
+        resultBox.textContent = "⚠️ Please enter a crop name.";
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("lands")
+        .select("*")
+        .ilike("current_crops", `%${cropName}%`);
+
+      if (error) {
+        resultBox.textContent = "❌ Error: " + error.message;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        resultBox.textContent = `No lands found for crop: ${cropName}`;
+        return;
+      }
+
+      let tableHTML = `
+        <table>
+          <tr>
+            <th>Land ID</th>
+            <th>User ID</th>
+            <th>Land Name</th>
+            <th>Current Crop</th>
+            <th>Soil Type</th>
+          </tr>
+      `;
+
+      data.forEach(row => {
+        tableHTML += `
+          <tr>
+            <td>${row.land_id || '-'}</td>
+            <td>${row.user_id || '-'}</td>
+            <td>${row.land_name || '-'}</td>
+            <td>${row.current_crops || '-'}</td>
+            <td>${row.soil_type || '-'}</td>
+          </tr>
+        `;
+      });
+
+      tableHTML += "</table>";
+      resultBox.innerHTML = tableHTML;
+    });
+  </script>
+</body>
+</html>
