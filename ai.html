@@ -345,35 +345,6 @@
             color: var(--accent);
         }
 
-        /* Button Styles */
-        .btn {
-            background: var(--gradient);
-            color: white;
-            border: none;
-            padding: 15px 20px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(46, 139, 87, 0.3);
-        }
-
-        .btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
         /* Loading spinner */
         .spinner {
             display: inline-block;
@@ -487,33 +458,6 @@
             display: none;
         }
 
-        /* Login Prompt */
-        .login-prompt {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 30px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            display: none;
-        }
-
-        .login-prompt i {
-            font-size: 48px;
-            color: var(--primary);
-            margin-bottom: 16px;
-        }
-
-        .login-prompt h2 {
-            margin-bottom: 12px;
-            color: var(--text);
-        }
-
-        .login-prompt p {
-            margin-bottom: 20px;
-            color: var(--text-light);
-        }
-
         /* Responsive Design */
         @media (max-width: 480px) {
             body {
@@ -571,10 +515,10 @@
                 GrowSmart
             </div>
             <div class="time-location">
-                <div class="time" id="currentTime">10:11 PM</div>
+                <div class="time">10:11 PM</div>
                 <div class="location" id="locationDisplay">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span id="locationText">Loading...</span>
+                    <span id="locationText">Detecting location...</span>
                 </div>
             </div>
         </div>
@@ -585,75 +529,62 @@
             <div class="date" id="currentDate">Wednesday, January 15, 2025</div>
         </div>
 
-        <!-- Login Prompt (shown when not authenticated) -->
-        <div class="login-prompt" id="loginPrompt">
-            <i class="fas fa-user-lock"></i>
-            <h2>Authentication Required</h2>
-            <p>Please log in to access crop recommendations</p>
-            <button class="btn" onclick="window.location.href='login.html'">
-                <i class="fas fa-sign-in-alt"></i> Go to Login
+        <!-- Land Selection -->
+        <div class="land-selection">
+            <div class="section-title">
+                <i class="fas fa-tractor"></i>
+                Select Your Land
+            </div>
+            <select class="land-select" id="landSelect">
+                <option value="">Choose a land...</option>
+            </select>
+            
+            <div class="land-details" id="landDetails">
+                <div class="land-detail-item">
+                    <span class="land-detail-label">Soil Type:</span>
+                    <span class="land-detail-value" id="soilType">--</span>
+                </div>
+                <div class="land-detail-item">
+                    <span class="land-detail-label">Area:</span>
+                    <span class="land-detail-value" id="landArea">--</span>
+                </div>
+                <div class="land-detail-item">
+                    <span class="land-detail-label">Water Availability:</span>
+                    <span class="land-detail-value" id="waterAvailability">--</span>
+                </div>
+                <div class="land-detail-item">
+                    <span class="land-detail-label">Current Crops:</span>
+                    <span class="land-detail-value" id="currentCrops">--</span>
+                </div>
+            </div>
+            
+            <button class="btn" id="analyzeBtn" style="width: 100%; margin-top: 16px;" disabled>
+                <i class="fas fa-robot"></i> Get AI Crop Recommendations
             </button>
         </div>
 
-        <!-- Main Content (shown when authenticated) -->
-        <div id="mainContent" style="display: none;">
-            <!-- Land Selection -->
-            <div class="land-selection">
-                <div class="section-title">
-                    <i class="fas fa-tractor"></i>
-                    Select Your Land
-                </div>
-                <select class="land-select" id="landSelect">
-                    <option value="">Choose a land...</option>
-                </select>
-                
-                <div class="land-details" id="landDetails">
-                    <div class="land-detail-item">
-                        <span class="land-detail-label">Soil Type:</span>
-                        <span class="land-detail-value" id="soilType">--</span>
-                    </div>
-                    <div class="land-detail-item">
-                        <span class="land-detail-label">Area:</span>
-                        <span class="land-detail-value" id="landArea">--</span>
-                    </div>
-                    <div class="land-detail-item">
-                        <span class="land-detail-label">Water Availability:</span>
-                        <span class="land-detail-value" id="waterAvailability">--</span>
-                    </div>
-                    <div class="land-detail-item">
-                        <span class="land-detail-label">Current Crops:</span>
-                        <span class="land-detail-value" id="currentCrops">--</span>
-                    </div>
-                </div>
-                
-                <button class="btn" id="analyzeBtn" style="width: 100%; margin-top: 16px;" disabled>
-                    <i class="fas fa-robot"></i> Get AI Crop Recommendations
-                </button>
+        <!-- Error and Success Messages -->
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <!-- Analysis Results -->
+        <div class="analysis-results" id="analysisResults">
+            <div class="section-title">
+                <i class="fas fa-seedling"></i>
+                Recommended Crops
             </div>
-
-            <!-- Error and Success Messages -->
-            <div class="error-message" id="errorMessage"></div>
-            <div class="success-message" id="successMessage"></div>
-
-            <!-- Analysis Results -->
-            <div class="analysis-results" id="analysisResults">
+            
+            <div id="cropRecommendations">
+                <!-- Crop recommendations will be inserted here -->
+            </div>
+            
+            <div class="ai-insights">
                 <div class="section-title">
-                    <i class="fas fa-seedling"></i>
-                    Recommended Crops
+                    <i class="fas fa-lightbulb"></i>
+                    AI Insights
                 </div>
-                
-                <div id="cropRecommendations">
-                    <!-- Crop recommendations will be inserted here -->
-                </div>
-                
-                <div class="ai-insights">
-                    <div class="section-title">
-                        <i class="fas fa-lightbulb"></i>
-                        AI Insights
-                    </div>
-                    <div id="aiInsights">
-                        <!-- AI insights will be inserted here -->
-                    </div>
+                <div id="aiInsights">
+                    <!-- AI insights will be inserted here -->
                 </div>
             </div>
         </div>
@@ -693,7 +624,7 @@
     <script>
         // Supabase Configuration
         const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIywicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
 
         // Initialize Supabase client
         let supabase;
@@ -703,13 +634,101 @@
                 auth: {
                     autoRefreshToken: true,
                     persistSession: true,
-                    detectSessionInUrl: true,
-                    storage: window.localStorage
+                    detectSessionInUrl: true
                 }
             });
             console.log('Supabase client initialized successfully');
         } catch (error) {
             console.error('Error initializing Supabase client:', error);
+        }
+    </script>
+
+    <!-- Authentication Checker -->
+    <script>
+        // Authentication Checker
+        class AuthChecker {
+            constructor() {
+                this.currentUser = null;
+                this.currentUserId = null;
+            }
+
+            // Check if user is authenticated
+            async checkAuth() {
+                try {
+                    if (!supabase) {
+                        console.error('Supabase client not found');
+                        return false;
+                    }
+
+                    const { data: { user }, error } = await supabase.auth.getUser();
+                    
+                    if (error) {
+                        console.error('Error checking auth:', error);
+                        return false;
+                    }
+
+                    if (user) {
+                        this.currentUser = user;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Error in checkAuth:', error);
+                    return false;
+                }
+            }
+
+            // Get current user
+            async getCurrentUser() {
+                if (this.currentUser) {
+                    return this.currentUser;
+                }
+
+                const isAuthenticated = await this.checkAuth();
+                return isAuthenticated ? this.currentUser : null;
+            }
+
+            // Redirect to login if not authenticated
+            async requireAuth(redirectUrl = 'login.html') {
+                const isAuthenticated = await this.checkAuth();
+                
+                if (!isAuthenticated) {
+                    window.location.href = redirectUrl;
+                    return false;
+                }
+                
+                return true;
+            }
+
+            // Get user ID from users table
+            async getUserId() {
+                if (this.currentUserId) {
+                    return this.currentUserId;
+                }
+
+                try {
+                    const user = await this.getCurrentUser();
+                    if (!user) return null;
+
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('user_id')
+                        .eq('auth_id', user.id)
+                        .single();
+
+                    if (error) {
+                        console.error('Error getting user ID:', error);
+                        return null;
+                    }
+
+                    this.currentUserId = data.user_id;
+                    return data.user_id;
+                } catch (error) {
+                    console.error('Error in getUserId:', error);
+                    return null;
+                }
+            }
         }
     </script>
 
@@ -726,30 +745,8 @@
                 this.weatherData = null;
                 this.authChecker = new AuthChecker();
                 this.initializeEventListeners();
+                this.loadLands();
                 this.updateDateTime();
-                this.checkAuthAndLoadData();
-            }
-
-            // Check authentication and load data
-            async checkAuthAndLoadData() {
-                try {
-                    const isAuthenticated = await this.authChecker.checkAuth();
-                    
-                    if (isAuthenticated) {
-                        // User is authenticated, show main content
-                        document.getElementById('mainContent').style.display = 'block';
-                        document.getElementById('loginPrompt').style.display = 'none';
-                        await this.loadLands();
-                    } else {
-                        // User is not authenticated, show login prompt
-                        document.getElementById('mainContent').style.display = 'none';
-                        document.getElementById('loginPrompt').style.display = 'block';
-                    }
-                } catch (error) {
-                    console.error('Error checking authentication:', error);
-                    document.getElementById('mainContent').style.display = 'none';
-                    document.getElementById('loginPrompt').style.display = 'block';
-                }
             }
 
             // Initialize event listeners
@@ -768,7 +765,7 @@
             // Update date and time
             updateDateTime() {
                 const now = new Date();
-                const timeElement = document.getElementById('currentTime');
+                const timeElement = document.querySelector('.time');
                 const dateElement = document.getElementById('currentDate');
                 
                 // Update time
@@ -793,13 +790,14 @@
             // Load user's lands from database
             async loadLands() {
                 try {
+                    const isAuthenticated = await this.authChecker.requireAuth();
+                    if (!isAuthenticated) return;
+
                     const user = await this.authChecker.getCurrentUser();
                     if (!user) {
-                        this.showError('Unable to load user data');
+                        this.showError('Please log in to access this feature');
                         return;
                     }
-
-                    console.log('Loading lands for user:', user.id);
 
                     const { data, error } = await supabase
                         .from('lands')
@@ -807,24 +805,13 @@
                         .eq('auth_id', user.id)
                         .order('created_at', { ascending: false });
 
-                    if (error) {
-                        console.error('Supabase error:', error);
-                        throw error;
-                    }
+                    if (error) throw error;
 
                     this.lands = data || [];
-                    console.log('Loaded lands:', this.lands);
                     this.populateLandSelect();
-                    
-                    // Update location display
-                    if (this.lands.length > 0) {
-                        document.getElementById('locationText').textContent = `${this.lands.length} lands available`;
-                    } else {
-                        document.getElementById('locationText').textContent = 'No lands registered';
-                    }
                 } catch (error) {
                     console.error('Error loading lands:', error);
-                    this.showError('Failed to load lands from database. Please try again.');
+                    this.showError('Failed to load lands from database');
                 }
             }
 
@@ -832,15 +819,6 @@
             populateLandSelect() {
                 const landSelect = document.getElementById('landSelect');
                 landSelect.innerHTML = '<option value="">Choose a land...</option>';
-                
-                if (this.lands.length === 0) {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = 'No lands available';
-                    option.disabled = true;
-                    landSelect.appendChild(option);
-                    return;
-                }
                 
                 this.lands.forEach(land => {
                     const option = document.createElement('option');
@@ -964,6 +942,9 @@
                         if (response.ok) {
                             const data = await response.json();
                             this.weatherData = data;
+                            
+                            // Update location display
+                            document.getElementById('locationText').textContent = `Land: ${this.selectedLand.land_name}`;
                         }
                     }
                 } catch (error) {
@@ -1246,109 +1227,14 @@
             }
         }
 
-        // Authentication Checker
-        class AuthChecker {
-            constructor() {
-                this.currentUser = null;
-                this.currentUserId = null;
-            }
-
-            // Check if user is authenticated
-            async checkAuth() {
-                try {
-                    if (!supabase) {
-                        console.error('Supabase client not found');
-                        return false;
-                    }
-
-                    // First try to get the session
-                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                    
-                    if (sessionError) {
-                        console.error('Error getting session:', sessionError);
-                        return false;
-                    }
-
-                    if (session && session.user) {
-                        this.currentUser = session.user;
-                        return true;
-                    }
-
-                    // If no session, try to get the user directly
-                    const { data: { user }, error: userError } = await supabase.auth.getUser();
-                    
-                    if (userError) {
-                        console.error('Error getting user:', userError);
-                        return false;
-                    }
-
-                    if (user) {
-                        this.currentUser = user;
-                        return true;
-                    }
-
-                    return false;
-                } catch (error) {
-                    console.error('Error in checkAuth:', error);
-                    return false;
-                }
-            }
-
-            // Get current user
-            async getCurrentUser() {
-                if (this.currentUser) {
-                    return this.currentUser;
-                }
-
-                const isAuthenticated = await this.checkAuth();
-                return isAuthenticated ? this.currentUser : null;
-            }
-
-            // Redirect to login if not authenticated
-            async requireAuth(redirectUrl = 'login.html') {
-                const isAuthenticated = await this.checkAuth();
-                
-                if (!isAuthenticated) {
-                    window.location.href = redirectUrl;
-                    return false;
-                }
-                
-                return true;
-            }
-
-            // Get user ID from users table
-            async getUserId() {
-                if (this.currentUserId) {
-                    return this.currentUserId;
-                }
-
-                try {
-                    const user = await this.getCurrentUser();
-                    if (!user) return null;
-
-                    const { data, error } = await supabase
-                        .from('users')
-                        .select('user_id')
-                        .eq('auth_id', user.id)
-                        .single();
-
-                    if (error) {
-                        console.error('Error getting user ID:', error);
-                        return null;
-                    }
-
-                    this.currentUserId = data.user_id;
-                    return data.user_id;
-                } catch (error) {
-                    console.error('Error in getUserId:', error);
-                    return null;
-                }
-            }
-        }
-
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', async () => {
-            new CropRecommendation();
+            const authChecker = new AuthChecker();
+            // Check authentication
+            const isAuthenticated = await authChecker.requireAuth();
+            if (isAuthenticated) {
+                new CropRecommendation();
+            }
         });
     </script>
 </body>
