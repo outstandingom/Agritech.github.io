@@ -792,45 +792,7 @@
                 return isAuthenticated ? this.currentUser : null;
             }
 
-            // Redirect to login if not authenticated
-            async requireAuth(redirectUrl = 'login.html') {
-                const isAuthenticated = await this.checkAuth();
-                
-                if (!isAuthenticated) {
-                    window.location.href = redirectUrl;
-                    return false;
-                }
-                
-                return true;
-            }
 
-            // Sign out user
-            async signOut(redirectUrl = 'login.html') {
-                try {
-                    if (!supabase) {
-                        console.error('Supabase client not found');
-                        return false;
-                    }
-
-                    const { error } = await supabase.auth.signOut();
-                    if (error) {
-                        console.error('Error signing out:', error);
-                        return false;
-                    }
-
-                    this.currentUser = null;
-                    this.currentUserId = null;
-
-                    if (redirectUrl) {
-                        window.location.href = redirectUrl;
-                    }
-
-                    return true;
-                } catch (error) {
-                    console.error('Error in signOut:', error);
-                    return false;
-                }
-            }
 
             // Get user ID from users table
             async getUserId() {
