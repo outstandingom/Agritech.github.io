@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GrowSmart - Crop Management</title>
+    <title>GrowSmart - Crop Recommendation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        /* Your existing CSS styles remain the same */
         * {
             margin: 0;
             padding: 0;
@@ -117,8 +116,8 @@
             color: var(--primary);
         }
 
-        /* Current Crop Status */
-        .current-crop-status {
+        /* Status Card */
+        .status-card {
             background: var(--gradient);
             color: white;
             border-radius: var(--radius);
@@ -128,13 +127,13 @@
             text-align: center;
         }
 
-        .crop-name {
+        .status-title {
             font-size: 20px;
             font-weight: 800;
             margin-bottom: 8px;
         }
 
-        .crop-stage {
+        .status-subtitle {
             font-size: 16px;
             opacity: 0.9;
             margin-bottom: 12px;
@@ -155,7 +154,7 @@
             transition: width 0.3s ease;
         }
 
-        .stage-duration {
+        .status-details {
             font-size: 14px;
             opacity: 0.8;
         }
@@ -203,11 +202,8 @@
             color: white;
         }
 
-        /* Crop Information */
-        .crop-info {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 12px;
+        /* Land Information */
+        .land-info {
             margin-top: 15px;
         }
 
@@ -238,320 +234,8 @@
             color: var(--text);
         }
 
-        /* Stage Conditions */
-        .stage-conditions {
-            margin-top: 20px;
-        }
-
-        .condition-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 12px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .condition-status {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            margin-right: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-
-        .condition-met {
-            background: var(--primary);
-            color: white;
-        }
-
-        .condition-pending {
-            background: var(--border);
-            color: var(--text-light);
-        }
-
-        .condition-text {
-            flex: 1;
-            font-size: 14px;
-        }
-
-        /* Stage Navigation */
-        .stage-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            gap: 10px;
-        }
-
-        .stage-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .stage-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .stage-btn:disabled {
-            background: var(--border);
-            color: var(--text-light);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Growth Stages Overview */
-        .stages-overview {
-            display: flex;
-            overflow-x: auto;
-            padding: 10px 0;
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .stage-indicator {
-            min-width: 80px;
-            text-align: center;
-            padding: 12px 8px;
-            border-radius: 10px;
-            background: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .stage-indicator.active {
-            background: var(--primary);
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .stage-indicator.completed {
-            background: rgba(46, 139, 87, 0.1);
-            border: 2px solid var(--primary);
-        }
-
-        .stage-emoji {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .stage-name-short {
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        /* Update Stage Button */
-        .update-stage-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            justify-content: center;
-            margin-top: 15px;
-        }
-
-        .update-stage-btn:hover {
-            background: #e69500;
-            transform: translateY(-2px);
-        }
-
-        /* Crop Selection */
-        .crop-selection {
-            margin-top: 15px;
-        }
-
-        .crop-input {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: white;
-            font-size: 16px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .crop-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
-        }
-
-        .crop-input::placeholder {
-            color: var(--text-light);
-        }
-
-        .start-journey-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .start-journey-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .start-journey-btn:disabled {
-            background: var(--border);
-            color: var(--text-light);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Land Selection Styles - IMPROVED */
-        .land-selection {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .land-card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            position: relative;
-        }
-
-        .land-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-        }
-
-        .land-card.selected {
-            border-color: var(--primary);
-            background: rgba(46, 139, 87, 0.05);
-        }
-
-        .land-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .land-name {
-            font-weight: 700;
-            font-size: 16px;
-            color: var(--text);
-        }
-
-        .land-area {
-            font-size: 14px;
-            color: var(--text-light);
-            background: var(--background);
-            padding: 4px 8px;
-            border-radius: 8px;
-        }
-
-        .land-details {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        .land-detail {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            color: var(--text-light);
-        }
-
-        .land-detail i {
-            color: var(--primary);
-            font-size: 12px;
-        }
-
-        .ai-advice {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(70, 130, 180, 0.08);
-            border-radius: 8px;
-            font-size: 13px;
-            color: var(--text);
-            border-left: 3px solid var(--secondary);
-        }
-
-        .ai-advice-header {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
-            font-weight: 600;
-            color: var(--secondary);
-        }
-
-        .ai-advice-header i {
-            font-size: 14px;
-        }
-
-        .ai-advice-content {
-            font-size: 13px;
-            line-height: 1.4;
-        }
-
-        .land-selector {
-            margin-bottom: 15px;
-        }
-
-        .land-select {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: white;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .land-select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
-        }
-
-        /* Next Steps Section */
-        .next-steps {
+        /* Crop Recommendation */
+        .crop-recommendation {
             margin-top: 20px;
             padding: 15px;
             background: rgba(70, 130, 180, 0.1);
@@ -559,7 +243,7 @@
             display: none;
         }
 
-        .next-steps-title {
+        .recommendation-title {
             font-weight: 600;
             color: var(--secondary);
             margin-bottom: 10px;
@@ -568,13 +252,74 @@
             gap: 8px;
         }
 
-        .next-steps-list {
+        .recommendation-list {
             font-size: 14px;
             line-height: 1.5;
         }
 
-        .next-steps-list li {
+        .recommendation-list li {
             margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .recommendation-list li:before {
+            content: "•";
+            color: var(--primary);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            background: var(--border);
+            color: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Error Display */
@@ -600,40 +345,6 @@
             font-size: 14px;
             color: var(--text);
             line-height: 1.5;
-        }
-
-        .error-stack {
-            background: rgba(0, 0, 0, 0.05);
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-family: monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        /* Loading States */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         /* Bottom Navigation */
@@ -705,10 +416,6 @@
                 gap: 12px;
             }
             
-            .stage-navigation {
-                flex-direction: column;
-            }
-            
             .bottom-nav {
                 width: calc(100% - 32px);
                 padding: 14px;
@@ -731,7 +438,6 @@
             <div class="error-details" id="errorDetails">
                 An error occurred while processing your request.
             </div>
-            <div class="error-stack" id="errorStack"></div>
         </div>
 
         <!-- Header -->
@@ -744,138 +450,129 @@
                 <div class="user-name" id="userName">Loading...</div>
                 <div class="location">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span id="locationText">Loading location...</span>
+                    <span id="locationText">Select a land</span>
                 </div>
             </div>
         </div>
 
-        <!-- Current Crop Status -->
-        <div class="current-crop-status">
-            <div class="crop-name" id="currentCropName">No crop selected</div>
-            <div class="crop-stage" id="currentStageDisplay">🌱 Select a crop to begin</div>
+        <!-- Status Card -->
+        <div class="status-card">
+            <div class="status-title" id="statusTitle">Select Your Land</div>
+            <div class="status-subtitle" id="statusSubtitle">Choose a land to get personalized crop recommendations</div>
             <div class="progress-container">
-                <div class="progress-bar" id="stageProgress" style="width: 0%"></div>
+                <div class="progress-bar" id="statusProgress" style="width: 0%"></div>
             </div>
-            <div class="stage-duration" id="stageDurationDisplay">Start your crop journey</div>
+            <div class="status-details" id="statusDetails">Ready to analyze your land</div>
         </div>
 
-        <!-- Land and Crop Selection - IMPROVED -->
+        <!-- Land Selection -->
         <div class="content-card">
             <div class="section-title">
                 <i class="fas fa-map-marked-alt"></i>
-                Select Land & Crop
+                Select Your Land
             </div>
             
-            <!-- Land Selection Cards -->
-            <div class="land-selection" id="landSelection">
-                <!-- Land cards will be populated here -->
+            <div class="land-selector">
+                <select class="form-select" id="landSelect">
+                    <option value="">Loading lands...</option>
+                </select>
             </div>
             
             <div class="map-container">
                 <div id="map"></div>
                 <div class="map-nav">
-                    <button class="map-nav-btn" id="prevLandBtn">
+                    <button class="map-nav-btn" id="prevLandBtn" disabled>
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <button class="map-nav-btn" id="nextLandBtn">
+                    <button class="map-nav-btn" id="nextLandBtn" disabled>
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
             </div>
             
-            <div class="crop-selection">
-                <div class="crop-detail-item" style="margin-top: 15px;">
-                    <div class="crop-detail-label">Selected Land</div>
-                    <div class="crop-detail-value" id="selectedLand">No land selected</div>
+            <div class="land-info">
+                <div class="crop-details">
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Land Name</div>
+                        <div class="crop-detail-value" id="selectedLand">No land selected</div>
+                    </div>
+                    
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Soil Type</div>
+                        <div class="crop-detail-value" id="soilType">-</div>
+                    </div>
+                    
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Water Availability</div>
+                        <div class="crop-detail-value" id="waterAvailability">-</div>
+                    </div>
+                    
+                    <div class="crop-detail-item">
+                        <div class="crop-detail-label">Area</div>
+                        <div class="crop-detail-value" id="landArea">-</div>
+                    </div>
                 </div>
                 
-                <div class="crop-detail-item">
-                    <div class="crop-detail-label">Soil Type</div>
-                    <div class="crop-detail-value" id="soilType">-</div>
-                </div>
-                
-                <div class="crop-detail-item">
-                    <div class="crop-detail-label">Water Availability</div>
-                    <div class="crop-detail-value" id="waterAvailability">-</div>
-                </div>
-                
-                <input type="text" class="crop-input" id="cropNameInput" placeholder="Enter crop name (e.g., Cotton, Wheat, Corn)">
-                
-                <button class="start-journey-btn" id="startJourneyBtn" disabled>
-                    <i class="fas fa-play-circle"></i>
-                    Start Crop Journey
+                <button class="action-btn" id="getRecommendationBtn" disabled>
+                    <i class="fas fa-seedling"></i>
+                    Get AI Crop Recommendations
                 </button>
             </div>
         </div>
 
-        <!-- Crop Information -->
-        <div class="content-card" id="cropInfoCard" style="display: none;">
-            <div class="section-title">
-                <i class="fas fa-seedling"></i>
-                Crop Information
-            </div>
-            
-            <div class="crop-info">
-                <div class="crop-details">
-                    <div class="crop-detail-item">
-                        <div class="crop-detail-label">Planting Date</div>
-                        <div class="crop-detail-value" id="plantingDate">-</div>
-                    </div>
-                    <div class="crop-detail-item">
-                        <div class="crop-detail-label">Expected Harvest</div>
-                        <div class="crop-detail-value" id="expectedHarvest">-</div>
-                    </div>
-                    <div class="crop-detail-item">
-                        <div class="crop-detail-label">Area</div>
-                        <div class="crop-detail-value" id="cropArea">-</div>
-                    </div>
-                    <div class="crop-detail-item">
-                        <div class="crop-detail-label">Days Since Planting</div>
-                        <div class="crop-detail-value" id="daysSincePlanting">-</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Current Stage Conditions -->
-        <div class="content-card" id="stageConditionsCard" style="display: none;">
-            <div class="section-title">
-                <i class="fas fa-tasks"></i>
-                Stage Conditions
-            </div>
-            
-            <div class="stage-conditions" id="stageConditions">
-                <!-- Conditions will be populated here -->
-            </div>
-            
-            <!-- Next Steps Section -->
-            <div class="next-steps" id="nextSteps">
-                <div class="next-steps-title">
-                    <i class="fas fa-arrow-right"></i>
-                    Next Steps for Stage Completion
-                </div>
-                <ul class="next-steps-list" id="nextStepsList">
-                    <!-- Next steps will be populated here -->
-                </ul>
-            </div>
-
-            <!-- Update Stage Button -->
-            <button class="update-stage-btn" id="updateStageBtn">
-                <i class="fas fa-camera"></i>
-                Update Plant Stage with AI
-            </button>
-        </div>
-
-        <!-- Growth Stages Overview -->
-        <div class="content-card" id="stagesOverviewCard" style="display: none;">
+        <!-- Crop Recommendation -->
+        <div class="content-card" id="recommendationCard" style="display: none;">
             <div class="section-title">
                 <i class="fas fa-chart-line"></i>
-                Growth Journey
+                AI Crop Recommendations
             </div>
             
-            <div class="stages-overview" id="stagesOverview">
-                <!-- Stage indicators will be populated here -->
+            <div class="crop-recommendation" id="cropRecommendation">
+                <div class="recommendation-title">
+                    <i class="fas fa-check-circle"></i>
+                    Best Crops for Your Land
+                </div>
+                <ul class="recommendation-list" id="recommendationList">
+                    <!-- Recommendations will be populated here -->
+                </ul>
             </div>
+            
+            <div class="crop-details">
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Best Match</div>
+                    <div class="crop-detail-value" id="bestCrop">-</div>
+                </div>
+                
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Season</div>
+                    <div class="crop-detail-value" id="growingSeason">-</div>
+                </div>
+                
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Yield Potential</div>
+                    <div class="crop-detail-value" id="yieldPotential">-</div>
+                </div>
+                
+                <div class="crop-detail-item">
+                    <div class="crop-detail-label">Water Needs</div>
+                    <div class="crop-detail-value" id="waterNeeds">-</div>
+                </div>
+            </div>
+            
+            <div class="crop-recommendation" style="margin-top: 15px;">
+                <div class="recommendation-title">
+                    <i class="fas fa-info-circle"></i>
+                    Why These Crops?
+                </div>
+                <div class="recommendation-details" id="recommendationDetails">
+                    <!-- Detailed explanation will be populated here -->
+                </div>
+            </div>
+            
+            <button class="action-btn" id="saveRecommendationBtn">
+                <i class="fas fa-save"></i>
+                Start Crop Journey
+            </button>
         </div>
     </div>
 
@@ -915,178 +612,43 @@
         let currentUser = null;
         let userLands = [];
         let currentLandIndex = 0;
-        let currentCrop = null;
-        let currentStage = 'germination';
-        let landCrops = {}; // Store crops by land ID
-        let userLocation = null;
-
-        // Plant growth stages configuration
-        const plantStages = {
-            germination: {
-                name: "Germination (Seed Stage)",
-                emoji: "🌱",
-                duration: "Few days to 2 weeks",
-                description: "The seed absorbs water and swells. The embryo inside starts to grow. The root (radicle) comes out first, followed by the shoot.",
-                conditions: [
-                    "Adequate moisture",
-                    "Suitable temperature (20-25°C)",
-                    "Proper soil depth"
-                ],
-                recommendations: [
-                    "Maintain consistent soil moisture but avoid overwatering",
-                    "Keep soil temperature between 20-25°C for optimal germination",
-                    "Ensure proper seed depth according to crop type"
-                ],
-                durationDays: 14
-            },
-            seedling: {
-                name: "Seedling Stage",
-                emoji: "🌿",
-                duration: "1–4 weeks",
-                description: "The young plant develops its first true leaves. Roots grow deeper to absorb nutrients and water. The plant is delicate and needs proper care.",
-                conditions: [
-                    "Adequate light (12-16 hours daily)",
-                    "Regular watering",
-                    "Nutrient availability",
-                    "Protection from pests"
-                ],
-                recommendations: [
-                    "Provide adequate light for strong growth",
-                    "Apply balanced, diluted fertilizer",
-                    "Monitor for pests and diseases",
-                    "Maintain consistent soil moisture"
-                ],
-                durationDays: 28
-            },
-            vegetative: {
-                name: "Vegetative Growth Stage",
-                emoji: "🌾",
-                duration: "Several weeks to months",
-                description: "Rapid growth phase — plant produces more leaves, stems, and roots. Focus is on building a strong structure for future flowering and fruiting.",
-                conditions: [
-                    "Adequate space between plants",
-                    "Balanced nutrition",
-                    "Proper pruning",
-                    "Weed control",
-                    "Adequate water supply"
-                ],
-                recommendations: [
-                    "Increase nitrogen-rich fertilizer for leaf growth",
-                    "Ensure proper spacing for air circulation",
-                    "Implement weed control measures",
-                    "Monitor for nutrient deficiencies"
-                ],
-                durationDays: 56
-            },
-            flowering: {
-                name: "Flowering or Reproductive Stage",
-                emoji: "🌸",
-                duration: "1–4 weeks typically",
-                description: "The plant begins to produce flowers or reproductive parts. Pollination occurs (by wind, insects, or manually).",
-                conditions: [
-                    "Proper pollination",
-                    "Adequate light",
-                    "Proper temperature",
-                    "Reduced nitrogen",
-                    "Increased phosphorus"
-                ],
-                recommendations: [
-                    "Reduce nitrogen and increase phosphorus for flowering",
-                    "Ensure pollinators have access",
-                    "Consider manual pollination if needed",
-                    "Maintain optimal temperature range"
-                ],
-                durationDays: 28
-            },
-            fruiting: {
-                name: "Fruiting or Grain Filling Stage",
-                emoji: "🌾",
-                duration: "Varies widely (from weeks to months)",
-                description: "After successful pollination, fruits or grains start developing. Nutrients and energy are directed toward filling seeds or fruits.",
-                conditions: [
-                    "Adequate water supply",
-                    "Nutrient availability",
-                    "Pest control",
-                    "Disease management",
-                    "Proper support for heavy fruits"
-                ],
-                recommendations: [
-                    "Apply potassium-rich fertilizer for fruit development",
-                    "Maintain consistent watering",
-                    "Implement pest control measures",
-                    "Provide support for heavy fruiting plants"
-                ],
-                durationDays: 42
-            },
-            maturity: {
-                name: "Maturity and Harvesting Stage",
-                emoji: "🌻",
-                duration: "Varies by crop",
-                description: "Fruits, grains, or pods reach full size and ripen. Moisture levels drop, and the plant may begin to dry or turn yellow. Crops are ready for harvest.",
-                conditions: [
-                    "Proper harvest timing",
-                    "Dry weather for harvesting",
-                    "Storage preparation",
-                    "Quality assessment"
-                ],
-                recommendations: [
-                    "Reduce watering as harvest approaches",
-                    "Monitor for optimal harvest time",
-                    "Prepare storage facilities",
-                    "Check crop quality before harvest"
-                ],
-                durationDays: 14
-            }
-        };
-
-        const stageOrder = ['germination', 'seedling', 'vegetative', 'flowering', 'fruiting', 'maturity'];
+        let selectedLand = null;
+        let cropRecommendations = null;
 
         // DOM Elements
         const errorDisplay = document.getElementById('errorDisplay');
         const errorTitle = document.getElementById('errorTitle');
         const errorDetails = document.getElementById('errorDetails');
-        const errorStack = document.getElementById('errorStack');
         const userName = document.getElementById('userName');
         const locationText = document.getElementById('locationText');
-        const currentCropName = document.getElementById('currentCropName');
-        const currentStageDisplay = document.getElementById('currentStageDisplay');
-        const stageProgress = document.getElementById('stageProgress');
-        const stageDurationDisplay = document.getElementById('stageDurationDisplay');
-        const landSelection = document.getElementById('landSelection');
-        const selectedLand = document.getElementById('selectedLand');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusSubtitle = document.getElementById('statusSubtitle');
+        const statusProgress = document.getElementById('statusProgress');
+        const statusDetails = document.getElementById('statusDetails');
+        const landSelect = document.getElementById('landSelect');
+        const selectedLandElement = document.getElementById('selectedLand');
         const soilType = document.getElementById('soilType');
         const waterAvailability = document.getElementById('waterAvailability');
-        const cropNameInput = document.getElementById('cropNameInput');
-        const startJourneyBtn = document.getElementById('startJourneyBtn');
+        const landArea = document.getElementById('landArea');
         const prevLandBtn = document.getElementById('prevLandBtn');
         const nextLandBtn = document.getElementById('nextLandBtn');
-        const cropInfoCard = document.getElementById('cropInfoCard');
-        const plantingDate = document.getElementById('plantingDate');
-        const expectedHarvest = document.getElementById('expectedHarvest');
-        const cropArea = document.getElementById('cropArea');
-        const daysSincePlanting = document.getElementById('daysSincePlanting');
-        const stageConditionsCard = document.getElementById('stageConditionsCard');
-        const stageConditions = document.getElementById('stageConditions');
-        const nextSteps = document.getElementById('nextSteps');
-        const nextStepsList = document.getElementById('nextStepsList');
-        const stagesOverviewCard = document.getElementById('stagesOverviewCard');
-        const stagesOverview = document.getElementById('stagesOverview');
-        const updateStageBtn = document.getElementById('updateStageBtn');
+        const getRecommendationBtn = document.getElementById('getRecommendationBtn');
+        const recommendationCard = document.getElementById('recommendationCard');
+        const cropRecommendation = document.getElementById('cropRecommendation');
+        const recommendationList = document.getElementById('recommendationList');
+        const recommendationDetails = document.getElementById('recommendationDetails');
+        const bestCrop = document.getElementById('bestCrop');
+        const growingSeason = document.getElementById('growingSeason');
+        const yieldPotential = document.getElementById('yieldPotential');
+        const waterNeeds = document.getElementById('waterNeeds');
+        const saveRecommendationBtn = document.getElementById('saveRecommendationBtn');
 
         // Error Handling Functions
-        function showError(title, message, error = null) {
-            console.error(`Error: ${title}`, message, error);
+        function showError(title, message) {
+            console.error(`Error: ${title}`, message);
             
             errorTitle.textContent = title;
             errorDetails.textContent = message;
-            
-            if (error) {
-                errorStack.textContent = `Stack: ${error.stack || 'No stack trace available'}\n\nDetails: ${JSON.stringify(error, null, 2)}`;
-                errorStack.style.display = 'block';
-            } else {
-                errorStack.style.display = 'none';
-            }
-            
             errorDisplay.style.display = 'block';
         }
 
@@ -1097,21 +659,23 @@
         // Initialize map
         function initializeMap() {
             try {
-                map = L.map('map').setView([22.7196, 75.8577], 15);
+                // Default to India center
+                map = L.map('map').setView([22.7196, 75.8577], 5);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
                     maxZoom: 19,
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
             } catch (error) {
-                showError('Map Initialization Failed', 'Failed to initialize the map. Please check your internet connection.', error);
+                showError('Map Initialization Failed', 'Failed to initialize the map. Please check your internet connection.');
             }
         }
 
         // Update map with land coordinates
         function updateMapWithLand(land) {
             try {
+                // Clear existing layers
                 map.eachLayer(layer => {
-                    if (layer instanceof L.Polygon) {
+                    if (layer instanceof L.Marker || layer instanceof L.Polygon) {
                         map.removeLayer(layer);
                     }
                 });
@@ -1133,50 +697,32 @@
                         .addTo(map)
                         .bindPopup(`<b>${land.land_name}</b><br>${land.area_acres} acres`)
                         .openPopup();
+                        
+                    // Update location text
+                    locationText.textContent = land.land_name;
+                } else if (land && land.center_lat && land.center_lng) {
+                    // If no polygon coordinates, just show center point
+                    map.setView([land.center_lat, land.center_lng], 13);
+                    L.marker([land.center_lat, land.center_lng])
+                        .addTo(map)
+                        .bindPopup(`<b>${land.land_name}</b><br>${land.area_acres} acres`)
+                        .openPopup();
+                        
+                    // Update location text
+                    locationText.textContent = land.land_name;
                 }
             } catch (error) {
-                showError('Map Update Failed', 'Failed to update map with land coordinates.', error);
-            }
-        }
-
-        // Get user location
-        function getUserLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        try {
-                            const lat = position.coords.latitude;
-                            const lng = position.coords.longitude;
-                            
-                            userLocation = { lat, lng };
-                            
-                            // Get location name using reverse geocoding
-                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-                            const data = await response.json();
-                            
-                            if (data && data.address) {
-                                const city = data.address.city || data.address.town || data.address.village || data.address.county;
-                                const state = data.address.state;
-                                locationText.textContent = city && state ? `${city}, ${state}` : 'Location found';
-                            } else {
-                                locationText.textContent = 'Location found';
-                            }
-                        } catch (error) {
-                            locationText.textContent = 'Location found';
-                        }
-                    },
-                    (error) => {
-                        locationText.textContent = 'Location access denied';
-                    }
-                );
-            } else {
-                locationText.textContent = 'Geolocation not supported';
+                console.error('Error updating map:', error);
+                showError('Map Update Failed', 'Failed to update map with land coordinates.');
             }
         }
 
         // Load user data from Supabase
         async function loadUserData() {
             try {
+                statusProgress.style.width = '30%';
+                statusDetails.textContent = 'Loading user profile...';
+
                 // Check authentication first
                 const isAuthenticated = await window.authChecker.requireAuth();
                 if (!isAuthenticated) {
@@ -1191,6 +737,9 @@
                     return;
                 }
 
+                statusProgress.style.width = '50%';
+                statusDetails.textContent = 'Loading user profile...';
+
                 // Load user profile
                 const { data: userProfile, error: userError } = await window.supabaseClient
                     .from('users')
@@ -1204,6 +753,9 @@
                     userName.textContent = userProfile.full_name;
                 }
 
+                statusProgress.style.width = '70%';
+                statusDetails.textContent = 'Loading your lands...';
+
                 // Load user lands
                 const { data: lands, error: landsError } = await window.supabaseClient
                     .from('lands')
@@ -1215,6 +767,9 @@
                 } else if (lands && lands.length > 0) {
                     userLands = lands;
                     
+                    statusProgress.style.width = '90%';
+                    statusDetails.textContent = 'Loading land coordinates...';
+
                     // Load coordinates for each land
                     for (let land of userLands) {
                         try {
@@ -1232,20 +787,25 @@
                         }
                     }
                     
-                    // Populate land cards
-                    populateLandCards();
-                    
-                    // Load crops for each land
-                    for (let land of userLands) {
-                        await loadLandCrops(land.land_id);
-                    }
-                    
+                    // Populate land dropdown
+                    populateLandDropdown();
                     updateLandDisplay();
+                    
+                    statusProgress.style.width = '100%';
+                    statusDetails.textContent = 'Ready! Select a land to get recommendations';
+                    statusTitle.textContent = 'Land Loaded Successfully';
+                    statusSubtitle.textContent = `${userLands.length} lands found`;
+
                 } else {
-                    selectedLand.textContent = 'No lands found';
+                    selectedLandElement.textContent = 'No lands found';
                     prevLandBtn.disabled = true;
                     nextLandBtn.disabled = true;
-                    landSelection.innerHTML = '<div class="no-lands-message">No lands available. Please add a land first.</div>';
+                    landSelect.innerHTML = '<option value="">No lands available</option>';
+                    
+                    statusProgress.style.width = '100%';
+                    statusDetails.textContent = 'No lands found. Please add a land first.';
+                    statusTitle.textContent = 'No Lands Available';
+                    statusSubtitle.textContent = 'Add a land to get started';
                 }
 
             } catch (error) {
@@ -1253,189 +813,42 @@
             }
         }
 
-        // Populate land cards
-        function populateLandCards() {
-            landSelection.innerHTML = '';
+        // Populate land dropdown
+        function populateLandDropdown() {
+            landSelect.innerHTML = '';
             
             userLands.forEach((land, index) => {
-                const landCard = document.createElement('div');
-                landCard.className = `land-card ${index === currentLandIndex ? 'selected' : ''}`;
-                landCard.setAttribute('data-land-index', index);
-                
-                // Generate AI advice based on land properties
-                const aiAdvice = generateAIAdvice(land);
-                
-                landCard.innerHTML = `
-                    <div class="land-card-header">
-                        <div class="land-name">${land.land_name}</div>
-                        <div class="land-area">${land.area_acres} acres</div>
-                    </div>
-                    <div class="land-details">
-                        <div class="land-detail">
-                            <i class="fas fa-mountain"></i>
-                            <span>${land.soil_type || 'Unknown soil'}</span>
-                        </div>
-                        <div class="land-detail">
-                            <i class="fas fa-tint"></i>
-                            <span>${land.water_availability || 'Unknown'}</span>
-                        </div>
-                    </div>
-                    <div class="ai-advice">
-                        <div class="ai-advice-header">
-                            <i class="fas fa-robot"></i>
-                            <span>AI Recommendation</span>
-                        </div>
-                        <div class="ai-advice-content">
-                            ${aiAdvice}
-                        </div>
-                    </div>
-                `;
-                
-                landCard.addEventListener('click', () => {
-                    currentLandIndex = index;
-                    updateLandDisplay();
-                });
-                
-                landSelection.appendChild(landCard);
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${land.land_name} (${land.area_acres} acres)`;
+                landSelect.appendChild(option);
             });
-        }
-
-        // Generate AI advice based on land properties
-        function generateAIAdvice(land) {
-            let advice = '';
             
-            // Soil-based recommendations
-            if (land.soil_type) {
-                const soilType = land.soil_type.toLowerCase();
-                if (soilType.includes('clay')) {
-                    advice += 'Clay soil retains water well. Consider crops like rice, wheat, or cabbage. ';
-                } else if (soilType.includes('sandy')) {
-                    advice += 'Sandy soil drains quickly. Ideal for root vegetables like carrots and potatoes. ';
-                } else if (soilType.includes('loam')) {
-                    advice += 'Loam soil is balanced. Suitable for most crops including vegetables and grains. ';
-                }
-            }
-            
-            // Water availability recommendations
-            if (land.water_availability) {
-                const water = land.water_availability.toLowerCase();
-                if (water.includes('high') || water.includes('good')) {
-                    advice += 'Good water availability supports water-intensive crops like rice or sugarcane. ';
-                } else if (water.includes('low') || water.includes('limited')) {
-                    advice += 'Limited water availability. Consider drought-resistant crops like millet or sorghum. ';
-                }
-            }
-            
-            // Size-based recommendations
-            if (land.area_acres) {
-                const area = parseFloat(land.area_acres);
-                if (area < 0.1) {
-                    advice += 'Small plot suitable for high-value vegetables or herbs. ';
-                } else if (area < 1) {
-                    advice += 'Medium-sized land. Consider mixed cropping or specialty crops. ';
-                } else {
-                    advice += 'Large area suitable for staple crops or commercial farming. ';
-                }
-            }
-            
-            // Default advice if none generated
-            if (!advice) {
-                advice = 'Based on your location, consider seasonal crops appropriate for your region. ';
-            }
-            
-            return advice;
-        }
-
-        // Load crops for a specific land
-        async function loadLandCrops(landId) {
-            try {
-                const { data: crops, error } = await window.supabaseClient
-                    .from('crops')
-                    .select('*')
-                    .eq('auth_id', currentUser.id)
-                    .eq('land_id', landId);
-                
-                if (!error && crops && crops.length > 0) {
-                    landCrops[landId] = crops;
-                    
-                    // Load stages for each crop
-                    for (let crop of crops) {
-                        await loadCropStages(crop.crop_id);
-                    }
-                    
-                    // If there's an active crop on this land, set it as current
-                    const activeCrop = crops.find(crop => crop.is_active);
-                    if (activeCrop && userLands[currentLandIndex].land_id === landId) {
-                        currentCrop = activeCrop;
-                        updateCropDisplay();
-                        showCropSections();
-                    }
-                } else {
-                    landCrops[landId] = [];
-                }
-            } catch (error) {
-                console.error('Error loading land crops:', error);
-                landCrops[landId] = [];
-            }
-        }
-
-        // Load crop stages from database
-        async function loadCropStages(cropId) {
-            try {
-                const { data: stages, error } = await window.supabaseClient
-                    .from('crop_stages')
-                    .select('*')
-                    .eq('crop_id', cropId)
-                    .order('stage_order');
-                
-                if (!error && stages && stages.length > 0) {
-                    // Find the crop in landCrops and update its stages
-                    for (let landId in landCrops) {
-                        const cropIndex = landCrops[landId].findIndex(crop => crop.crop_id === cropId);
-                        if (cropIndex !== -1) {
-                            if (!landCrops[landId][cropIndex].stages) {
-                                landCrops[landId][cropIndex].stages = {};
-                            }
-                            
-                            stages.forEach(stage => {
-                                landCrops[landId][cropIndex].stages[stage.stage_key] = stage;
-                            });
-                            
-                            // Update current stage
-                            const activeStage = stages.find(stage => stage.is_current);
-                            if (activeStage) {
-                                landCrops[landId][cropIndex].current_stage = activeStage.stage_key;
-                            }
-                            
-                            // If this is the current crop, update currentStage
-                            if (currentCrop && currentCrop.crop_id === cropId) {
-                                currentStage = landCrops[landId][cropIndex].current_stage;
-                            }
-                            
-                            break;
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading crop stages:', error);
+            if (userLands.length > 0) {
+                landSelect.value = currentLandIndex;
             }
         }
 
         // Update land display
         function updateLandDisplay() {
             if (userLands.length === 0) {
-                selectedLand.textContent = 'No lands found';
+                selectedLandElement.textContent = 'No lands found';
                 soilType.textContent = '-';
                 waterAvailability.textContent = '-';
+                landArea.textContent = '-';
                 prevLandBtn.disabled = true;
                 nextLandBtn.disabled = true;
+                getRecommendationBtn.disabled = true;
                 return;
             }
             
             const currentLand = userLands[currentLandIndex];
-            selectedLand.textContent = currentLand.land_name;
+            selectedLand = currentLand;
+            
+            selectedLandElement.textContent = currentLand.land_name;
             soilType.textContent = currentLand.soil_type || 'Not specified';
             waterAvailability.textContent = currentLand.water_availability || 'Not specified';
+            landArea.textContent = currentLand.area_acres ? `${currentLand.area_acres} acres` : 'Not specified';
             
             // Update map
             updateMapWithLand(currentLand);
@@ -1444,296 +857,360 @@
             prevLandBtn.disabled = currentLandIndex === 0;
             nextLandBtn.disabled = currentLandIndex === userLands.length - 1;
             
-            // Update land cards selection state
-            document.querySelectorAll('.land-card').forEach((card, index) => {
-                if (index === currentLandIndex) {
-                    card.classList.add('selected');
-                } else {
-                    card.classList.remove('selected');
-                }
-            });
+            // Update dropdown selection
+            landSelect.value = currentLandIndex;
             
-            // Check if this land has crops and update display
-            const landId = currentLand.land_id;
-            if (landCrops[landId] && landCrops[landId].length > 0) {
-                // Find active crop for this land
-                const activeCrop = landCrops[landId].find(crop => crop.is_active);
-                if (activeCrop) {
-                    currentCrop = activeCrop;
-                    currentStage = activeCrop.current_stage;
-                    updateCropDisplay();
-                    showCropSections();
-                } else {
-                    // No active crop on this land
-                    currentCrop = null;
-                    hideCropSections();
-                    updateCropDisplay();
-                }
-            } else {
-                // No crops on this land
-                currentCrop = null;
-                hideCropSections();
-                updateCropDisplay();
-            }
+            // Enable recommendation button
+            getRecommendationBtn.disabled = false;
         }
 
-        // Show crop sections when a crop is active
-        function showCropSections() {
-            cropInfoCard.style.display = 'block';
-            stageConditionsCard.style.display = 'block';
-            stagesOverviewCard.style.display = 'block';
-        }
-
-        // Hide crop sections when no crop is active
-        function hideCropSections() {
-            cropInfoCard.style.display = 'none';
-            stageConditionsCard.style.display = 'none';
-            stagesOverviewCard.style.display = 'none';
-        }
-
-        // Update crop display
-        function updateCropDisplay() {
-            if (!currentCrop) {
-                currentCropName.textContent = 'No crop selected';
-                currentStageDisplay.textContent = '🌱 Select a crop to begin';
-                stageProgress.style.width = '0%';
-                stageDurationDisplay.textContent = 'Start your crop journey';
-                hideCropSections();
+        // Get crop recommendations based on selected land
+        async function getCropRecommendations() {
+            if (!selectedLand) {
+                showError('No Land Selected', 'Please select a land first.');
                 return;
             }
-
-            currentCropName.textContent = currentCrop.crop_name;
-            
-            if (currentCrop.planting_date) {
-                plantingDate.textContent = new Date(currentCrop.planting_date).toLocaleDateString();
-            } else {
-                plantingDate.textContent = 'Not set';
-            }
-            
-            if (currentCrop.expected_harvest_date) {
-                expectedHarvest.textContent = new Date(currentCrop.expected_harvest_date).toLocaleDateString();
-            } else {
-                expectedHarvest.textContent = 'Not set';
-            }
-            
-            cropArea.textContent = currentCrop.area_allocated ? 
-                `${currentCrop.area_allocated} acres` : 'Not specified';
-            
-            // Calculate days since planting
-            if (currentCrop.planting_date) {
-                const planting = new Date(currentCrop.planting_date);
-                const today = new Date();
-                const days = Math.floor((today - planting) / (1000 * 60 * 60 * 24));
-                daysSincePlanting.textContent = `${days} days`;
-            } else {
-                daysSincePlanting.textContent = 'Not set';
-            }
-
-            // Update current stage
-            updateStageDisplay();
-            showCropSections();
-        }
-
-        function updateStageDisplay() {
-            const stage = plantStages[currentStage];
-            if (!stage) {
-                currentStageDisplay.textContent = '🌱 Stage not found';
-                return;
-            }
-
-            currentStageDisplay.textContent = `${stage.emoji} ${stage.name}`;
-            const stageIndex = stageOrder.indexOf(currentStage);
-            const progress = (stageIndex / (stageOrder.length - 1)) * 100;
-            stageProgress.style.width = `${progress}%`;
-            
-            // Update stage duration
-            stageDurationDisplay.textContent = stage.duration;
-            
-            // Update conditions
-            updateStageConditions();
-            
-            // Update stages overview
-            updateStagesOverview();
-        }
-
-        function updateStageConditions() {
-            stageConditions.innerHTML = '';
-            const stage = plantStages[currentStage];
-            
-            // Get AI verified conditions from database
-            const aiVerifiedConditions = currentCrop.stages && currentCrop.stages[currentStage] 
-                ? currentCrop.stages[currentStage].ai_verified_conditions || []
-                : Array(stage.conditions.length).fill(false);
-            
-            stage.conditions.forEach((condition, index) => {
-                const isVerified = aiVerifiedConditions[index] || false;
-                
-                const conditionItem = document.createElement('div');
-                conditionItem.className = 'condition-item';
-                
-                conditionItem.innerHTML = `
-                    <div class="condition-status ${isVerified ? 'condition-met' : 'condition-pending'}">
-                        <i class="fas fa-${isVerified ? 'check' : 'clock'}"></i>
-                    </div>
-                    <div class="condition-text">
-                        ${condition}
-                        ${!isVerified ? `<div class="ai-verification-status ai-pending" style="margin-top: 8px;">
-                            <i class="fas fa-robot"></i> AI verification pending
-                        </div>` : ''}
-                    </div>
-                `;
-                
-                stageConditions.appendChild(conditionItem);
-            });
-            
-            // Show next steps if there are pending conditions
-            const allConditionsVerified = aiVerifiedConditions.length === stage.conditions.length && 
-                                        aiVerifiedConditions.every(condition => condition === true);
-            
-            if (!allConditionsVerified) {
-                showNextSteps();
-            } else {
-                hideNextSteps();
-                // Automatically advance to next stage if all conditions are verified
-                autoAdvanceStage();
-            }
-        }
-
-        // Show next steps for current stage
-        function showNextSteps() {
-            const stage = plantStages[currentStage];
-            nextStepsList.innerHTML = '';
-            
-            stage.recommendations.forEach(recommendation => {
-                const li = document.createElement('li');
-                li.textContent = recommendation;
-                nextStepsList.appendChild(li);
-            });
-            
-            nextSteps.style.display = 'block';
-        }
-
-        // Hide next steps
-        function hideNextSteps() {
-            nextSteps.style.display = 'none';
-        }
-
-        // Automatically advance to next stage when all conditions are verified
-        async function autoAdvanceStage() {
-            const currentIndex = stageOrder.indexOf(currentStage);
-            if (currentIndex < stageOrder.length - 1) {
-                const nextStage = stageOrder[currentIndex + 1];
-                
-                try {
-                    // Update current stage in crops table
-                    const { error: cropError } = await window.supabaseClient
-                        .from('crops')
-                        .update({ 
-                            current_stage: nextStage,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('crop_id', currentCrop.crop_id);
-
-                    if (cropError) {
-                        showError('Crop Stage Update Failed', 'Failed to update crop stage in database.', cropError);
-                        return;
-                    }
-
-                    // Update crop_stages table
-                    await window.supabaseClient
-                        .from('crop_stages')
-                        .update({ 
-                            is_current: false,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('crop_id', currentCrop.crop_id)
-                        .eq('stage_key', currentStage);
-
-                    await window.supabaseClient
-                        .from('crop_stages')
-                        .update({ 
-                            is_current: true,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('crop_id', currentCrop.crop_id)
-                        .eq('stage_key', nextStage);
-
-                    // Update local state
-                    currentStage = nextStage;
-                    currentCrop.current_stage = nextStage;
-                    
-                    // Update landCrops data
-                    const landId = userLands[currentLandIndex].land_id;
-                    const cropIndex = landCrops[landId].findIndex(crop => crop.crop_id === currentCrop.crop_id);
-                    if (cropIndex !== -1) {
-                        landCrops[landId][cropIndex].current_stage = nextStage;
-                    }
-                    
-                    updateStageDisplay();
-                    showNotification(`Crop automatically advanced to ${plantStages[nextStage].name}!`);
-
-                } catch (error) {
-                    showError('Stage Advancement Failed', 'Failed to advance to next stage.', error);
-                }
-            }
-        }
-
-        function updateStagesOverview() {
-            stagesOverview.innerHTML = '';
-            const currentIndex = stageOrder.indexOf(currentStage);
-            
-            stageOrder.forEach((stageKey, index) => {
-                const stage = plantStages[stageKey];
-                const isCompleted = index < currentIndex;
-                const isActive = index === currentIndex;
-                
-                const stageIndicator = document.createElement('div');
-                stageIndicator.className = `stage-indicator ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
-                stageIndicator.setAttribute('data-stage', stageKey);
-                
-                stageIndicator.innerHTML = `
-                    <div class="stage-emoji">${stage.emoji}</div>
-                    <div class="stage-name-short">${stage.name.split(' ')[0]}</div>
-                `;
-                
-                // Only allow viewing completed or current stages (no navigation)
-                if (index <= currentIndex) {
-                    stageIndicator.style.cursor = 'pointer';
-                    stageIndicator.addEventListener('click', () => {
-                        currentStage = stageKey;
-                        updateStageDisplay();
-                    });
-                } else {
-                    stageIndicator.style.cursor = 'default';
-                    stageIndicator.style.opacity = '0.5';
-                }
-                
-                stagesOverview.appendChild(stageIndicator);
-            });
-        }
-
-        // Start crop journey
-        async function startCropJourney() {
-            const cropName = cropNameInput.value.trim();
-            
-            if (!cropName) {
-                showError('Input Required', 'Please enter a crop name.');
-                return;
-            }
-            
-            if (userLands.length === 0) {
-                showError('No Lands Available', 'No land available. Please add a land first.');
-                return;
-            }
-            
-            const currentLand = userLands[currentLandIndex];
             
             try {
-                // Create a new crop
+                // Show loading state
+                getRecommendationBtn.innerHTML = '<span class="spinner"></span> Analyzing your land with AI...';
+                getRecommendationBtn.disabled = true;
+                
+                // Get additional data for better recommendations
+                const soilAnalysis = await getSoilAnalysis(selectedLand.land_id);
+                const weatherData = await getWeatherData(selectedLand.land_id);
+                
+                // Prepare request data for Gemini API
+                const requestData = {
+                    land: {
+                        name: selectedLand.land_name,
+                        soilType: selectedLand.soil_type,
+                        waterAvailability: selectedLand.water_availability,
+                        area: selectedLand.area_acres,
+                        coordinates: {
+                            lat: selectedLand.center_lat,
+                            lng: selectedLand.center_lng
+                        }
+                    },
+                    soilAnalysis: soilAnalysis,
+                    weatherData: weatherData
+                };
+                
+                // Call Gemini API for crop recommendations
+                const recommendations = await callGeminiAPI(requestData);
+                
+                // Process and display recommendations
+                displayCropRecommendations(recommendations);
+                
+                // Reset button state
+                getRecommendationBtn.innerHTML = '<i class="fas fa-seedling"></i> Get AI Crop Recommendations';
+                getRecommendationBtn.disabled = false;
+                
+            } catch (error) {
+                showError('Recommendation Failed', 'Failed to get crop recommendations. Please try again.');
+                console.error('Error getting recommendations:', error);
+                
+                // Reset button state
+                getRecommendationBtn.innerHTML = '<i class="fas fa-seedling"></i> Get AI Crop Recommendations';
+                getRecommendationBtn.disabled = false;
+            }
+        }
+
+        // Get soil analysis data
+        async function getSoilAnalysis(landId) {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('soil_analysis')
+                    .select('*')
+                    .eq('land_id', landId)
+                    .order('analysis_date', { ascending: false })
+                    .limit(1);
+                
+                if (!error && data && data.length > 0) {
+                    return data[0];
+                }
+                return null;
+            } catch (error) {
+                console.error('Error getting soil analysis:', error);
+                return null;
+            }
+        }
+
+        // Get weather data
+        async function getWeatherData(landId) {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('weather_reports')
+                    .select('*')
+                    .eq('land_id', landId)
+                    .order('report_date', { ascending: false })
+                    .limit(1);
+                
+                if (!error && data && data.length > 0) {
+                    return data[0];
+                }
+                return null;
+            } catch (error) {
+                console.error('Error getting weather data:', error);
+                return null;
+            }
+        }
+
+        // Call Gemini API for crop recommendations
+        async function callGeminiAPI(requestData) {
+            const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
+            const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+            
+            // Prepare the prompt for Gemini
+            const prompt = `
+                As an agricultural expert, analyze this land data and provide crop recommendations:
+                
+                LAND INFORMATION:
+                - Name: ${requestData.land.name}
+                - Soil Type: ${requestData.land.soilType}
+                - Water Availability: ${requestData.land.waterAvailability}
+                - Area: ${requestData.land.area} acres
+                - Location: Latitude ${requestData.land.coordinates.lat}, Longitude ${requestData.land.coordinates.lng}
+                
+                ${requestData.soilAnalysis ? `
+                SOIL ANALYSIS:
+                - pH Level: ${requestData.soilAnalysis.ph_level}
+                - Nitrogen: ${requestData.soilAnalysis.nitrogen}
+                - Phosphorus: ${requestData.soilAnalysis.phosphorus}
+                - Potassium: ${requestData.soilAnalysis.potassium}
+                - Organic Matter: ${requestData.soilAnalysis.organic_matter}%
+                ` : 'No recent soil analysis available'}
+                
+                ${requestData.weatherData ? `
+                WEATHER CONDITIONS:
+                - Temperature: ${requestData.weatherData.current_temperature}°C
+                - Rainfall: ${requestData.weatherData.rainfall_amount} mm
+                - Humidity: ${requestData.weatherData.humidity}%
+                ` : 'No recent weather data available'}
+                
+                Please provide:
+                1. Top 3-5 recommended crops for this specific land
+                2. For each crop, include suitability score, growing season, yield potential, and water requirements
+                3. Detailed explanation of why these crops are recommended
+                4. Specific agricultural practices for this land
+                5. Potential challenges and solutions
+                
+                Format the response as a JSON object with this structure:
+                {
+                    "bestCrops": [
+                        {
+                            "name": "Crop Name",
+                            "suitability": 9,
+                            "season": "Rabi/Kharif/Zaid",
+                            "yield": "High/Medium/Low",
+                            "water": "High/Medium/Low",
+                            "advantages": ["Advantage 1", "Advantage 2"]
+                        }
+                    ],
+                    "explanation": "Detailed explanation here",
+                    "practices": ["Practice 1", "Practice 2"],
+                    "challenges": ["Challenge 1 with solution", "Challenge 2 with solution"]
+                }
+            `;
+            
+            const requestBody = {
+                contents: [
+                    {
+                        parts: [
+                            {
+                                text: prompt
+                            }
+                        ]
+                    }
+                ],
+                generationConfig: {
+                    temperature: 0.2,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 1024,
+                }
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Extract the text from the response
+                const responseText = data.candidates[0].content.parts[0].text;
+                
+                // Try to parse the JSON from the response
+                try {
+                    // Extract JSON from the response (in case there's additional text)
+                    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        return JSON.parse(jsonMatch[0]);
+                    } else {
+                        // Fallback: create a structured response from the text
+                        return createStructuredResponse(responseText, requestData);
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing JSON response:', parseError);
+                    // Fallback: create a structured response from the text
+                    return createStructuredResponse(responseText, requestData);
+                }
+                
+            } catch (error) {
+                console.error('API call failed:', error);
+                // Return fallback recommendations based on land data
+                return getFallbackRecommendations(requestData);
+            }
+        }
+
+        // Create structured response from text (fallback)
+        function createStructuredResponse(text, requestData) {
+            // Simple fallback parsing
+            const crops = [];
+            const lines = text.split('\n');
+            
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                
+                if (trimmedLine && /^\d+\./.test(trimmedLine)) {
+                    const cropName = trimmedLine.replace(/^\d+\.\s*/, '').split(':')[0];
+                    if (cropName && cropName.length < 50) { // Basic validation
+                        crops.push({
+                            name: cropName,
+                            suitability: 8,
+                            season: getSeasonFromSoil(requestData.land.soilType),
+                            yield: 'Good',
+                            water: requestData.land.waterAvailability === 'high' ? 'Medium' : 'Low',
+                            advantages: ['Well-suited to your soil type', 'Good market potential']
+                        });
+                    }
+                }
+                
+                if (crops.length >= 3) break;
+            }
+            
+            return {
+                bestCrops: crops.length > 0 ? crops : getFallbackRecommendations(requestData).bestCrops,
+                explanation: "Based on your land characteristics, these crops are recommended for optimal yield and sustainability.",
+                practices: ["Test soil pH before planting", "Implement proper irrigation scheduling"],
+                challenges: ["Monitor for pest outbreaks - use integrated pest management", "Manage water efficiently - consider drip irrigation"]
+            };
+        }
+
+        // Helper function to determine season from soil type
+        function getSeasonFromSoil(soilType) {
+            const soilSeasonMap = {
+                'sandy': 'Kharif',
+                'loamy': 'Rabi/Kharif',
+                'clay': 'Kharif',
+                'silt': 'Rabi',
+                'peaty': 'Kharif',
+                'chalky': 'Rabi'
+            };
+            return soilSeasonMap[soilType] || 'Rabi/Kharif';
+        }
+
+        // Fallback recommendations if API fails
+        function getFallbackRecommendations(requestData) {
+            // Simple fallback based on soil type and water availability
+            const soilBasedCrops = {
+                sandy: ['Pearl Millet', 'Groundnut', 'Watermelon'],
+                loamy: ['Wheat', 'Maize', 'Soybean', 'Cotton'],
+                clay: ['Rice', 'Sugarcane', 'Lentils', 'Chickpea'],
+                silt: ['Wheat', 'Barley', 'Oats', 'Potato'],
+                peaty: ['Rice', 'Cabbage', 'Celery', 'Onions'],
+                chalky: ['Spinach', 'Beets', 'Sweet Corn', 'Cabbage']
+            };
+            
+            const crops = soilBasedCrops[requestData.land.soilType] || ['Wheat', 'Maize', 'Rice'];
+            
+            return {
+                bestCrops: crops.map((crop, index) => ({
+                    name: crop,
+                    suitability: 9 - index,
+                    season: getSeasonFromSoil(requestData.land.soilType),
+                    yield: 'High with proper management',
+                    water: requestData.land.waterAvailability === 'high' ? 'Medium' : 'Low',
+                    advantages: ['Well-suited to your soil type', 'Good market demand']
+                })),
+                explanation: `Based on your ${requestData.land.soilType} soil and ${requestData.land.waterAvailability} water availability, these crops are traditionally successful in your region.`,
+                practices: ['Consult with local agricultural experts for specific varieties', 'Test soil pH before planting'],
+                challenges: ['Monitor water usage carefully', 'Check for local pest advisories']
+            };
+        }
+
+        // Display crop recommendations
+        function displayCropRecommendations(recommendations) {
+            cropRecommendations = recommendations;
+            
+            // Clear previous recommendations
+            recommendationList.innerHTML = '';
+            
+            // Add crops to recommendation list
+            recommendations.bestCrops.forEach((crop, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${crop.name}</strong> - Suitability: ${crop.suitability}/10 - Season: ${crop.season}`;
+                recommendationList.appendChild(li);
+            });
+            
+            // Update crop details
+            if (recommendations.bestCrops.length > 0) {
+                const bestCropData = recommendations.bestCrops[0];
+                bestCrop.textContent = bestCropData.name;
+                growingSeason.textContent = bestCropData.season;
+                yieldPotential.textContent = bestCropData.yield;
+                waterNeeds.textContent = bestCropData.water;
+            }
+            
+            // Update explanation and details
+            recommendationDetails.innerHTML = `
+                <p>${recommendations.explanation}</p>
+                ${recommendations.practices ? `
+                <p style="margin-top: 10px;"><strong>Recommended Practices:</strong></p>
+                <ul>
+                    ${recommendations.practices.map(practice => `<li>${practice}</li>`).join('')}
+                </ul>
+                ` : ''}
+                ${recommendations.challenges ? `
+                <p style="margin-top: 10px;"><strong>Potential Challenges & Solutions:</strong></p>
+                <ul>
+                    ${recommendations.challenges.map(challenge => `<li>${challenge}</li>`).join('')}
+                </ul>
+                ` : ''}
+            `;
+            
+            // Show recommendation card
+            recommendationCard.style.display = 'block';
+            cropRecommendation.style.display = 'block';
+            
+            // Scroll to recommendations
+            recommendationCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Save recommendation and start crop journey
+        async function saveRecommendation() {
+            if (!cropRecommendations || !selectedLand) return;
+            
+            try {
+                saveRecommendationBtn.innerHTML = '<span class="spinner"></span> Creating crop...';
+                saveRecommendationBtn.disabled = true;
+                
+                const bestCropName = cropRecommendations.bestCrops[0].name;
+                
+                // Create a new crop in the database
                 const cropId = 'CROP_' + Date.now();
                 const plantingDate = new Date().toISOString().split('T')[0];
                 
-                // Calculate expected harvest date (add 120 days as default)
+                // Calculate expected harvest date (add default duration)
                 const harvestDate = new Date();
                 harvestDate.setDate(harvestDate.getDate() + 120);
                 const expectedHarvestDate = harvestDate.toISOString().split('T')[0];
@@ -1744,12 +1221,12 @@
                     .insert({
                         crop_id: cropId,
                         auth_id: currentUser.id,
-                        land_id: currentLand.land_id,
-                        crop_name: cropName,
+                        land_id: selectedLand.land_id,
+                        crop_name: bestCropName,
                         crop_type: 'custom',
                         planting_date: plantingDate,
                         expected_harvest_date: expectedHarvestDate,
-                        area_allocated: currentLand.area_acres,
+                        area_allocated: selectedLand.area_acres,
                         current_stage: 'germination',
                         is_active: true,
                         created_at: new Date().toISOString(),
@@ -1759,85 +1236,47 @@
                     .single();
                 
                 if (error) {
-                    showError('Crop Creation Failed', 'Failed to create crop in database.', error);
-                    return;
+                    throw new Error('Failed to create crop: ' + error.message);
                 }
                 
-                // Create crop stages with empty AI verification
-                for (let i = 0; i < stageOrder.length; i++) {
-                    const stageKey = stageOrder[i];
-                    const stage = plantStages[stageKey];
-                    
-                    const { error: stageError } = await window.supabaseClient
+                // Create initial crop stages
+                const stages = ['germination', 'seedling', 'vegetative', 'flowering', 'fruiting', 'maturity'];
+                
+                for (let i = 0; i < stages.length; i++) {
+                    const stageKey = stages[i];
+                    await window.supabaseClient
                         .from('crop_stages')
                         .insert({
                             crop_id: cropId,
                             auth_id: currentUser.id,
                             stage_key: stageKey,
-                            stage_name: stage.name,
+                            stage_name: stageKey.charAt(0).toUpperCase() + stageKey.slice(1),
                             stage_order: i,
-                            ai_verified_conditions: Array(stage.conditions.length).fill(false),
+                            ai_verified_conditions: [],
                             is_current: i === 0,
                             created_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         });
-                    
-                    if (stageError) {
-                        console.error('Error creating stage:', stageError);
-                    }
                 }
                 
-                // Update local state
-                currentCrop = crop;
-                currentCrop.stages = {};
+                showNotification(`Crop journey started for ${bestCropName}!`);
                 
-                // Initialize stages in local state
-                for (let stageKey of stageOrder) {
-                    currentCrop.stages[stageKey] = {
-                        ai_verified_conditions: Array(plantStages[stageKey].conditions.length).fill(false)
-                    };
-                }
-                
-                // Update landCrops
-                if (!landCrops[currentLand.land_id]) {
-                    landCrops[currentLand.land_id] = [];
-                }
-                landCrops[currentLand.land_id].push(currentCrop);
-                
-                // Update UI
-                updateCropDisplay();
-                showNotification(`Crop journey started for ${cropName}!`);
-                
-                // Clear input
-                cropNameInput.value = '';
-                startJourneyBtn.disabled = true;
+                // Redirect to crop management page after a delay
+                setTimeout(() => {
+                    window.location.href = 'crops.html';
+                }, 2000);
                 
             } catch (error) {
-                showError('Crop Journey Start Failed', 'Failed to start crop journey.', error);
+                showError('Crop Creation Failed', 'Failed to start crop journey. Please try again.');
+                console.error('Error saving recommendation:', error);
+                
+                saveRecommendationBtn.innerHTML = '<i class="fas fa-save"></i> Start Crop Journey';
+                saveRecommendationBtn.disabled = false;
             }
         }
 
-        // Navigate to stage identification page
-        function navigateToStageIdentification() {
-            if (!currentCrop) {
-                showError('No Crop Selected', 'Please select a crop first.');
-                return;
-            }
-            
-            // Store current crop info in session storage for stage.html
-            sessionStorage.setItem('currentCropId', currentCrop.crop_id);
-            sessionStorage.setItem('currentCropName', currentCrop.crop_name);
-            sessionStorage.setItem('currentStage', currentStage);
-            sessionStorage.setItem('currentLandId', userLands[currentLandIndex].land_id);
-            sessionStorage.setItem('currentLandName', userLands[currentLandIndex].land_name);
-            
-            // Navigate to stage identification page
-            window.location.href = 'stage.html';
-        }
-
-        // Helper function to show notifications
+        // Show notification
         function showNotification(message) {
-            // Create a simple notification
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
@@ -1862,7 +1301,6 @@
             
             document.body.appendChild(notification);
             
-            // Remove after 3 seconds
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.3s ease-in';
                 setTimeout(() => {
@@ -1875,6 +1313,15 @@
 
         // Event Listeners
         function setupEventListeners() {
+            // Land selection dropdown
+            landSelect.addEventListener('change', (e) => {
+                const selectedIndex = parseInt(e.target.value);
+                if (!isNaN(selectedIndex) && selectedIndex >= 0 && selectedIndex < userLands.length) {
+                    currentLandIndex = selectedIndex;
+                    updateLandDisplay();
+                }
+            });
+
             // Land navigation
             prevLandBtn.addEventListener('click', () => {
                 if (currentLandIndex > 0) {
@@ -1890,15 +1337,9 @@
                 }
             });
 
-            // Crop input
-            cropNameInput.addEventListener('input', () => {
-                startJourneyBtn.disabled = !cropNameInput.value.trim();
-            });
-
-            startJourneyBtn.addEventListener('click', startCropJourney);
-
-            // Update stage button
-            updateStageBtn.addEventListener('click', navigateToStageIdentification);
+            // Buttons
+            getRecommendationBtn.addEventListener('click', getCropRecommendations);
+            saveRecommendationBtn.addEventListener('click', saveRecommendation);
 
             // Error display close
             errorDisplay.addEventListener('click', hideError);
@@ -1913,14 +1354,11 @@
                 // Initialize map
                 initializeMap();
                 
-                // Get user location
-                getUserLocation();
-                
                 // Load user data
                 await loadUserData();
                 
             } catch (error) {
-                showError('App Initialization Failed', 'Failed to initialize the application.', error);
+                showError('App Initialization Failed', 'Failed to initialize the application.');
             }
         }
 
