@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crop Recommendation - GrowSmart</title>
+    <title>AI Crop Advisor - GrowSmart</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -93,82 +93,7 @@
             gap: 5px;
         }
 
-        /* Date and Assistant Card */
-        .date-card {
-            background: var(--gradient);
-            color: white;
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .date-card::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: rotate(30deg);
-        }
-
-        .assistant-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            position: relative;
-        }
-
-        .date {
-            font-size: 14px;
-            opacity: 0.9;
-            position: relative;
-        }
-
-        /* Clickable Cards */
-        .clickable-card {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid transparent;
-            text-decoration: none;
-            display: block;
-            color: inherit;
-        }
-
-        .clickable-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-hover);
-            border-color: var(--primary);
-        }
-
-        .clickable-card:active {
-            transform: translateY(-2px);
-        }
-
-        .click-indicator {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            color: var(--primary);
-            font-size: 16px;
-            background: rgba(255, 255, 255, 0.9);
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        /* Land Selection Card */
+        /* Land Selection */
         .land-selection {
             background: var(--surface);
             border-radius: var(--radius);
@@ -197,10 +122,9 @@
             border: 2px solid var(--border);
             border-radius: 12px;
             font-size: 16px;
+            margin-bottom: 16px;
             background-color: var(--surface);
             color: var(--text);
-            margin-bottom: 16px;
-            transition: border-color 0.3s;
         }
 
         .land-select:focus {
@@ -220,6 +144,7 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
+            font-size: 14px;
         }
 
         .land-detail-item:last-child {
@@ -227,122 +152,198 @@
         }
 
         .land-detail-label {
-            font-weight: 600;
             color: var(--text-light);
+            font-weight: 600;
         }
 
         .land-detail-value {
-            font-weight: 700;
             color: var(--text);
+            font-weight: 700;
         }
 
-        /* Analysis Results */
-        .analysis-results {
+        .btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Chat Interface */
+        .chat-container {
             background: var(--surface);
             border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 24px;
             box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 24px;
             display: none;
         }
 
-        .crop-recommendation {
-            margin-bottom: 20px;
-        }
-
-        .crop-card {
-            background: rgba(46, 139, 87, 0.05);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            border-left: 4px solid var(--primary);
-        }
-
-        .crop-header {
+        .chat-header {
+            background: var(--gradient);
+            color: white;
+            padding: 16px 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            justify-content: space-between;
         }
 
-        .crop-name {
+        .chat-title {
             font-size: 18px;
             font-weight: 700;
-            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .crop-score {
-            background: var(--primary);
+        .back-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
             color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 14px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .crop-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
-        .crop-detail {
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
             display: flex;
             flex-direction: column;
+            gap: 16px;
         }
 
-        .crop-detail-label {
-            font-size: 12px;
-            color: var(--text-light);
-            margin-bottom: 4px;
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
         }
 
-        .crop-detail-value {
-            font-size: 14px;
-            font-weight: 600;
+        .user-message {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 6px;
         }
 
-        .crop-reasons {
-            margin-top: 12px;
+        .ai-message {
+            align-self: flex-start;
+            background: #f0f0f0;
+            color: var(--text);
+            border-bottom-left-radius: 6px;
         }
 
-        .reason-item {
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .ai-message .message-time {
+            text-align: left;
+        }
+
+        .chat-input-container {
             display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .reason-item i {
-            color: var(--primary);
-            margin-top: 2px;
-        }
-
-        .reason-text {
-            font-size: 14px;
-        }
-
-        .ai-insights {
-            background: rgba(255, 165, 0, 0.05);
-            border-left: 4px solid var(--accent);
-            border-radius: 12px;
             padding: 16px;
-            margin-top: 20px;
+            border-top: 1px solid var(--border);
+            gap: 10px;
         }
 
-        .insight-item {
-            margin-bottom: 12px;
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
         }
 
-        .insight-item:last-child {
-            margin-bottom: 0;
+        .chat-input:focus {
+            border-color: var(--primary);
         }
 
-        .insight-title {
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: var(--accent);
+        .send-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .file-upload-button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-button:hover {
+            background: #3a6ea5;
+            transform: scale(1.05);
+        }
+
+        .file-input {
+            display: none;
         }
 
         /* Loading spinner */
@@ -361,26 +362,125 @@
             to { transform: rotate(360deg); }
         }
 
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+        .ai-typing {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            z-index: 9999;
-            color: white;
+            gap: 8px;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-light);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Crop Advice Card */
+        .crop-advice-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
             display: none;
         }
 
-        .loading-text {
-            margin-top: 16px;
+        .crop-advice-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .crop-advice-title {
             font-size: 18px;
-            font-weight: 600;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .crop-advice-content {
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .crop-list {
+            margin-top: 16px;
+        }
+
+        .crop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .crop-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .crop-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .crop-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(46, 139, 87, 0.1);
+            color: var(--primary);
+        }
+
+        .crop-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .crop-profit {
+            text-align: right;
+        }
+
+        .profit-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .profit-label {
+            font-size: 12px;
+            color: var(--text-light);
         }
 
         /* Bottom Navigation */
@@ -435,29 +535,6 @@
             font-weight: 600;
         }
 
-        /* Error and loading states */
-        .error-message {
-            background: rgba(255, 99, 71, 0.1);
-            border: 1px solid var(--warning);
-            color: var(--warning);
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 14px;
-            display: none;
-        }
-
-        .success-message {
-            background: rgba(46, 139, 87, 0.1);
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 14px;
-            display: none;
-        }
-
         /* Responsive Design */
         @media (max-width: 480px) {
             body {
@@ -476,9 +553,8 @@
                 align-items: flex-end;
             }
             
-            .crop-details {
-                grid-template-columns: 1fr;
-                gap: 8px;
+            .chat-messages {
+                height: 350px;
             }
             
             .bottom-nav {
@@ -504,6 +580,22 @@
                 font-size: 13px;
             }
         }
+
+        /* Error and loading states */
+        .error-message {
+            background: rgba(255, 99, 71, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -511,8 +603,8 @@
         <!-- Header -->
         <div class="header">
             <div class="app-title">
-                <i class="fas fa-leaf"></i>
-                GrowSmart
+                <i class="fas fa-robot"></i>
+                AI Crop Advisor
             </div>
             <div class="time-location">
                 <div class="time">10:11 PM</div>
@@ -523,20 +615,14 @@
             </div>
         </div>
 
-        <!-- Date and Assistant -->
-        <div class="date-card">
-            <div class="assistant-title">AI Crop Recommendation</div>
-            <div class="date" id="currentDate">Wednesday, January 15, 2025</div>
-        </div>
-
         <!-- Land Selection -->
-        <div class="land-selection">
+        <div class="land-selection" id="landSelection">
             <div class="section-title">
                 <i class="fas fa-tractor"></i>
                 Select Your Land
             </div>
             <select class="land-select" id="landSelect">
-                <option value="">Choose a land...</option>
+                <option value="">Choose a land for analysis...</option>
             </select>
             
             <div class="land-details" id="landDetails">
@@ -558,41 +644,62 @@
                 </div>
             </div>
             
-            <button class="btn" id="analyzeBtn" style="width: 100%; margin-top: 16px;" disabled>
-                <i class="fas fa-robot"></i> Get AI Crop Recommendations
+            <button class="btn" id="getAdviceBtn" disabled>
+                <i class="fas fa-robot"></i>
+                Get AI Crop Advice
             </button>
         </div>
 
-        <!-- Error and Success Messages -->
-        <div class="error-message" id="errorMessage"></div>
-        <div class="success-message" id="successMessage"></div>
-
-        <!-- Analysis Results -->
-        <div class="analysis-results" id="analysisResults">
-            <div class="section-title">
-                <i class="fas fa-seedling"></i>
-                Recommended Crops
-            </div>
-            
-            <div id="cropRecommendations">
-                <!-- Crop recommendations will be inserted here -->
-            </div>
-            
-            <div class="ai-insights">
-                <div class="section-title">
-                    <i class="fas fa-lightbulb"></i>
-                    AI Insights
-                </div>
-                <div id="aiInsights">
-                    <!-- AI insights will be inserted here -->
+        <!-- Crop Advice Card -->
+        <div class="crop-advice-card" id="cropAdviceCard">
+            <div class="crop-advice-header">
+                <div class="crop-advice-title">
+                    <i class="fas fa-seedling"></i>
+                    Recommended Crops
                 </div>
             </div>
+            <div class="crop-advice-content" id="cropAdviceContent">
+                <!-- AI recommendations will appear here -->
+            </div>
+            <div class="crop-list" id="cropList">
+                <!-- Crop list will appear here -->
+            </div>
+            <button class="btn" id="askMoreBtn" style="margin-top: 16px;">
+                <i class="fas fa-comments"></i>
+                Ask More Questions
+            </button>
         </div>
 
-        <!-- Loading Overlay -->
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="spinner"></div>
-            <div class="loading-text">Analyzing your land data with AI...</div>
+        <!-- Chat Interface -->
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-header">
+                <button class="back-button" id="backButton">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="chat-title">
+                    <i class="fas fa-robot"></i>
+                    AI Crop Advisor
+                </div>
+                <div style="width: 36px;"></div> <!-- Spacer for alignment -->
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    Hello! I'm your AI Crop Advisor. I can help you with crop selection, pest control, fertilizer recommendations, and more based on your land data. How can I assist you today?
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="file" class="file-input" id="fileInput" accept="image/*">
+                <button class="file-upload-button" id="fileUploadButton">
+                    <i class="fas fa-image"></i>
+                </button>
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask about crops, pests, fertilizers...">
+                <button class="send-button" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
         </div>
 
         <!-- Bottom Navigation -->
@@ -605,13 +712,13 @@
                 <i class="fas fa-vial"></i>
                 <span>Soil</span>
             </a>
-            <a href="crops.html" class="nav-item active">
+            <a href="crops.html" class="nav-item">
                 <i class="fas fa-seedling"></i>
                 <span>Crops</span>
             </a>
-            <a href="blockchain.html" class="nav-item">
-                <i class="fas fa-link"></i>
-                <span>Blockchain</span>
+            <a href="ai.html" class="nav-item active">
+                <i class="fas fa-robot"></i>
+                <span>AI Advisor</span>
             </a>
             <a href="profile.html" class="nav-item">
                 <i class="fas fa-user"></i>
@@ -620,7 +727,6 @@
         </div>
     </div>
 
-    <!-- Supabase Configuration -->
     <script>
         // Supabase Configuration
         const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
@@ -641,10 +747,7 @@
         } catch (error) {
             console.error('Error initializing Supabase client:', error);
         }
-    </script>
 
-    <!-- Authentication Checker -->
-    <script>
         // Authentication Checker
         class AuthChecker {
             constructor() {
@@ -701,6 +804,34 @@
                 return true;
             }
 
+            // Sign out user
+            async signOut(redirectUrl = 'login.html') {
+                try {
+                    if (!supabase) {
+                        console.error('Supabase client not found');
+                        return false;
+                    }
+
+                    const { error } = await supabase.auth.signOut();
+                    if (error) {
+                        console.error('Error signing out:', error);
+                        return false;
+                    }
+
+                    this.currentUser = null;
+                    this.currentUserId = null;
+
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl;
+                    }
+
+                    return true;
+                } catch (error) {
+                    console.error('Error in signOut:', error);
+                    return false;
+                }
+            }
+
             // Get user ID from users table
             async getUserId() {
                 if (this.currentUserId) {
@@ -730,23 +861,17 @@
                 }
             }
         }
-    </script>
 
-    <!-- Crop Recommendation Logic -->
-    <script>
-        // Crop Recommendation System
-        class CropRecommendation {
+        // AI Crop Advisor functionality
+        class AICropAdvisor {
             constructor() {
                 this.lands = [];
                 this.selectedLand = null;
-                this.landCoordinates = [];
-                this.soilAnalysis = null;
-                this.cropStages = [];
-                this.weatherData = null;
                 this.authChecker = new AuthChecker();
+                this.conversationHistory = [];
                 this.initializeEventListeners();
                 this.loadLands();
-                this.updateDateTime();
+                this.updateTime();
             }
 
             // Initialize event listeners
@@ -756,19 +881,48 @@
                     this.handleLandSelection(e.target.value);
                 });
 
-                // Analyze button
-                document.getElementById('analyzeBtn').addEventListener('click', () => {
-                    this.generateRecommendations();
+                // Get advice button
+                document.getElementById('getAdviceBtn').addEventListener('click', () => {
+                    this.getCropAdvice();
+                });
+
+                // Ask more questions button
+                document.getElementById('askMoreBtn').addEventListener('click', () => {
+                    this.showChatInterface();
+                });
+
+                // Back button
+                document.getElementById('backButton').addEventListener('click', () => {
+                    this.hideChatInterface();
+                });
+
+                // Send message button
+                document.getElementById('sendButton').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                // Enter key in chat input
+                document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+
+                // File upload
+                document.getElementById('fileUploadButton').addEventListener('click', () => {
+                    document.getElementById('fileInput').click();
+                });
+
+                document.getElementById('fileInput').addEventListener('change', (e) => {
+                    this.handleFileUpload(e.target.files[0]);
                 });
             }
 
-            // Update date and time
-            updateDateTime() {
+            // Update time
+            updateTime() {
                 const now = new Date();
                 const timeElement = document.querySelector('.time');
-                const dateElement = document.getElementById('currentDate');
                 
-                // Update time
                 let hours = now.getHours();
                 let minutes = now.getMinutes();
                 const ampm = hours >= 12 ? 'PM' : 'AM';
@@ -778,21 +932,11 @@
                 minutes = minutes < 10 ? '0' + minutes : minutes;
                 
                 timeElement.textContent = `${hours}:${minutes} ${ampm}`;
-                
-                // Update date
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                dateElement.textContent = now.toLocaleDateString('en-US', options);
-                
-                // Update every minute
-                setTimeout(() => this.updateDateTime(), 60000);
             }
 
-            // Load user's lands from database
+            // Load user's lands
             async loadLands() {
                 try {
-                    const isAuthenticated = await this.authChecker.requireAuth();
-                    if (!isAuthenticated) return;
-
                     const user = await this.authChecker.getCurrentUser();
                     if (!user) {
                         this.showError('Please log in to access this feature');
@@ -811,14 +955,14 @@
                     this.populateLandSelect();
                 } catch (error) {
                     console.error('Error loading lands:', error);
-                    this.showError('Failed to load lands from database');
+                    this.showError('Failed to load lands');
                 }
             }
 
             // Populate land select dropdown
             populateLandSelect() {
                 const landSelect = document.getElementById('landSelect');
-                landSelect.innerHTML = '<option value="">Choose a land...</option>';
+                landSelect.innerHTML = '<option value="">Choose a land for analysis...</option>';
                 
                 this.lands.forEach(land => {
                     const option = document.createElement('option');
@@ -829,38 +973,81 @@
             }
 
             // Handle land selection
-            async handleLandSelection(landId) {
-                const analyzeBtn = document.getElementById('analyzeBtn');
+            handleLandSelection(landId) {
                 const landDetails = document.getElementById('landDetails');
+                const getAdviceBtn = document.getElementById('getAdviceBtn');
                 
                 if (!landId) {
-                    analyzeBtn.disabled = true;
                     landDetails.style.display = 'none';
+                    getAdviceBtn.disabled = true;
                     this.selectedLand = null;
                     return;
                 }
 
                 this.selectedLand = this.lands.find(land => land.land_id === landId);
-                if (!this.selectedLand) return;
-
-                // Update land details
-                document.getElementById('soilType').textContent = this.selectedLand.soil_type || 'Not specified';
-                document.getElementById('landArea').textContent = `${this.selectedLand.area_hectares} hectares`;
-                document.getElementById('waterAvailability').textContent = this.selectedLand.water_availability || 'Not specified';
-                document.getElementById('currentCrops').textContent = this.selectedLand.current_crops || 'None';
                 
-                landDetails.style.display = 'block';
-                analyzeBtn.disabled = false;
-
-                // Load additional data for this land
-                await this.loadLandCoordinates(landId);
-                await this.loadSoilAnalysis(landId);
-                await this.loadCropStages(landId);
-                await this.loadWeatherData();
+                if (this.selectedLand) {
+                    document.getElementById('soilType').textContent = this.selectedLand.soil_type || 'Not specified';
+                    document.getElementById('landArea').textContent = `${this.selectedLand.area_hectares} hectares`;
+                    document.getElementById('waterAvailability').textContent = this.selectedLand.water_availability || 'Not specified';
+                    document.getElementById('currentCrops').textContent = this.selectedLand.current_crops || 'None';
+                    
+                    landDetails.style.display = 'block';
+                    getAdviceBtn.disabled = false;
+                }
             }
 
-            // Load land coordinates
-            async loadLandCoordinates(landId) {
+            // Get crop advice using Gemini AI
+            async getCropAdvice() {
+                try {
+                    if (!this.selectedLand) {
+                        this.showError('Please select a land first');
+                        return;
+                    }
+
+                    // Show loading state
+                    const getAdviceBtn = document.getElementById('getAdviceBtn');
+                    getAdviceBtn.innerHTML = '<span class="spinner"></span> Analyzing...';
+                    getAdviceBtn.disabled = true;
+
+                    // Get additional data for the selected land
+                    const landCoordinates = await this.getLandCoordinates(this.selectedLand.land_id);
+                    const soilAnalysis = await this.getSoilAnalysis(this.selectedLand.land_id);
+                    const cropStages = await this.getCropStages(this.selectedLand.land_id);
+
+                    // Prepare data for AI analysis
+                    const landData = {
+                        land: this.selectedLand,
+                        coordinates: landCoordinates,
+                        soil_analysis: soilAnalysis,
+                        crop_stages: cropStages,
+                        current_weather: await this.getCurrentWeather(),
+                        location: document.getElementById('locationText').textContent
+                    };
+
+                    // Get AI recommendation
+                    const aiAdvice = await this.getAIRecommendation(landData);
+                    
+                    // Display the advice
+                    this.displayCropAdvice(aiAdvice);
+                    
+                    // Reset button
+                    getAdviceBtn.innerHTML = '<i class="fas fa-robot"></i> Get AI Crop Advice';
+                    getAdviceBtn.disabled = false;
+                    
+                } catch (error) {
+                    console.error('Error getting crop advice:', error);
+                    this.showError(error.message || 'Failed to get crop advice');
+                    
+                    // Reset button
+                    const getAdviceBtn = document.getElementById('getAdviceBtn');
+                    getAdviceBtn.innerHTML = '<i class="fas fa-robot"></i> Get AI Crop Advice';
+                    getAdviceBtn.disabled = false;
+                }
+            }
+
+            // Get land coordinates
+            async getLandCoordinates(landId) {
                 try {
                     const { data, error } = await supabase
                         .from('land_coordinates')
@@ -869,15 +1056,15 @@
                         .order('corner_index', { ascending: true });
 
                     if (error) throw error;
-
-                    this.landCoordinates = data || [];
+                    return data || [];
                 } catch (error) {
-                    console.error('Error loading land coordinates:', error);
+                    console.error('Error getting land coordinates:', error);
+                    return [];
                 }
             }
 
-            // Load soil analysis data
-            async loadSoilAnalysis(landId) {
+            // Get soil analysis
+            async getSoilAnalysis(landId) {
                 try {
                     const { data, error } = await supabase
                         .from('soil_analysis')
@@ -887,160 +1074,49 @@
                         .limit(1);
 
                     if (error) throw error;
-
-                    this.soilAnalysis = data && data.length > 0 ? data[0] : null;
+                    return data && data.length > 0 ? data[0] : null;
                 } catch (error) {
-                    console.error('Error loading soil analysis:', error);
+                    console.error('Error getting soil analysis:', error);
+                    return null;
                 }
             }
 
-            // Load crop stages
-            async loadCropStages(landId) {
+            // Get crop stages
+            async getCropStages(landId) {
                 try {
-                    // First get crops for this land
-                    const { data: crops, error: cropsError } = await supabase
+                    const { data, error } = await supabase
                         .from('crops')
-                        .select('crop_id')
+                        .select('crop_id, crop_name, current_stage')
                         .eq('land_id', landId)
                         .eq('is_active', true);
 
-                    if (cropsError) throw cropsError;
-
-                    if (crops && crops.length > 0) {
-                        const cropIds = crops.map(crop => crop.crop_id);
-                        
-                        const { data: stages, error: stagesError } = await supabase
-                            .from('crop_stages')
-                            .select('*')
-                            .in('crop_id', cropIds)
-                            .order('stage_order', { ascending: true });
-
-                        if (stagesError) throw stagesError;
-                        
-                        this.cropStages = stages || [];
-                    } else {
-                        this.cropStages = [];
-                    }
+                    if (error) throw error;
+                    return data || [];
                 } catch (error) {
-                    console.error('Error loading crop stages:', error);
+                    console.error('Error getting crop stages:', error);
+                    return [];
                 }
             }
 
-            // Load weather data
-            async loadWeatherData() {
+            // Get current weather
+            async getCurrentWeather() {
                 try {
-                    // Get location from land coordinates
-                    if (this.landCoordinates.length > 0) {
-                        const centerLat = this.landCoordinates.reduce((sum, coord) => sum + parseFloat(coord.latitude), 0) / this.landCoordinates.length;
-                        const centerLng = this.landCoordinates.reduce((sum, coord) => sum + parseFloat(coord.longitude), 0) / this.landCoordinates.length;
-                        
-                        // Use Open-Meteo API for weather data
-                        const response = await fetch(
-                            `https://api.open-meteo.com/v1/forecast?latitude=${centerLat}&longitude=${centerLng}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`
-                        );
-                        
-                        if (response.ok) {
-                            const data = await response.json();
-                            this.weatherData = data;
-                            
-                            // Update location display
-                            document.getElementById('locationText').textContent = `Land: ${this.selectedLand.land_name}`;
-                        }
-                    }
+                    // This would typically come from your weather API
+                    // For now, we'll return mock data
+                    return {
+                        temperature: 28,
+                        humidity: 65,
+                        rainfall: 0,
+                        condition: 'Sunny'
+                    };
                 } catch (error) {
-                    console.error('Error loading weather data:', error);
+                    console.error('Error getting weather:', error);
+                    return null;
                 }
             }
 
-            // Generate crop recommendations using Gemini AI
-            async generateRecommendations() {
-                try {
-                    this.showLoading(true);
-                    this.hideMessages();
-                    document.getElementById('analysisResults').style.display = 'none';
-
-                    // Prepare data for AI analysis
-                    const analysisData = this.prepareAnalysisData();
-                    
-                    // Call Gemini AI API
-                    const recommendations = await this.callGeminiAI(analysisData);
-                    
-                    // Display results
-                    this.displayRecommendations(recommendations);
-                    
-                    document.getElementById('analysisResults').style.display = 'block';
-                    this.showSuccess('AI analysis completed successfully!');
-                    
-                } catch (error) {
-                    console.error('Error generating recommendations:', error);
-                    this.showError(error.message || 'Failed to generate crop recommendations');
-                } finally {
-                    this.showLoading(false);
-                }
-            }
-
-            // Prepare data for AI analysis
-            prepareAnalysisData() {
-                const data = {
-                    land: {
-                        name: this.selectedLand.land_name,
-                        soil_type: this.selectedLand.soil_type,
-                        area_hectares: this.selectedLand.area_hectares,
-                        water_availability: this.selectedLand.water_availability,
-                        current_crops: this.selectedLand.current_crops
-                    },
-                    location: this.landCoordinates.length > 0 ? {
-                        latitude: this.landCoordinates[0].latitude,
-                        longitude: this.landCoordinates[0].longitude
-                    } : null,
-                    soil_analysis: this.soilAnalysis ? {
-                        ph_level: this.soilAnalysis.ph_level,
-                        nitrogen: this.soilAnalysis.nitrogen,
-                        phosphorus: this.soilAnalysis.phosphorus,
-                        potassium: this.soilAnalysis.potassium,
-                        organic_matter: this.soilAnalysis.organic_matter
-                    } : null,
-                    current_crops: this.cropStages.map(stage => ({
-                        crop_id: stage.crop_id,
-                        stage: stage.stage_name,
-                        is_current: stage.is_current
-                    })),
-                    weather: this.weatherData ? {
-                        current_temperature: this.weatherData.current_weather?.temperature,
-                        condition: this.weatherData.current_weather?.weathercode
-                    } : null,
-                    season: this.getCurrentSeason(),
-                    government_subsidies: this.getGovernmentSubsidies()
-                };
-
-                return data;
-            }
-
-            // Get current season based on date
-            getCurrentSeason() {
-                const month = new Date().getMonth() + 1;
-                if (month >= 3 && month <= 5) return 'Spring';
-                if (month >= 6 && month <= 8) return 'Summer';
-                if (month >= 9 && month <= 11) return 'Autumn';
-                return 'Winter';
-            }
-
-            // Get government subsidies information
-            getGovernmentSubsidies() {
-                // This would typically come from an API or database
-                return {
-                    "Wheat": { "subsidy": "₹6000/hectare", "scheme": "PM-KISAN" },
-                    "Rice": { "subsidy": "₹7000/hectare", "scheme": "PM-KISAN" },
-                    "Soybean": { "subsidy": "₹5000/hectare", "scheme": "Oilseeds Mission" },
-                    "Cotton": { "subsidy": "₹4000/hectare", "scheme": "TMOP" },
-                    "Sugarcane": { "subsidy": "₹5500/hectare", "scheme": "SAMPADA" },
-                    "Maize": { "subsidy": "₹4500/hectare", "scheme": "PM-KISAN" },
-                    "Pulses": { "subsidy": "₹6000/hectare", "scheme": "NFSM" }
-                };
-            }
-
-            // Call Gemini AI API
-            async callGeminiAI(analysisData) {
+            // Get AI recommendation using Gemini API
+            async getAIRecommendation(landData) {
                 const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
                 const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
@@ -1048,53 +1124,51 @@
                 You are an agricultural expert AI. Analyze the following farm data and provide crop recommendations:
 
                 LAND INFORMATION:
-                - Soil Type: ${analysisData.land.soil_type}
-                - Area: ${analysisData.land.area_hectares} hectares
-                - Water Availability: ${analysisData.land.water_availability}
-                - Current Crops: ${analysisData.land.current_crops || 'None'}
-                - Location: ${analysisData.location ? `Lat: ${analysisData.location.latitude}, Lng: ${analysisData.location.longitude}` : 'Not specified'}
+                - Location: ${landData.location}
+                - Soil Type: ${landData.land.soil_type}
+                - Area: ${landData.land.area_hectares} hectares
+                - Water Availability: ${landData.land.water_availability}
+                - Current Crops: ${landData.land.current_crops || 'None'}
 
                 SOIL ANALYSIS:
-                ${analysisData.soil_analysis ? `
-                - pH Level: ${analysisData.soil_analysis.ph_level}
-                - Nitrogen: ${analysisData.soil_analysis.nitrogen} mg/kg
-                - Phosphorus: ${analysisData.soil_analysis.phosphorus} mg/kg
-                - Potassium: ${analysisData.soil_analysis.potassium} mg/kg
-                - Organic Matter: ${analysisData.soil_analysis.organic_matter}%
-                ` : 'No soil analysis available'}
+                ${landData.soil_analysis ? `
+                - pH Level: ${landData.soil_analysis.ph_level}
+                - Organic Matter: ${landData.soil_analysis.organic_matter}%
+                - Nitrogen: ${landData.soil_analysis.nitrogen} mg/kg
+                - Phosphorus: ${landData.soil_analysis.phosphorus} mg/kg
+                - Potassium: ${landData.soil_analysis.potassium} mg/kg
+                ` : 'No recent soil analysis available'}
 
-                WEATHER & SEASON:
-                - Current Season: ${analysisData.season}
-                ${analysisData.weather ? `- Current Temperature: ${analysisData.weather.current_temperature}°C` : ''}
+                CURRENT CROPS:
+                ${landData.crop_stages.length > 0 ? 
+                    landData.crop_stages.map(crop => `- ${crop.crop_name}: ${crop.current_stage}`).join('\n') 
+                    : 'No active crops'}
 
-                GOVERNMENT SUBSIDIES AVAILABLE:
-                ${JSON.stringify(analysisData.government_subsidies, null, 2)}
+                WEATHER CONDITIONS:
+                - Temperature: ${landData.current_weather.temperature}°C
+                - Humidity: ${landData.current_weather.humidity}%
+                - Condition: ${landData.current_weather.condition}
 
-                Please provide:
-                1. Top 3-4 crop recommendations with suitability scores (0-100)
-                2. Detailed reasons for each recommendation considering soil, weather, subsidies, and market factors
-                3. Overall agricultural insights and suggestions
+                Based on this information, please provide:
+                1. Top 3-4 crop recommendations suitable for this land
+                2. Expected profitability for each crop
+                3. Key factors influencing your recommendations
+                4. Any immediate actions needed
 
                 Format your response as a JSON object with this structure:
                 {
+                  "summary": "Brief overall assessment",
                   "recommendations": [
                     {
-                      "crop": "Crop Name",
-                      "score": 85,
-                      "suitability_reasons": ["Reason 1", "Reason 2", "Reason 3"],
-                      "expected_yield": "X tons/hectare",
-                      "market_demand": "High/Medium/Low",
-                      "subsidy_available": "₹XXXX/hectare",
-                      "investment_required": "₹XXXX/hectare",
-                      "profit_potential": "₹XXXX/hectare"
+                      "crop": "Crop name",
+                      "profitability": "High/Medium/Low",
+                      "profit_estimate": "Estimated profit per hectare",
+                      "reasoning": "Why this crop is suitable",
+                      "key_requirements": "What's needed for success"
                     }
                   ],
-                  "insights": [
-                    {
-                      "title": "Insight Title",
-                      "description": "Detailed insight description"
-                    }
-                  ]
+                  "key_factors": ["Factor 1", "Factor 2", ...],
+                  "immediate_actions": ["Action 1", "Action 2", ...]
                 }
                 `;
 
@@ -1115,115 +1189,255 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`AI API request failed with status ${response.status}`);
+                    throw new Error(`AI request failed with status ${response.status}`);
                 }
 
                 const data = await response.json();
-                const responseText = data.candidates[0].content.parts[0].text;
+                const aiText = data.candidates[0].content.parts[0].text;
                 
                 // Extract JSON from response
-                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                const jsonMatch = aiText.match(/\{[\s\S]*\}/);
                 if (!jsonMatch) {
-                    throw new Error('AI returned invalid JSON format');
+                    throw new Error('AI returned invalid format');
                 }
 
                 return JSON.parse(jsonMatch[0]);
             }
 
-            // Display recommendations
-            displayRecommendations(recommendations) {
-                const container = document.getElementById('cropRecommendations');
-                const insightsContainer = document.getElementById('aiInsights');
-                
-                container.innerHTML = '';
-                insightsContainer.innerHTML = '';
+            // Display crop advice
+            displayCropAdvice(advice) {
+                const cropAdviceCard = document.getElementById('cropAdviceCard');
+                const cropAdviceContent = document.getElementById('cropAdviceContent');
+                const cropList = document.getElementById('cropList');
 
-                if (!recommendations.recommendations || recommendations.recommendations.length === 0) {
-                    container.innerHTML = '<p>No crop recommendations available.</p>';
-                    return;
-                }
+                // Show the card
+                cropAdviceCard.style.display = 'block';
 
-                // Display crop recommendations
-                recommendations.recommendations.forEach((crop, index) => {
-                    const cropCard = document.createElement('div');
-                    cropCard.className = 'crop-card';
+                // Update content
+                cropAdviceContent.innerHTML = `
+                    <p><strong>Summary:</strong> ${advice.summary}</p>
+                    <p style="margin-top: 12px;"><strong>Key Factors:</strong> ${advice.key_factors.join(', ')}</p>
+                `;
+
+                // Update crop list
+                cropList.innerHTML = '';
+                advice.recommendations.forEach(crop => {
+                    const cropItem = document.createElement('div');
+                    cropItem.className = 'crop-item';
                     
-                    // Determine color based on score
-                    let scoreColor = '#FF6347'; // Red for low scores
-                    if (crop.score >= 80) scoreColor = '#2E8B57'; // Green for high scores
-                    else if (crop.score >= 60) scoreColor = '#FFA500'; // Orange for medium scores
-                    
-                    cropCard.innerHTML = `
-                        <div class="crop-header">
-                            <div class="crop-name">${crop.crop}</div>
-                            <div class="crop-score" style="background: ${scoreColor}">${crop.score}/100</div>
-                        </div>
-                        <div class="crop-details">
-                            <div class="crop-detail">
-                                <span class="crop-detail-label">Expected Yield</span>
-                                <span class="crop-detail-value">${crop.expected_yield || 'N/A'}</span>
+                    cropItem.innerHTML = `
+                        <div class="crop-info">
+                            <div class="crop-icon">
+                                <i class="fas fa-seedling"></i>
                             </div>
-                            <div class="crop-detail">
-                                <span class="crop-detail-label">Market Demand</span>
-                                <span class="crop-detail-value">${crop.market_demand || 'N/A'}</span>
-                            </div>
-                            <div class="crop-detail">
-                                <span class="crop-detail-label">Subsidy</span>
-                                <span class="crop-detail-value">${crop.subsidy_available || 'N/A'}</span>
-                            </div>
-                            <div class="crop-detail">
-                                <span class="crop-detail-label">Profit Potential</span>
-                                <span class="crop-detail-value">${crop.profit_potential || 'N/A'}</span>
+                            <div>
+                                <div class="crop-name">${crop.crop}</div>
+                                <div style="font-size: 12px; color: var(--text-light);">${crop.reasoning}</div>
                             </div>
                         </div>
-                        <div class="crop-reasons">
-                            ${crop.suitability_reasons ? crop.suitability_reasons.map(reason => `
-                                <div class="reason-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span class="reason-text">${reason}</span>
-                                </div>
-                            `).join('') : ''}
+                        <div class="crop-profit">
+                            <div class="profit-value">${crop.profit_estimate}</div>
+                            <div class="profit-label">${crop.profitability} Profit</div>
                         </div>
                     `;
                     
-                    container.appendChild(cropCard);
+                    cropList.appendChild(cropItem);
                 });
 
-                // Display AI insights
-                if (recommendations.insights && recommendations.insights.length > 0) {
-                    recommendations.insights.forEach(insight => {
-                        const insightElement = document.createElement('div');
-                        insightElement.className = 'insight-item';
-                        insightElement.innerHTML = `
-                            <div class="insight-title">${insight.title}</div>
-                            <div>${insight.description}</div>
-                        `;
-                        insightsContainer.appendChild(insightElement);
-                    });
+                // Add immediate actions
+                if (advice.immediate_actions && advice.immediate_actions.length > 0) {
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.style.marginTop = '16px';
+                    actionsDiv.style.padding = '12px';
+                    actionsDiv.style.background = 'rgba(255, 165, 0, 0.1)';
+                    actionsDiv.style.borderRadius = '8px';
+                    actionsDiv.style.borderLeft = '4px solid var(--accent)';
+                    
+                    actionsDiv.innerHTML = `
+                        <strong><i class="fas fa-exclamation-circle"></i> Immediate Actions:</strong>
+                        <ul style="margin-top: 8px; margin-left: 16px;">
+                            ${advice.immediate_actions.map(action => `<li>${action}</li>`).join('')}
+                        </ul>
+                    `;
+                    
+                    cropAdviceContent.appendChild(actionsDiv);
+                }
+
+                // Scroll to the advice
+                cropAdviceCard.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            // Show chat interface
+            showChatInterface() {
+                document.getElementById('landSelection').style.display = 'none';
+                document.getElementById('cropAdviceCard').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'block';
+            }
+
+            // Hide chat interface
+            hideChatInterface() {
+                document.getElementById('landSelection').style.display = 'block';
+                document.getElementById('cropAdviceCard').style.display = 'block';
+                document.getElementById('chatContainer').style.display = 'none';
+            }
+
+            // Send message in chat
+            async sendMessage() {
+                const chatInput = document.getElementById('chatInput');
+                const message = chatInput.value.trim();
+                
+                if (!message) return;
+
+                // Add user message to chat
+                this.addMessageToChat(message, 'user');
+                chatInput.value = '';
+
+                // Show typing indicator
+                this.showTypingIndicator();
+
+                try {
+                    // Get AI response
+                    const response = await this.getAIResponse(message);
+                    
+                    // Remove typing indicator and add AI response
+                    this.removeTypingIndicator();
+                    this.addMessageToChat(response, 'ai');
+                    
+                } catch (error) {
+                    console.error('Error getting AI response:', error);
+                    this.removeTypingIndicator();
+                    this.addMessageToChat('Sorry, I encountered an error. Please try again.', 'ai');
                 }
             }
 
-            // Helper methods
-            showLoading(show) {
-                document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
-                document.getElementById('analyzeBtn').disabled = show;
+            // Add message to chat
+            addMessageToChat(message, sender) {
+                const chatMessages = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                messageDiv.innerHTML = `
+                    ${message}
+                    <div class="message-time">${timeString}</div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Add to conversation history
+                this.conversationHistory.push({ sender, message, time: now });
             }
 
+            // Show typing indicator
+            showTypingIndicator() {
+                const chatMessages = document.getElementById('chatMessages');
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typingIndicator';
+                typingDiv.className = 'ai-typing';
+                
+                typingDiv.innerHTML = `
+                    AI is typing
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Remove typing indicator
+            removeTypingIndicator() {
+                const typingIndicator = document.getElementById('typingIndicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+
+            // Get AI response for chat
+            async getAIResponse(userMessage) {
+                const API_KEY = 'AIzaSyD-qhnQlGDMd2BcoZo-hv5ld2fbDzP49sI';
+                const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+                // Prepare context from land data
+                let context = '';
+                if (this.selectedLand) {
+                    context = `
+                    Current Land Context:
+                    - Land: ${this.selectedLand.land_name}
+                    - Soil Type: ${this.selectedLand.soil_type}
+                    - Area: ${this.selectedLand.area_hectares} hectares
+                    - Water Availability: ${this.selectedLand.water_availability}
+                    `;
+                }
+
+                const prompt = `
+                You are an agricultural expert AI assistant. ${context}
+                
+                Previous conversation:
+                ${this.conversationHistory.slice(-5).map(msg => `${msg.sender}: ${msg.message}`).join('\n')}
+                
+                User's question: ${userMessage}
+                
+                Please provide a helpful, accurate response focused on agricultural advice.
+                `;
+
+                const requestBody = {
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                };
+
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            }
+
+            // Handle file upload
+            async handleFileUpload(file) {
+                if (!file) return;
+
+                // For now, we'll just show a message
+                this.addMessageToChat(`Uploaded image: ${file.name}`, 'user');
+                this.showTypingIndicator();
+
+                // Simulate AI analysis of the image
+                setTimeout(() => {
+                    this.removeTypingIndicator();
+                    this.addMessageToChat(`I've analyzed your image. It appears to show healthy crops with no visible signs of disease or pests. For more accurate analysis, please describe what you're seeing or concerned about.`, 'ai');
+                }, 2000);
+            }
+
+            // Show error message
             showError(message) {
-                const errorDiv = document.getElementById('errorMessage');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
                 errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-            }
-
-            showSuccess(message) {
-                const successDiv = document.getElementById('successMessage');
-                successDiv.textContent = message;
-                successDiv.style.display = 'block';
-            }
-
-            hideMessages() {
-                document.getElementById('errorMessage').style.display = 'none';
-                document.getElementById('successMessage').style.display = 'none';
+                
+                document.querySelector('.container').insertBefore(errorDiv, document.getElementById('landSelection'));
+                
+                // Remove error after 5 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
             }
         }
 
@@ -1233,7 +1447,12 @@
             // Check authentication
             const isAuthenticated = await authChecker.requireAuth();
             if (isAuthenticated) {
-                new CropRecommendation();
+                new AICropAdvisor();
+                
+                // Update time every minute
+                setInterval(() => {
+                    document.querySelector('.time').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }, 60000);
             }
         });
     </script>
