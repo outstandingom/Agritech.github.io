@@ -596,37 +596,6 @@
             opacity: 0.7;
             pointer-events: none;
         }
-        
-        .success-message {
-            background: rgba(46, 139, 87, 0.1);
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 14px;
-        }
-        
-        .login-prompt {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        
-        .login-prompt i {
-            font-size: 64px;
-            color: var(--primary);
-            margin-bottom: 16px;
-        }
-        
-        .login-prompt h3 {
-            margin-bottom: 12px;
-            color: var(--text);
-        }
-        
-        .login-prompt p {
-            color: var(--text-light);
-            margin-bottom: 24px;
-        }
     </style>
 </head>
 <body>
@@ -779,136 +748,11 @@
             console.error('Error initializing Supabase client:', error);
         }
 
-        // Authentication Checker
-        class AuthChecker {
-            constructor() {
-                this.currentUser = null;
-                this.currentUserId = null;
-                this.authChecked = false;
-            }
-
-            // Check if user is authenticated
-            async checkAuth() {
-                try {
-                    if (!supabase) {
-                        console.error('Supabase client not found');
-                        return false;
-                    }
-
-                    const { data: { user }, error } = await supabase.auth.getUser();
-                    
-                    if (error) {
-                        console.error('Error checking auth:', error);
-                        return false;
-                    }
-
-                    if (user) {
-                        this.currentUser = user;
-                        this.authChecked = true;
-                        console.log('User authenticated:', user.email);
-                        return true;
-                    } else {
-                        this.currentUser = null;
-                        this.authChecked = true;
-                        console.log('No user found');
-                        return false;
-                    }
-                } catch (error) {
-                    console.error('Error in checkAuth:', error);
-                    this.authChecked = true;
-                    return false;
-                }
-            }
-
-            // Require authentication - show login prompt if not authenticated
-            async requireAuth() {
-                // If we've already checked auth, return the result
-                if (this.authChecked && this.currentUser) {
-                    return true;
-                }
-
-                const isAuthenticated = await this.checkAuth();
-                
-                if (!isAuthenticated) {
-                    // Show login prompt
-                    this.showLoginPrompt();
-                    return false;
-                }
-                
-                return true;
-            }
-
-            // Show login prompt
-            showLoginPrompt() {
-                const landSelection = document.getElementById('landSelection');
-                if (landSelection) {
-                    landSelection.innerHTML = `
-                        <div class="login-prompt">
-                            <i class="fas fa-robot"></i>
-                            <h3>Authentication Required</h3>
-                            <p>Please log in to access the AI Crop Advisor</p>
-                            <button class="btn" onclick="window.location.href='login.html'">
-                                <i class="fas fa-sign-in-alt"></i>
-                                Go to Login
-                            </button>
-                        </div>
-                    `;
-                }
-                
-                // Hide other sections
-                const cropAdviceCard = document.getElementById('cropAdviceCard');
-                if (cropAdviceCard) cropAdviceCard.style.display = 'none';
-                
-                const chatContainer = document.getElementById('chatContainer');
-                if (chatContainer) chatContainer.style.display = 'none';
-            }
-
-            // Get current user
-            async getCurrentUser() {
-                if (this.currentUser) {
-                    return this.currentUser;
-                }
-
-                await this.checkAuth();
-                return this.currentUser;
-            }
-
-            // Get user ID from users table
-            async getUserId() {
-                if (this.currentUserId) {
-                    return this.currentUserId;
-                }
-
-                try {
-                    const user = await this.getCurrentUser();
-                    if (!user) return null;
-
-                    const { data, error } = await supabase
-                        .from('users')
-                        .select('user_id')
-                        .eq('auth_id', user.id)
-                        .single();
-
-                    if (error) {
-                        console.error('Error getting user ID:', error);
-                        return null;
-                    }
-
-                    this.currentUserId = data.user_id;
-                    return data.user_id;
-                } catch (error) {
-                    console.error('Error in getUserId:', error);
-                    return null;
-                }
-            }
-        }
-
         // AI Crop Advisor functionality
         class AICropAdvisor {
             constructor() {
                 this.lands = [];
                 this.selectedLand = null;
-                this.authChecker = new AuthChecker();
                 this.conversationHistory = [];
                 this.initializeEventListeners();
                 this.updateTime();
@@ -1056,7 +900,8 @@
             // Load user's lands
             async loadLands() {
                 try {
-                    const user = await this.authChecker.getCurrentUser();
+                    // Get current user
+                    const { data: { user } } = await supabase.auth.getUser();
                     if (!user) {
                         this.showError('Please log in to access this feature');
                         return;
@@ -1709,18 +1554,7 @@
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const authChecker = new AuthChecker();
-                
-                // Check authentication status
-                const isAuthenticated = await authChecker.checkAuth();
-                
-                if (!isAuthenticated) {
-                    console.log('User not authenticated, showing login prompt');
-                    authChecker.showLoginPrompt();
-                    return;
-                }
-
-                console.log('User authenticated, initializing application...');
+                console.log('Initializing AI Crop Advisor...');
                 
                 // Initialize AI Crop Advisor
                 new AICropAdvisor();
