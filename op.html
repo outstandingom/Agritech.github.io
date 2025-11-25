@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPTCHA Test</title>
+
+<!-- Cloudflare Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+    }
+
+    .container {
+        width: 350px;
+        margin: 50px auto;
+        padding: 20px;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    input, button {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+        border: none;
+    }
+
+    button:hover {
+        background: #0056b3;
+    }
+
+    #msg {
+        margin-top: 10px;
+        text-align: center;
+        font-weight: bold;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+    <h2>CAPTCHA Test Form</h2>
+
+    <form id="testForm">
+        <input type="text" id="name" placeholder="Enter your name" required>
+
+        <input type="email" id="email" placeholder="Enter your email" required>
+
+        <!-- Turnstile CAPTCHA Widget -->
+        <div class="cf-turnstile" 
+            data-sitekey="YOUR_SITE_KEY_HERE"
+            data-callback="captchaVerified">
+        </div>
+
+        <button type="submit">Submit</button>
+
+        <p id="msg"></p>
+    </form>
+</div>
+
+<script>
+    let captchaOK = false;
+
+    // Called automatically when Turnstile verifies CAPTCHA
+    function captchaVerified() {
+        captchaOK = true;
+        const msg = document.getElementById("msg");
+        msg.textContent = "CAPTCHA Verified!";
+        msg.style.color = "green";
+    }
+
+    document.getElementById("testForm").addEventListener("submit", function(e) {
+        e.preventDefault(); // stop form from submitting
+
+        const msg = document.getElementById("msg");
+
+        if (!captchaOK) {
+            msg.textContent = "Please complete CAPTCHA!";
+            msg.style.color = "red";
+            return;
+        }
+
+        msg.textContent = "Form submitted successfully!";
+        msg.style.color = "green";
+    });
+</script>
+
+</body>
+</html>
