@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Growsmart  - Farmer Login</title>
+    <title>Growsmart - Farmer Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -438,37 +438,34 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase configuration
-        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
-
-        // Initialize Supabase client with error handling
-        let supabase;
-        try {
-            // Make sure supabase is available globally
-            supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-                auth: {
-                    autoRefreshToken: true,
-                    persistSession: true,
-                    detectSessionInUrl: true
-                }
-            }) : null;
-            
-            if (supabase) {
-                console.log('Supabase client initialized successfully');
-            } else {
-                console.error('Supabase library not loaded');
-            }
-        } catch (error) {
-            console.error('Error initializing Supabase client:', error);
-        }
-
-        // Check speech support
-        if (!("speechSynthesis" in window)) {
-            console.warn("Sorry, your browser does not support Text-to-Speech.");
-        }
-
+        // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
+            // Supabase configuration
+            const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
+
+            // Initialize Supabase client
+            let supabase;
+            try {
+                // Check if supabase is available
+                if (typeof supabase === 'undefined') {
+                    console.error('Supabase library not loaded properly');
+                    showSupabaseError('Error: Supabase library not loaded. Please refresh the page.');
+                } else {
+                    supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                        auth: {
+                            autoRefreshToken: true,
+                            persistSession: true,
+                            detectSessionInUrl: true
+                        }
+                    });
+                    console.log('Supabase client initialized successfully');
+                }
+            } catch (error) {
+                console.error('Error initializing Supabase client:', error);
+                showSupabaseError('Error connecting to database. Please check your internet connection.');
+            }
+
             // DOM Elements
             const languageSection = document.getElementById('languageSection');
             const formSection = document.getElementById('formSection');
@@ -479,7 +476,6 @@
             const loginForm = document.getElementById('loginForm');
             const emailInput = document.getElementById('loginEmail');
             const passwordInput = document.getElementById('loginPassword');
-            const rememberCheckbox = document.getElementById('rememberMe');
             const loginButton = document.getElementById('loginButton');
             const loginLoader = document.getElementById('loginLoader');
             const loginText = document.getElementById('loginText');
@@ -495,11 +491,22 @@
             // Validation patterns
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-            // Current language
+            // Current language (default to English)
             let currentLanguage = 'English';
             let speechLang = 'en-IN';
 
-            // Language selection - Fixed to work immediately
+            // Function to show Supabase error
+            function showSupabaseError(message) {
+                supabaseError.style.display = 'flex';
+                document.getElementById('supabaseErrorText').textContent = message;
+            }
+
+            // Function to hide Supabase error
+            function hideSupabaseError() {
+                supabaseError.style.display = 'none';
+            }
+
+            // Language selection event listeners
             englishBtn.addEventListener('click', function() {
                 selectLanguage('English', 'en-IN');
             });
@@ -513,7 +520,9 @@
                 languageSection.style.display = 'block';
             });
 
+            // Language selection function
             function selectLanguage(lang, speechCode) {
+                console.log('Selecting language:', lang);
                 currentLanguage = lang;
                 speechLang = speechCode;
                 
@@ -524,7 +533,7 @@
                 // Update form labels and placeholders based on language
                 updateFormLanguage(lang);
                 
-                // Show form section
+                // Show form section and hide language section
                 languageSection.style.display = 'none';
                 formSection.style.display = 'block';
                 
@@ -534,7 +543,9 @@
                 }
             }
 
+            // Function to update form language
             function updateFormLanguage(lang) {
+                console.log('Updating form to language:', lang);
                 if (lang === 'Hindi') {
                     document.getElementById('emailLabel').textContent = 'ईमेल पता';
                     document.getElementById('passwordLabel').textContent = 'पासवर्ड';
@@ -574,6 +585,7 @@
                 });
             });
 
+            // Function to speak field instructions
             function speakFieldInstruction(fieldId) {
                 if (!window.speechSynthesis) {
                     console.warn("Speech synthesis not supported");
@@ -597,56 +609,19 @@
                 window.speechSynthesis.speak(msg);
             }
 
-            // Test Supabase connection
-            async function testSupabaseConnection() {
-                if (!supabase) {
-                    console.error('Supabase client not initialized');
-                    showSupabaseError('Connection error: Please refresh the page');
-                    return;
-                }
-                
-                try {
-                    // Test the connection by making a simple query
-                    const { data, error } = await supabase.from('users').select('count').limit(1);
-                    
-                    if (error) {
-                        console.error('Supabase connection test failed:', error);
-                        if (error.message.includes('JWT')) {
-                            showSupabaseError('Authentication error: Invalid API key. Please check your Supabase configuration.');
-                        } else {
-                            showSupabaseError('Connection error: ' + error.message);
-                        }
-                    } else {
-                        console.log('Supabase connection test successful');
-                        hideSupabaseError();
-                    }
-                } catch (error) {
-                    console.error('Supabase connection test error:', error);
-                    showSupabaseError('Failed to connect to server. Please try again later.');
-                }
-            }
-
-            function showSupabaseError(message) {
-                supabaseError.style.display = 'flex';
-                document.getElementById('supabaseErrorText').textContent = message;
-            }
-
-            function hideSupabaseError() {
-                supabaseError.style.display = 'none';
-            }
-
             // Password toggle functionality
             passwordToggle.addEventListener('click', function() {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
             });
 
             // Real-time validation
             emailInput.addEventListener('blur', validateEmail);
             passwordInput.addEventListener('blur', validatePassword);
 
+            // Email validation function
             function validateEmail() {
                 const email = emailInput.value.trim();
                 const emailError = document.getElementById('emailError');
@@ -665,6 +640,7 @@
                 return true;
             }
 
+            // Password validation function
             function validatePassword() {
                 const password = passwordInput.value;
                 const passwordError = document.getElementById('passwordError');
@@ -678,6 +654,7 @@
                 return true;
             }
 
+            // Show error function
             function showError(input, errorElement, message) {
                 input.classList.add('input-error');
                 input.classList.remove('input-success');
@@ -685,6 +662,7 @@
                 errorElement.style.display = 'flex';
             }
 
+            // Show success function
             function showSuccess(input, errorElement) {
                 input.classList.remove('input-error');
                 input.classList.add('input-success');
@@ -718,6 +696,13 @@
                         email: emailInput.value.trim(),
                         password: passwordInput.value
                     };
+                    
+                    console.log('Attempting login with:', formData.email);
+                    
+                    // Check if supabase is initialized
+                    if (!supabase) {
+                        throw new Error('Database connection not available. Please refresh the page.');
+                    }
                     
                     // Sign in user with Supabase Auth
                     const { data, error } = await supabase.auth.signInWithPassword({
@@ -790,6 +775,14 @@
                 this.textContent = currentLanguage === 'Hindi' ? 'भेजा जा रहा है...' : 'Sending...';
                 this.style.pointerEvents = 'none';
                 
+                // Check if supabase is available
+                if (!supabase) {
+                    alert('Database connection not available. Please refresh the page.');
+                    this.textContent = originalText;
+                    this.style.pointerEvents = 'auto';
+                    return;
+                }
+                
                 // Send password reset email
                 supabase.auth.resetPasswordForEmail(email, {
                     redirectTo: window.location.origin + '/reset-password.html',
@@ -813,6 +806,7 @@
                 });
             });
 
+            // Function to speak text
             function speakText(text) {
                 if (!window.speechSynthesis) return;
                 
@@ -821,8 +815,68 @@
                 window.speechSynthesis.speak(msg);
             }
 
-            // Test connection on page load
-            testSupabaseConnection();
+            // Test Supabase connection
+            async function testSupabaseConnection() {
+                if (!supabase) {
+                    console.error('Supabase client not initialized');
+                    showSupabaseError('Connection error: Please refresh the page');
+                    return;
+                }
+                
+                try {
+                    // Test the connection by making a simple query
+                    const { data, error } = await supabase.from('users').select('count').limit(1);
+                    
+                    if (error) {
+                        console.error('Supabase connection test failed:', error);
+                        if (error.message.includes('JWT')) {
+                            showSupabaseError('Authentication error: Invalid API key. Please check your Supabase configuration.');
+                        } else {
+                            showSupabaseError('Connection error: ' + error.message);
+                        }
+                    } else {
+                        console.log('Supabase connection test successful');
+                        hideSupabaseError();
+                    }
+                } catch (error) {
+                    console.error('Supabase connection test error:', error);
+                    showSupabaseError('Failed to connect to server. Please try again later.');
+                }
+            }
+
+            // Initialize Supabase properly
+            function initializeSupabase() {
+                try {
+                    // The supabase library should be available globally after script load
+                    if (typeof window.supabase !== 'undefined') {
+                        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                            auth: {
+                                autoRefreshToken: true,
+                                persistSession: true,
+                                detectSessionInUrl: true
+                            }
+                        });
+                        console.log('Supabase initialized successfully');
+                        hideSupabaseError();
+                        // Test connection after initialization
+                        testSupabaseConnection();
+                    } else {
+                        console.error('Supabase library not loaded');
+                        showSupabaseError('Error: Required libraries not loaded. Please refresh the page.');
+                    }
+                } catch (error) {
+                    console.error('Error in Supabase initialization:', error);
+                    showSupabaseError('Error initializing database connection.');
+                }
+            }
+
+            // Initialize Supabase after a short delay to ensure library is loaded
+            setTimeout(initializeSupabase, 100);
+
+            // Check speech support
+            if (!("speechSynthesis" in window)) {
+                console.warn("Sorry, your browser does not support Text-to-Speech.");
+            }
         });
     </script>
 </body>
