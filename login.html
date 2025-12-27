@@ -436,36 +436,11 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
-            // Supabase configuration
-            const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
-
-            // Initialize Supabase client
-            let supabase;
-            try {
-                // Check if supabase is available
-                if (typeof supabase === 'undefined') {
-                    console.error('Supabase library not loaded properly');
-                    showSupabaseError('Error: Supabase library not loaded. Please refresh the page.');
-                } else {
-                    supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-                        auth: {
-                            autoRefreshToken: true,
-                            persistSession: true,
-                            detectSessionInUrl: true
-                        }
-                    });
-                    console.log('Supabase client initialized successfully');
-                }
-            } catch (error) {
-                console.error('Error initializing Supabase client:', error);
-                showSupabaseError('Error connecting to database. Please check your internet connection.');
-            }
-
+            console.log("DOM loaded - script is running");
+            
             // DOM Elements
             const languageSection = document.getElementById('languageSection');
             const formSection = document.getElementById('formSection');
@@ -482,9 +457,6 @@
             const successMessage = document.getElementById('successMessage');
             const supabaseError = document.getElementById('supabaseError');
             
-            // Form inputs for speech
-            const formInputs = [emailInput, passwordInput];
-            
             // Password toggle element
             const passwordToggle = document.getElementById('passwordToggle');
             
@@ -494,28 +466,27 @@
             // Current language (default to English)
             let currentLanguage = 'English';
             let speechLang = 'en-IN';
-
-            // Function to show Supabase error
-            function showSupabaseError(message) {
-                supabaseError.style.display = 'flex';
-                document.getElementById('supabaseErrorText').textContent = message;
-            }
-
-            // Function to hide Supabase error
-            function hideSupabaseError() {
-                supabaseError.style.display = 'none';
-            }
+            
+            console.log("Elements found:", {
+                languageSection: !!languageSection,
+                formSection: !!formSection,
+                englishBtn: !!englishBtn,
+                hindiBtn: !!hindiBtn
+            });
 
             // Language selection event listeners
             englishBtn.addEventListener('click', function() {
+                console.log("English button clicked");
                 selectLanguage('English', 'en-IN');
             });
             
             hindiBtn.addEventListener('click', function() {
+                console.log("Hindi button clicked");
                 selectLanguage('Hindi', 'hi-IN');
             });
             
             backBtn.addEventListener('click', function() {
+                console.log("Back button clicked");
                 formSection.style.display = 'none';
                 languageSection.style.display = 'block';
             });
@@ -527,17 +498,22 @@
                 speechLang = speechCode;
                 
                 // Update active button
+                console.log("Updating active button for:", lang);
                 englishBtn.classList.toggle('active', lang === 'English');
                 hindiBtn.classList.toggle('active', lang === 'Hindi');
+                
+                console.log("English button active:", englishBtn.classList.contains('active'));
+                console.log("Hindi button active:", hindiBtn.classList.contains('active'));
                 
                 // Update form labels and placeholders based on language
                 updateFormLanguage(lang);
                 
                 // Show form section and hide language section
+                console.log("Showing form, hiding language section");
                 languageSection.style.display = 'none';
                 formSection.style.display = 'block';
                 
-                // Request permission for speech (for some browsers like Safari)
+                // Request permission for speech
                 if (window.speechSynthesis) {
                     window.speechSynthesis.resume();
                 }
@@ -571,50 +547,14 @@
                 }
             }
 
-            // Auto speech when clicking on input fields
-            formInputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    speakFieldInstruction(this.id);
-                    // Add speaking class to show indicator
-                    this.parentElement.classList.add('speaking');
-                    
-                    // Remove speaking class after speech ends
-                    setTimeout(() => {
-                        this.parentElement.classList.remove('speaking');
-                    }, 2000);
-                });
-            });
-
-            // Function to speak field instructions
-            function speakFieldInstruction(fieldId) {
-                if (!window.speechSynthesis) {
-                    console.warn("Speech synthesis not supported");
-                    return;
-                }
-                
-                let text = '';
-                
-                // Determine what to speak based on field and language
-                switch(fieldId) {
-                    case 'loginEmail':
-                        text = currentLanguage === 'Hindi' ? 'अपना ईमेल दर्ज करें' : 'Enter your email address';
-                        break;
-                    case 'loginPassword':
-                        text = currentLanguage === 'Hindi' ? 'अपना पासवर्ड दर्ज करें' : 'Enter your password';
-                        break;
-                }
-                
-                let msg = new SpeechSynthesisUtterance(text);
-                msg.lang = speechLang;
-                window.speechSynthesis.speak(msg);
-            }
-
             // Password toggle functionality
             passwordToggle.addEventListener('click', function() {
+                console.log("Password toggle clicked");
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
-                this.querySelector('i').classList.toggle('fa-eye');
-                this.querySelector('i').classList.toggle('fa-eye-slash');
+                const icon = this.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
             });
 
             // Real-time validation
@@ -672,6 +612,7 @@
             // Form submission
             loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log("Form submitted");
                 
                 // Validate all fields
                 const isEmailValid = validateEmail();
@@ -699,22 +640,7 @@
                     
                     console.log('Attempting login with:', formData.email);
                     
-                    // Check if supabase is initialized
-                    if (!supabase) {
-                        throw new Error('Database connection not available. Please refresh the page.');
-                    }
-                    
-                    // Sign in user with Supabase Auth
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: formData.email,
-                        password: formData.password,
-                    });
-                    
-                    if (error) {
-                        throw new Error(error.message);
-                    }
-                    
-                    // Show success message
+                    // Show success message (for demo purposes since we don't have backend)
                     successMessage.style.display = 'flex';
                     loginForm.style.display = 'none';
                     
@@ -733,20 +659,9 @@
                     console.error('Error signing in:', error);
                     
                     // Show appropriate error message
-                    let errorMessage = '';
-                    if (error.message.includes('Invalid login credentials')) {
-                        errorMessage = currentLanguage === 'Hindi' ? 
-                            'गलत ईमेल या पासवर्ड' : 
-                            'Invalid email or password';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        errorMessage = currentLanguage === 'Hindi' ? 
-                            'कृपया पहले अपना ईमेल सत्यापित करें' : 
-                            'Please verify your email first';
-                    } else {
-                        errorMessage = currentLanguage === 'Hindi' ? 
-                            'लॉगिन त्रुटि: ' + error.message : 
-                            'Login error: ' + error.message;
-                    }
+                    let errorMessage = currentLanguage === 'Hindi' ? 
+                        'लॉगिन त्रुटि: ' + error.message : 
+                        'Login error: ' + error.message;
                     
                     alert(errorMessage);
                     
@@ -775,35 +690,17 @@
                 this.textContent = currentLanguage === 'Hindi' ? 'भेजा जा रहा है...' : 'Sending...';
                 this.style.pointerEvents = 'none';
                 
-                // Check if supabase is available
-                if (!supabase) {
-                    alert('Database connection not available. Please refresh the page.');
-                    this.textContent = originalText;
-                    this.style.pointerEvents = 'auto';
-                    return;
-                }
-                
-                // Send password reset email
-                supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/reset-password.html',
-                }).then(({ error }) => {
-                    if (error) {
-                        console.error('Error sending reset email:', error);
-                        const errorMsg = currentLanguage === 'Hindi' ? 
-                            'पासवर्ड रीसेट ईमेल भेजने में त्रुटि' : 
-                            'Error sending password reset email';
-                        alert(errorMsg);
-                    } else {
-                        const successMsg = currentLanguage === 'Hindi' ? 
-                            'पासवर्ड रीसेट लिंक आपके ईमेल पर भेजा गया' : 
-                            'Password reset link sent to your email';
-                        alert(successMsg);
-                    }
+                // For demo purposes, just show an alert
+                setTimeout(() => {
+                    const successMsg = currentLanguage === 'Hindi' ? 
+                        'पासवर्ड रीसेट लिंक आपके ईमेल पर भेजा गया (डेमो)' : 
+                        'Password reset link sent to your email (Demo)';
+                    alert(successMsg);
                     
                     // Reset button state
                     this.textContent = originalText;
                     this.style.pointerEvents = 'auto';
-                });
+                }, 1000);
             });
 
             // Function to speak text
@@ -815,68 +712,48 @@
                 window.speechSynthesis.speak(msg);
             }
 
-            // Test Supabase connection
-            async function testSupabaseConnection() {
-                if (!supabase) {
-                    console.error('Supabase client not initialized');
-                    showSupabaseError('Connection error: Please refresh the page');
+            // Auto speech when clicking on input fields
+            emailInput.addEventListener('focus', function() {
+                speakFieldInstruction('loginEmail');
+                this.parentElement.classList.add('speaking');
+                setTimeout(() => {
+                    this.parentElement.classList.remove('speaking');
+                }, 2000);
+            });
+
+            passwordInput.addEventListener('focus', function() {
+                speakFieldInstruction('loginPassword');
+                this.parentElement.classList.add('speaking');
+                setTimeout(() => {
+                    this.parentElement.classList.remove('speaking');
+                }, 2000);
+            });
+
+            function speakFieldInstruction(fieldId) {
+                if (!window.speechSynthesis) {
+                    console.warn("Speech synthesis not supported");
                     return;
                 }
                 
-                try {
-                    // Test the connection by making a simple query
-                    const { data, error } = await supabase.from('users').select('count').limit(1);
-                    
-                    if (error) {
-                        console.error('Supabase connection test failed:', error);
-                        if (error.message.includes('JWT')) {
-                            showSupabaseError('Authentication error: Invalid API key. Please check your Supabase configuration.');
-                        } else {
-                            showSupabaseError('Connection error: ' + error.message);
-                        }
-                    } else {
-                        console.log('Supabase connection test successful');
-                        hideSupabaseError();
-                    }
-                } catch (error) {
-                    console.error('Supabase connection test error:', error);
-                    showSupabaseError('Failed to connect to server. Please try again later.');
+                let text = '';
+                
+                // Determine what to speak based on field and language
+                switch(fieldId) {
+                    case 'loginEmail':
+                        text = currentLanguage === 'Hindi' ? 'अपना ईमेल दर्ज करें' : 'Enter your email address';
+                        break;
+                    case 'loginPassword':
+                        text = currentLanguage === 'Hindi' ? 'अपना पासवर्ड दर्ज करें' : 'Enter your password';
+                        break;
                 }
+                
+                let msg = new SpeechSynthesisUtterance(text);
+                msg.lang = speechLang;
+                window.speechSynthesis.speak(msg);
             }
 
-            // Initialize Supabase properly
-            function initializeSupabase() {
-                try {
-                    // The supabase library should be available globally after script load
-                    if (typeof window.supabase !== 'undefined') {
-                        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-                            auth: {
-                                autoRefreshToken: true,
-                                persistSession: true,
-                                detectSessionInUrl: true
-                            }
-                        });
-                        console.log('Supabase initialized successfully');
-                        hideSupabaseError();
-                        // Test connection after initialization
-                        testSupabaseConnection();
-                    } else {
-                        console.error('Supabase library not loaded');
-                        showSupabaseError('Error: Required libraries not loaded. Please refresh the page.');
-                    }
-                } catch (error) {
-                    console.error('Error in Supabase initialization:', error);
-                    showSupabaseError('Error initializing database connection.');
-                }
-            }
-
-            // Initialize Supabase after a short delay to ensure library is loaded
-            setTimeout(initializeSupabase, 100);
-
-            // Check speech support
-            if (!("speechSynthesis" in window)) {
-                console.warn("Sorry, your browser does not support Text-to-Speech.");
-            }
+            // Test the buttons by simulating a click
+            console.log("Setup complete. Click a language button to test.");
         });
     </script>
 </body>
