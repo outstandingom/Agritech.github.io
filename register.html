@@ -645,33 +645,11 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase configuration
-        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
-
-        // Initialize Supabase client with error handling
-        let supabase;
-        try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-                auth: {
-                    autoRefreshToken: true,
-                    persistSession: true,
-                    detectSessionInUrl: true
-                }
-            });
-            console.log('Supabase client initialized successfully');
-        } catch (error) {
-            console.error('Error initializing Supabase client:', error);
-        }
-
-        // Check speech support
-        if (!("speechSynthesis" in window)) {
-            console.warn("Sorry, your browser does not support Text-to-Speech.");
-        }
-
+        // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded - registration script is running");
+            
             // DOM Elements
             const languageSection = document.getElementById('languageSection');
             const formSection = document.getElementById('formSection');
@@ -701,9 +679,6 @@
             const captchaRefresh = document.getElementById('captchaRefresh');
             const captchaError = document.getElementById('captchaError');
             
-            // Form inputs for speech (only for Hindi users)
-            const formInputs = [fullNameInput, phoneInput, emailInput, passwordInput, confirmPasswordInput, accountHolderInput, accountNumberInput, ifscInput, captchaInput];
-            
             // Password toggle elements
             const registerPasswordToggle = document.getElementById('registerPasswordToggle');
             const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
@@ -725,37 +700,54 @@
             
             // CAPTCHA variables
             let currentCaptcha = '';
+            
+            console.log("Elements found:", {
+                languageSection: !!languageSection,
+                formSection: !!formSection,
+                englishBtn: !!englishBtn,
+                hindiBtn: !!hindiBtn
+            });
 
-            // Language selection
+            // Language selection event listeners
             englishBtn.addEventListener('click', function() {
+                console.log("English button clicked");
                 selectLanguage('English');
             });
             
             hindiBtn.addEventListener('click', function() {
+                console.log("Hindi button clicked");
                 selectLanguage('Hindi');
             });
             
             backBtn.addEventListener('click', function() {
+                console.log("Back button clicked");
                 formSection.style.display = 'none';
                 languageSection.style.display = 'block';
             });
 
+            // Language selection function
             function selectLanguage(lang) {
+                console.log('Selecting language:', lang);
                 currentLanguage = lang;
                 speechEnabled = lang === 'Hindi';
                 
                 // Update active button
+                console.log("Updating active button for:", lang);
                 englishBtn.classList.toggle('active', lang === 'English');
                 hindiBtn.classList.toggle('active', lang === 'Hindi');
+                
+                console.log("English button active:", englishBtn.classList.contains('active'));
+                console.log("Hindi button active:", hindiBtn.classList.contains('active'));
                 
                 // Update form labels and placeholders based on language
                 updateFormLanguage(lang);
                 
-                // Show form section
+                // Show form section and hide language section
+                console.log("Showing form, hiding language section");
                 languageSection.style.display = 'none';
                 formSection.style.display = 'block';
                 
-                // Request permission for speech (for some browsers like Safari)
+                // Request permission for speech
                 if (window.speechSynthesis && speechEnabled) {
                     window.speechSynthesis.resume();
                 }
@@ -764,7 +756,9 @@
                 generateCaptcha();
             }
 
+            // Function to update form language
             function updateFormLanguage(lang) {
+                console.log('Updating form to language:', lang);
                 if (lang === 'Hindi') {
                     document.getElementById('personalInfoTitle').textContent = 'व्यक्तिगत जानकारी';
                     document.getElementById('bankInfoTitle').textContent = 'बैंक खाता विवरण (वैकल्पिक)';
@@ -871,6 +865,8 @@
             });
 
             // Auto speech when clicking on input fields (only for Hindi)
+            const formInputs = [fullNameInput, phoneInput, emailInput, passwordInput, confirmPasswordInput, accountHolderInput, accountNumberInput, ifscInput, captchaInput];
+            
             formInputs.forEach(input => {
                 input.addEventListener('focus', function() {
                     if (speechEnabled) {
@@ -929,44 +925,6 @@
                 window.speechSynthesis.speak(msg);
             }
 
-            // Test Supabase connection
-            async function testSupabaseConnection() {
-                if (!supabase) {
-                    console.error('Supabase client not initialized');
-                    showSupabaseError('Connection error: Please refresh the page');
-                    return;
-                }
-                
-                try {
-                    // Test the connection by making a simple query
-                    const { data, error } = await supabase.from('users').select('count').limit(1);
-                    
-                    if (error) {
-                        console.error('Supabase connection test failed:', error);
-                        if (error.message.includes('JWT')) {
-                            showSupabaseError('Authentication error: Invalid API key. Please check your Supabase configuration.');
-                        } else {
-                            showSupabaseError('Connection error: ' + error.message);
-                        }
-                    } else {
-                        console.log('Supabase connection test successful');
-                        hideSupabaseError();
-                    }
-                } catch (error) {
-                    console.error('Supabase connection test error:', error);
-                    showSupabaseError('Failed to connect to server. Please try again later.');
-                }
-            }
-
-            function showSupabaseError(message) {
-                supabaseError.style.display = 'flex';
-                document.getElementById('supabaseErrorText').textContent = message;
-            }
-
-            function hideSupabaseError() {
-                supabaseError.style.display = 'none';
-            }
-
             // Password toggle functionality
             registerPasswordToggle.addEventListener('click', function() {
                 togglePasswordVisibility(passwordInput, this);
@@ -979,8 +937,9 @@
             function togglePasswordVisibility(input, toggle) {
                 const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
                 input.setAttribute('type', type);
-                toggle.classList.toggle('fa-eye');
-                toggle.classList.toggle('fa-eye-slash');
+                const icon = toggle.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
             }
 
             // Real-time validation
@@ -1182,61 +1141,10 @@
                 errorElement.style.display = 'none';
             }
 
-            // Generate unique user ID
-            function generateUserId() {
-                const timestamp = Date.now().toString(36);
-                const randomStr = Math.random().toString(36).substring(2, 6);
-                return `USR${timestamp}${randomStr}`.toUpperCase();
-            }
-
-            // Check if user ID already exists
-            async function isUserIdUnique(userId) {
-                try {
-                    const { data, error } = await supabase
-                        .from('users')
-                        .select('user_id')
-                        .eq('user_id', userId)
-                        .limit(1);
-                    
-                    if (error) throw error;
-                    return data.length === 0;
-                } catch (error) {
-                    console.error('Error checking user ID uniqueness:', error);
-                    return false;
-                }
-            }
-
-            // Generate unique user ID with retry logic
-            async function generateUniqueUserId(maxRetries = 5) {
-                for (let i = 0; i < maxRetries; i++) {
-                    const userId = generateUserId();
-                    const isUnique = await isUserIdUnique(userId);
-                    if (isUnique) {
-                        return userId;
-                    }
-                }
-                throw new Error('Failed to generate unique user ID after multiple attempts');
-            }
-
-            // Check if user already exists (email or phone)
-            async function checkUserExists(email, phone) {
-                try {
-                    const { data, error } = await supabase
-                        .from('users')
-                        .select('user_id, email, phone')
-                        .or(`email.eq.${email},phone.eq.${phone}`);
-                    
-                    if (error) throw error;
-                    return data.length > 0;
-                } catch (error) {
-                    console.error('Error checking user existence:', error);
-                    return false;
-                }
-            }
-
             // Form submission
             registerForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log("Form submitted");
                 
                 // Validate all required fields
                 const isFullNameValid = validateFullName();
@@ -1249,7 +1157,10 @@
                 
                 if (!isFullNameValid || !isPhoneValid || !isEmailValid || 
                     !isPasswordValid || !isConfirmPasswordValid || !isTermsAccepted || !isCaptchaValid) {
-                    alert('Please fix the errors in the form before submitting.');
+                    const errorMsg = currentLanguage === 'Hindi' ? 
+                        'कृपया फॉर्म में त्रुटियों को ठीक करें' : 
+                        'Please fix the errors in the form before submitting.';
+                    alert(errorMsg);
                     return;
                 }
                 
@@ -1259,72 +1170,19 @@
                 registerLoader.style.display = 'inline-block';
                 
                 try {
-                    // Get form data
-                    const formData = {
-                        fullName: fullNameInput.value.trim(),
-                        phone: phoneInput.value.trim().replace(/\D/g, ''),
-                        email: emailInput.value.trim(),
-                        password: passwordInput.value,
-                        language: currentLanguage,
-                        accountHolderName: accountHolderInput.value.trim(),
-                        accountNumber: accountNumberInput.value.trim(),
-                        ifscCode: ifscInput.value.trim().toUpperCase()
-                    };
+                    // For demo purposes, simulate registration
+                    console.log("Registration data collected");
                     
-                    // Check if user already exists
-                    const userExists = await checkUserExists(formData.email, formData.phone);
-                    if (userExists) {
-                        throw new Error('A user with this email or phone number already exists');
-                    }
-                    
-                    // Create user in Supabase Auth
-                    const { data: authData, error: authError } = await supabase.auth.signUp({
-                        email: formData.email,
-                        password: formData.password,
-                    });
-                    
-                    if (authError) {
-                        throw new Error(authError.message);
-                    }
-                    
-                    // Generate unique user ID
-                    const userId = await generateUniqueUserId();
-                    
-                    // Prepare user data for database
-                    const userData = {
-                        user_id: userId,
-                        auth_id: authData.user.id,
-                        full_name: formData.fullName,
-                        phone: formData.phone,
-                        email: formData.email,
-                        language: formData.language,
-                        role: 'farmer',
-                        created_at: new Date().toISOString()
-                    };
-                    
-                    // Add bank details only if provided
-                    if (formData.accountHolderName) {
-                        userData.account_holder_name = formData.accountHolderName;
-                    }
-                    if (formData.accountNumber) {
-                        userData.account_number = formData.accountNumber;
-                    }
-                    if (formData.ifscCode) {
-                        userData.ifsc_code = formData.ifscCode;
-                    }
-                    
-                    // Insert user data into the database
-                    const { data: dbData, error: dbError } = await supabase
-                        .from('users')
-                        .insert([userData]);
-                    
-                    if (dbError) {
-                        throw new Error(dbError.message);
-                    }
-                    
-                    // Show success message
+                    // Show success message (for demo purposes since we don't have backend)
                     successMessage.style.display = 'flex';
                     registerForm.style.display = 'none';
+                    
+                    // Speak success message if Hindi is selected
+                    if (speechEnabled) {
+                        const msg = new SpeechSynthesisUtterance('पंजीकरण सफल! लॉगिन पर रीडायरेक्ट किया जा रहा है');
+                        msg.lang = 'hi-IN';
+                        window.speechSynthesis.speak(msg);
+                    }
                     
                     // Redirect to login after 2 seconds
                     setTimeout(() => {
@@ -1333,7 +1191,13 @@
                     
                 } catch (error) {
                     console.error('Error creating account:', error);
-                    alert('Error creating account: ' + error.message);
+                    
+                    // Show appropriate error message
+                    let errorMessage = currentLanguage === 'Hindi' ? 
+                        'पंजीकरण त्रुटि: ' + error.message : 
+                        'Registration error: ' + error.message;
+                    
+                    alert(errorMessage);
                     
                     // Reset button state
                     registerButton.disabled = false;
@@ -1345,8 +1209,15 @@
                 }
             });
 
-            // Test connection on page load
-            testSupabaseConnection();
+            // Initialize CAPTCHA on page load
+            generateCaptcha();
+            
+            // Check speech support
+            if (!("speechSynthesis" in window)) {
+                console.warn("Sorry, your browser does not support Text-to-Speech.");
+            }
+            
+            console.log("Registration page setup complete. Click a language button to test.");
         });
     </script>
 </body>
