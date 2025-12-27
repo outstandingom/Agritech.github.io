@@ -401,7 +401,7 @@
                 <div class="form-group">
                     <label for="loginPassword" class="form-label" id="passwordLabel">Password</label>
                     <div class="password-container">
-                        <input type="password" id="loginPassword" class="form-input" placeholder="Ener your password">
+                        <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password">
                         <div class="speech-indicator">
                             <i class="fas fa-volume-up"></i>
                         </div>
@@ -411,7 +411,7 @@
                     </div>
                     <div id="passwordError" class="error-message">
                         <i class="fas fa-exclamation-circle"></i>
-                        <span>Please enter your d</span>
+                        <span>Please enter your password</span>
                     </div>
                     
                     <div class="forgot-password">
@@ -421,7 +421,7 @@
                 
                 <div class="checkbox-group">
                     <input type="checkbox" id="rememberMe">
-                    <label for="rememberMe" id="rememberLabel">rememberMe</label>
+                    <label for="rememberMe" id="rememberLabel">Remember me</label>
                 </div>
                 
                 <button type="submit" id="loginButton" class="submit-btn">
@@ -445,14 +445,20 @@
         // Initialize Supabase client with error handling
         let supabase;
         try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            // Make sure supabase is available globally
+            supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
                 auth: {
                     autoRefreshToken: true,
                     persistSession: true,
                     detectSessionInUrl: true
                 }
-            });
-            console.log('Supabase client initialized successfully');
+            }) : null;
+            
+            if (supabase) {
+                console.log('Supabase client initialized successfully');
+            } else {
+                console.error('Supabase library not loaded');
+            }
         } catch (error) {
             console.error('Error initializing Supabase client:', error);
         }
@@ -493,7 +499,7 @@
             let currentLanguage = 'English';
             let speechLang = 'en-IN';
 
-            // Language selection
+            // Language selection - Fixed to work immediately
             englishBtn.addEventListener('click', function() {
                 selectLanguage('English', 'en-IN');
             });
