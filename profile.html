@@ -334,6 +334,22 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Error Message */
+        .error-message {
+            background-color: #fee;
+            border: 1px solid #fcc;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #c00;
+        }
+
+        .error-message i {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
         /* Bottom Navigation */
         .bottom-nav {
             background: var(--surface);
@@ -424,6 +440,9 @@
             <div class="user-name" id="userFullName">Loading...</div>
             <div class="user-role">Farmer</div>
         </div>
+
+        <!-- Error Message Container -->
+        <div id="errorContainer" style="display: none;"></div>
 
         <!-- Personal Information Section -->
         <div class="section">
@@ -551,21 +570,26 @@
             console.log('Initializing app...');
             
             try {
-                // Check if user is authenticated
-                const session = await checkAuthentication();
-                if (!session) {
-                    console.log('No session found, redirecting to login');
-                    window.location.href = 'login.html';
+                // Check authentication
+                const authResult = await checkAuthentication();
+                if (!authResult.authenticated) {
+                    console.log('User not authenticated, redirecting to login');
+                    showError('Please login to access your profile');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
                     return;
                 }
 
-                console.log('User authenticated, loading data...');
+                console.log('User authenticated:', authResult.userId);
                 
                 // Load user data
-                await loadUserData(session.user.id);
+                await loadUserData(authResult.userId);
                 
                 // Load lands data
-                await loadLandsData();
+                if (userData && userData.user_id) {
+                    await loadLandsData(userData.user_id);
+                }
                 
                 isInitialized = true;
                 
@@ -577,14 +601,18 @@
 
         async function checkAuthentication() {
             try {
-                // Check localStorage first (for backward compatibility)
+                // First check localStorage (from login page)
                 const storedSession = localStorage.getItem('growsmart_user_session');
                 if (storedSession) {
                     try {
                         const sessionData = JSON.parse(storedSession);
                         if (sessionData.logged_in && sessionData.auth_id) {
                             console.log('Found session in localStorage:', sessionData.auth_id);
-                            return { user: { id: sessionData.auth_id, email: sessionData.email } };
+                            return {
+                                authenticated: true,
+                                userId: sessionData.auth_id,
+                                email: sessionData.email
+                            };
                         }
                     } catch (e) {
                         console.warn('Error parsing stored session:', e);
@@ -596,19 +624,23 @@
                 
                 if (error) {
                     console.error('Supabase session error:', error);
-                    return null;
+                    return { authenticated: false };
                 }
                 
                 if (session && session.user) {
                     console.log('Found Supabase session:', session.user.id);
-                    return session;
+                    return {
+                        authenticated: true,
+                        userId: session.user.id,
+                        email: session.user.email
+                    };
                 }
                 
-                return null;
+                return { authenticated: false };
                 
             } catch (error) {
                 console.error('Error checking authentication:', error);
-                return null;
+                return { authenticated: false };
             }
         }
 
@@ -616,16 +648,17 @@
             try {
                 console.log('Loading user data for auth ID:', authId);
                 
-                // First try to get user by auth_id
-                let { data: user, error } = await supabase
+                // Query users table with auth_id
+                const { data: user, error } = await supabase
                     .from('users')
                     .select('*')
                     .eq('auth_id', authId)
                     .single();
                 
-                // If not found by auth_id, try by email (for backward compatibility)
-                if (error || !user) {
-                    console.log('User not found by auth_id, trying by email...');
+                if (error) {
+                    console.error('Error fetching user by auth_id:', error);
+                    
+                    // Try alternative: get by email
                     const { data: session } = await supabase.auth.getSession();
                     if (session?.user?.email) {
                         const { data: userByEmail } = await supabase
@@ -635,18 +668,26 @@
                             .single();
                         
                         if (userByEmail) {
-                            user = userByEmail;
+                            userData = userByEmail;
+                            console.log('Found user by email:', userByEmail);
+                            updateProfileUI();
+                            return;
                         }
                     }
+                    
+                    showError('User profile not found. Please complete your profile setup.');
+                    return;
                 }
                 
                 if (!user) {
                     console.error('User profile not found in database');
-                    showError('User profile not found. Please contact support.');
+                    showError('User profile not found. Please complete your profile setup.');
                     return;
                 }
                 
                 userData = user;
+                console.log('User data loaded:', userData);
+                
                 currentLanguage = userData.language || 'English';
                 speechLang = currentLanguage === 'Hindi' ? 'hi-IN' : 'en-IN';
                 
@@ -655,24 +696,25 @@
                 
             } catch (error) {
                 console.error('Error loading user data:', error);
-                showError('Error loading user profile');
+                showError('Error loading user profile. Please try again.');
             }
         }
 
-        async function loadLandsData() {
+        async function loadLandsData(userId) {
             try {
-                if (!userData || !userData.user_id) {
-                    console.error('No user data available to load lands');
+                if (!userId) {
+                    console.error('No user ID available to load lands');
+                    updateLandsUI([]);
                     return;
                 }
                 
-                console.log('Loading lands data for user ID:', userData.user_id);
+                console.log('Loading lands data for user ID:', userId);
                 
-                // Get lands data from lands table
+                // Get lands data from lands table - using user_id field
                 const { data, error } = await supabase
                     .from('lands')
                     .select('*')
-                    .eq('user_id', userData.user_id)
+                    .eq('user_id', userId)
                     .order('created_at', { ascending: false });
                 
                 if (error) {
@@ -680,6 +722,8 @@
                     updateLandsUI([]);
                     return;
                 }
+                
+                console.log('Lands data loaded:', data);
                 
                 if (data && data.length > 0) {
                     landsData = data;
@@ -695,29 +739,46 @@
         }
 
         function updateProfileUI() {
-            if (!userData) return;
+            if (!userData) {
+                document.getElementById('personalInfoContainer').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>No user data available. Please complete your profile setup.</p>
+                    </div>
+                `;
+                return;
+            }
             
             // Update header
             document.getElementById('userFullName').textContent = userData.full_name || 'User';
+            
+            // Update role if available
+            if (userData.role && userData.role !== 'farmer') {
+                document.querySelector('.user-role').textContent = userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+            }
             
             // Update personal information
             const personalInfoHTML = `
                 <div class="info-grid">
                     <div class="info-card">
                         <div class="info-label">Full Name</div>
-                        <div class="info-value">${userData.full_name || 'Not provided'}</div>
+                        <div class="info-value">${escapeHtml(userData.full_name || 'Not provided')}</div>
                     </div>
                     <div class="info-card">
                         <div class="info-label">Phone Number</div>
-                        <div class="info-value">${userData.phone || 'Not provided'}</div>
+                        <div class="info-value">${escapeHtml(userData.phone || 'Not provided')}</div>
                     </div>
                     <div class="info-card">
                         <div class="info-label">Email Address</div>
-                        <div class="info-value">${userData.email || 'Not provided'}</div>
+                        <div class="info-value">${escapeHtml(userData.email || 'Not provided')}</div>
                     </div>
                     <div class="info-card">
                         <div class="info-label">Language</div>
-                        <div class="info-value">${userData.language || 'English'}</div>
+                        <div class="info-value">${escapeHtml(userData.language || 'English')}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">User ID</div>
+                        <div class="info-value" style="font-size: 12px;">${escapeHtml(userData.user_id || 'N/A')}</div>
                     </div>
                 </div>
             `;
@@ -733,19 +794,19 @@
                     <div class="info-grid">
                         <div class="info-card">
                             <div class="info-label">Account Holder</div>
-                            <div class="info-value">${userData.account_holder_name || 'Not provided'}</div>
+                            <div class="info-value">${escapeHtml(userData.account_holder_name || 'Not provided')}</div>
                         </div>
                         <div class="info-card">
                             <div class="info-label">Account Number</div>
-                            <div class="info-value">${userData.account_number || 'Not provided'}</div>
+                            <div class="info-value">${escapeHtml(userData.account_number || 'Not provided')}</div>
                         </div>
                         <div class="info-card">
                             <div class="info-label">IFSC Code</div>
-                            <div class="info-value">${userData.ifsc_code || 'Not provided'}</div>
+                            <div class="info-value">${escapeHtml(userData.ifsc_code || 'Not provided')}</div>
                         </div>
                         <div class="info-card">
                             <div class="info-label">Water Source</div>
-                            <div class="info-value">${userData.water_source || 'Not provided'}</div>
+                            <div class="info-value">${escapeHtml(userData.water_source || 'Not provided')}</div>
                         </div>
                     </div>
                 `;
@@ -837,13 +898,20 @@
             document.getElementById('landsContainer').innerHTML = landsHTML;
             
             // Re-attach event listeners
-            document.getElementById('viewCropsBtn').addEventListener('click', function() {
-                window.location.href = 'crops.html';
-            });
+            const viewCropsBtn = document.getElementById('viewCropsBtn');
+            const addLandBtn = document.getElementById('addLandBtn');
             
-            document.getElementById('addLandBtn').addEventListener('click', function() {
-                window.location.href = 'land.html';
-            });
+            if (viewCropsBtn) {
+                viewCropsBtn.addEventListener('click', function() {
+                    window.location.href = 'crops.html';
+                });
+            }
+            
+            if (addLandBtn) {
+                addLandBtn.addEventListener('click', function() {
+                    window.location.href = 'land.html';
+                });
+            }
         }
 
         function setupEventListeners() {
@@ -995,7 +1063,26 @@
         }
 
         function showError(message) {
-            alert(message);
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>${escapeHtml(message)}</p>
+                </div>
+            `;
+            errorContainer.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 </body>
