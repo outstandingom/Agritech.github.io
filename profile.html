@@ -311,45 +311,6 @@
             font-size: 14px;
         }
 
-        /* Loading Spinner */
-        .loading-spinner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            gap: 16px;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(46, 139, 87, 0.1);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Error Message */
-        .error-message {
-            background-color: #fee;
-            border: 1px solid #fcc;
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #c00;
-        }
-
-        .error-message i {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
         /* Bottom Navigation */
         .bottom-nav {
             background: var(--surface);
@@ -441,9 +402,6 @@
             <div class="user-role">Farmer</div>
         </div>
 
-        <!-- Error Message Container -->
-        <div id="errorContainer" style="display: none;"></div>
-
         <!-- Personal Information Section -->
         <div class="section">
             <h2 class="section-title">
@@ -453,10 +411,22 @@
                 </button>
             </h2>
             
-            <div id="personalInfoContainer">
-                <div class="loading-spinner">
-                    <div class="spinner"></div>
-                    <div>Loading personal information...</div>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value" id="profileFullName">Loading...</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Phone Number</div>
+                    <div class="info-value" id="profilePhone">Loading...</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value" id="profileEmail">Loading...</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Language</div>
+                    <div class="info-value" id="profileLanguage">Loading...</div>
                 </div>
             </div>
         </div>
@@ -470,11 +440,33 @@
                 </button>
             </h2>
             
-            <div id="accountInfoContainer">
-                <div class="loading-spinner">
-                    <div class="spinner"></div>
-                    <div>Loading account information...</div>
+            <div id="accountInfo">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-label">Account Holder</div>
+                        <div class="info-value" id="profileAccountHolder">Loading...</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Account Number</div>
+                        <div class="info-value" id="profileAccountNumber">Loading...</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">IFSC Code</div>
+                        <div class="info-value" id="profileIfscCode">Loading...</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Water Source</div>
+                        <div class="info-value" id="profileWaterSource">Loading...</div>
+                    </div>
                 </div>
+            </div>
+            
+            <div id="noAccountInfo" class="no-data" style="display: none;">
+                <i class="fas fa-university"></i>
+                <p>No account information added yet</p>
+                <button class="action-btn primary" id="addAccountBtn">
+                    <i class="fas fa-plus"></i> Add Account Details
+                </button>
             </div>
         </div>
 
@@ -488,9 +480,33 @@
             </h2>
             
             <div id="landsContainer">
-                <div class="loading-spinner">
-                    <div class="spinner"></div>
-                    <div>Loading land information...</div>
+                <div class="land-summary">
+                    <div class="land-header">
+                        <div class="land-name">Total Land Area</div>
+                    </div>
+                    <div class="land-details">
+                        <div class="land-detail">
+                            <div class="detail-value" id="totalAreaSqMeters">0</div>
+                            <div class="detail-label">Square Meters</div>
+                        </div>
+                        <div class="land-detail">
+                            <div class="detail-value" id="totalAreaHectares">0</div>
+                            <div class="detail-label">Hectares</div>
+                        </div>
+                        <div class="land-detail">
+                            <div class="detail-value" id="totalAreaAcres">0</div>
+                            <div class="detail-label">Acres</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn secondary" id="viewCropsBtn">
+                        <i class="fas fa-seedling"></i> View Crops
+                    </button>
+                    <button class="action-btn primary" id="addLandBtn">
+                        <i class="fas fa-plus"></i> Add Land
+                    </button>
                 </div>
             </div>
         </div>
@@ -530,25 +546,10 @@
         </div>
     </div>
 
-    <!-- Include Supabase -->
+    <!-- Include Supabase config and auth checker -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // Initialize Supabase with your credentials
-        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
-
-        // Create Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-            auth: {
-                autoRefreshToken: true,
-                persistSession: true,
-                detectSessionInUrl: true
-            }
-        });
-
-        window.supabaseClient = supabase;
-        console.log('Supabase initialized in profile.html');
-    </script>
+    <script src="supabase-config.js"></script>
+    <script src="auth-checker.js"></script>
 
     <script>
         // Global variables
@@ -556,10 +557,8 @@
         let speechLang = 'en-IN';
         let userData = null;
         let landsData = [];
-        let isInitialized = false;
 
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Profile page loaded');
             initializeApp();
             setupEventListeners();
             updateTime();
@@ -567,151 +566,53 @@
         });
 
         async function initializeApp() {
-            console.log('Initializing app...');
-            
-            try {
-                // Check authentication
-                const authResult = await checkAuthentication();
-                if (!authResult.authenticated) {
-                    console.log('User not authenticated, redirecting to login');
-                    showError('Please login to access your profile');
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
-                    return;
-                }
+            // Check authentication
+            const isAuthenticated = await window.authChecker.requireAuth();
+            if (!isAuthenticated) return;
 
-                console.log('User authenticated:', authResult.userId);
-                
-                // Load user data
-                await loadUserData(authResult.userId);
-                
-                // Load lands data
-                if (userData && userData.user_id) {
-                    await loadLandsData(userData.user_id);
-                }
-                
-                isInitialized = true;
-                
-            } catch (error) {
-                console.error('Error initializing app:', error);
-                showError('Failed to load profile. Please try again.');
-            }
+            await loadUserData();
+            await loadLandsData();
         }
 
-        async function checkAuthentication() {
+        async function loadUserData() {
             try {
-                // First check localStorage (from login page)
-                const storedSession = localStorage.getItem('growsmart_user_session');
-                if (storedSession) {
-                    try {
-                        const sessionData = JSON.parse(storedSession);
-                        if (sessionData.logged_in && sessionData.auth_id) {
-                            console.log('Found session in localStorage:', sessionData.auth_id);
-                            return {
-                                authenticated: true,
-                                userId: sessionData.auth_id,
-                                email: sessionData.email
-                            };
-                        }
-                    } catch (e) {
-                        console.warn('Error parsing stored session:', e);
-                    }
-                }
-                
-                // Check Supabase session
-                const { data: { session }, error } = await supabase.auth.getSession();
-                
-                if (error) {
-                    console.error('Supabase session error:', error);
-                    return { authenticated: false };
-                }
-                
-                if (session && session.user) {
-                    console.log('Found Supabase session:', session.user.id);
-                    return {
-                        authenticated: true,
-                        userId: session.user.id,
-                        email: session.user.email
-                    };
-                }
-                
-                return { authenticated: false };
-                
-            } catch (error) {
-                console.error('Error checking authentication:', error);
-                return { authenticated: false };
-            }
-        }
+                const userId = await window.authChecker.getUserId();
+                if (!userId) return;
 
-        async function loadUserData(authId) {
-            try {
-                console.log('Loading user data for auth ID:', authId);
-                
-                // Query users table with auth_id
-                const { data: user, error } = await supabase
+                // Get user data from users table
+                const { data, error } = await window.supabaseClient
                     .from('users')
                     .select('*')
-                    .eq('auth_id', authId)
+                    .eq('user_id', userId)
                     .single();
                 
                 if (error) {
-                    console.error('Error fetching user by auth_id:', error);
-                    
-                    // Try alternative: get by email
-                    const { data: session } = await supabase.auth.getSession();
-                    if (session?.user?.email) {
-                        const { data: userByEmail } = await supabase
-                            .from('users')
-                            .select('*')
-                            .eq('email', session.user.email)
-                            .single();
-                        
-                        if (userByEmail) {
-                            userData = userByEmail;
-                            console.log('Found user by email:', userByEmail);
-                            updateProfileUI();
-                            return;
-                        }
-                    }
-                    
-                    showError('User profile not found. Please complete your profile setup.');
+                    console.error('Error loading user data:', error);
+                    showError('User profile not found.');
                     return;
                 }
                 
-                if (!user) {
-                    console.error('User profile not found in database');
-                    showError('User profile not found. Please complete your profile setup.');
-                    return;
+                if (data) {
+                    userData = data;
+                    currentLanguage = data.language || 'English';
+                    speechLang = currentLanguage === 'Hindi' ? 'hi-IN' : 'en-IN';
+                    
+                    // Update UI with user data
+                    updateProfileUI();
                 }
-                
-                userData = user;
-                console.log('User data loaded:', userData);
-                
-                currentLanguage = userData.language || 'English';
-                speechLang = currentLanguage === 'Hindi' ? 'hi-IN' : 'en-IN';
-                
-                // Update UI with user data
-                updateProfileUI();
-                
             } catch (error) {
                 console.error('Error loading user data:', error);
-                showError('Error loading user profile. Please try again.');
+                showError('Error loading user profile');
             }
         }
 
-        async function loadLandsData(userId) {
+        async function loadLandsData() {
             try {
-                if (!userId) {
-                    console.error('No user ID available to load lands');
-                    updateLandsUI([]);
-                    return;
-                }
+                const userId = await window.authChecker.getUserId();
+                if (!userId) return;
                 
-                console.log('Loading lands data for user ID:', userId);
-                
-                // Get lands data from lands table - using user_id field
-                const { data, error } = await supabase
+                // Get lands data from lands table
+                const { data, error } = await window.supabaseClient
                     .from('lands')
                     .select('*')
                     .eq('user_id', userId)
@@ -719,247 +620,93 @@
                 
                 if (error) {
                     console.error('Error loading lands data:', error);
-                    updateLandsUI([]);
                     return;
                 }
                 
-                console.log('Lands data loaded:', data);
-                
                 if (data && data.length > 0) {
                     landsData = data;
-                    updateLandsUI(data);
-                } else {
-                    updateLandsUI([]);
+                    updateLandsUI();
                 }
-                
             } catch (error) {
                 console.error('Error loading lands data:', error);
-                updateLandsUI([]);
             }
         }
 
         function updateProfileUI() {
-            if (!userData) {
-                document.getElementById('personalInfoContainer').innerHTML = `
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>No user data available. Please complete your profile setup.</p>
-                    </div>
-                `;
-                return;
-            }
+            // Personal Information
+  document.getElementById('userFullName').textContent = userData.full_name;
+            document.getElementById('profileFullName').textContent = userData.full_name;
+            document.getElementById('profilePhone').textContent = userData.phone;
+            document.getElementById('profileEmail').textContent = userData.email;
+            document.getElementById('profileLanguage').textContent = userData.language || 'English';
             
-            // Update header
-            document.getElementById('userFullName').textContent = userData.full_name || 'User';
-            
-            // Update role if available
-            if (userData.role && userData.role !== 'farmer') {
-                document.querySelector('.user-role').textContent = userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
-            }
-            
-            // Update personal information
-            const personalInfoHTML = `
-                <div class="info-grid">
-                    <div class="info-card">
-                        <div class="info-label">Full Name</div>
-                        <div class="info-value">${escapeHtml(userData.full_name || 'Not provided')}</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Phone Number</div>
-                        <div class="info-value">${escapeHtml(userData.phone || 'Not provided')}</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Email Address</div>
-                        <div class="info-value">${escapeHtml(userData.email || 'Not provided')}</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Language</div>
-                        <div class="info-value">${escapeHtml(userData.language || 'English')}</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">User ID</div>
-                        <div class="info-value" style="font-size: 12px;">${escapeHtml(userData.user_id || 'N/A')}</div>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('personalInfoContainer').innerHTML = personalInfoHTML;
-            
-            // Update account information
-            const hasAccountInfo = userData.account_holder_name || userData.account_number;
-            let accountInfoHTML = '';
-            
-            if (hasAccountInfo) {
-                accountInfoHTML = `
-                    <div class="info-grid">
-                        <div class="info-card">
-                            <div class="info-label">Account Holder</div>
-                            <div class="info-value">${escapeHtml(userData.account_holder_name || 'Not provided')}</div>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-label">Account Number</div>
-                            <div class="info-value">${escapeHtml(userData.account_number || 'Not provided')}</div>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-label">IFSC Code</div>
-                            <div class="info-value">${escapeHtml(userData.ifsc_code || 'Not provided')}</div>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-label">Water Source</div>
-                            <div class="info-value">${escapeHtml(userData.water_source || 'Not provided')}</div>
-                        </div>
-                    </div>
-                `;
+            // Account Information
+            if (userData.account_holder_name && userData.account_number) {
+                document.getElementById('profileAccountHolder').textContent = userData.account_holder_name;
+                document.getElementById('profileAccountNumber').textContent = userData.account_number;
+                document.getElementById('profileIfscCode').textContent = userData.ifsc_code || 'Not provided';
+                document.getElementById('profileWaterSource').textContent = userData.water_source || 'Not provided';
+                
+                document.getElementById('accountInfo').style.display = 'block';
+                document.getElementById('noAccountInfo').style.display = 'none';
             } else {
-                accountInfoHTML = `
-                    <div class="no-data">
-                        <i class="fas fa-university"></i>
-                        <p>No account information added yet</p>
-                        <button class="action-btn primary" id="addAccountBtn">
-                            <i class="fas fa-plus"></i> Add Account Details
-                        </button>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('accountInfoContainer').innerHTML = accountInfoHTML;
-            
-            // Re-attach event listener for the add account button
-            const addAccountBtn = document.getElementById('addAccountBtn');
-            if (addAccountBtn) {
-                addAccountBtn.addEventListener('click', function() {
-                    window.location.href = 'account-management.html';
-                });
+                document.getElementById('accountInfo').style.display = 'none';
+                document.getElementById('noAccountInfo').style.display = 'block';
             }
         }
 
-        function updateLandsUI(lands) {
-            let landsHTML = '';
+        function updateLandsUI() {
+            // Calculate total area across all lands
+            let totalSqMeters = 0;
+            let totalHectares = 0;
+            let totalAcres = 0;
             
-            if (lands && lands.length > 0) {
-                // Calculate total area across all lands
-                let totalSqMeters = 0;
-                let totalHectares = 0;
-                let totalAcres = 0;
-                
-                lands.forEach(land => {
-                    totalSqMeters += parseFloat(land.area_sq_meters) || 0;
-                    totalHectares += parseFloat(land.area_hectares) || 0;
-                    totalAcres += parseFloat(land.area_acres) || 0;
-                });
-                
-                landsHTML = `
-                    <div class="land-summary">
-                        <div class="land-header">
-                            <div class="land-name">Total Land Area (${lands.length} ${lands.length === 1 ? 'plot' : 'plots'})</div>
-                        </div>
-                        <div class="land-details">
-                            <div class="land-detail">
-                                <div class="detail-value">${totalSqMeters.toFixed(2)}</div>
-                                <div class="detail-label">Square Meters</div>
-                            </div>
-                            <div class="land-detail">
-                                <div class="detail-value">${totalHectares.toFixed(2)}</div>
-                                <div class="detail-label">Hectares</div>
-                            </div>
-                            <div class="land-detail">
-                                <div class="detail-value">${totalAcres.toFixed(2)}</div>
-                                <div class="detail-label">Acres</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="action-btn secondary" id="viewCropsBtn">
-                            <i class="fas fa-seedling"></i> View Crops
-                        </button>
-                        <button class="action-btn primary" id="addLandBtn">
-                            <i class="fas fa-plus"></i> Add Land
-                        </button>
-                    </div>
-                `;
-            } else {
-                landsHTML = `
-                    <div class="no-data">
-                        <i class="fas fa-tractor"></i>
-                        <p>No land information added yet</p>
-                        <div class="action-buttons">
-                            <button class="action-btn secondary" id="viewCropsBtn">
-                                <i class="fas fa-seedling"></i> View Crops
-                            </button>
-                            <button class="action-btn primary" id="addLandBtn">
-                                <i class="fas fa-plus"></i> Add Land
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
+            landsData.forEach(land => {
+                totalSqMeters += parseFloat(land.area_sq_meters) || 0;
+                totalHectares += parseFloat(land.area_hectares) || 0;
+                totalAcres += parseFloat(land.area_acres) || 0;
+            });
             
-            document.getElementById('landsContainer').innerHTML = landsHTML;
-            
-            // Re-attach event listeners
-            const viewCropsBtn = document.getElementById('viewCropsBtn');
-            const addLandBtn = document.getElementById('addLandBtn');
-            
-            if (viewCropsBtn) {
-                viewCropsBtn.addEventListener('click', function() {
-                    window.location.href = 'crops.html';
-                });
-            }
-            
-            if (addLandBtn) {
-                addLandBtn.addEventListener('click', function() {
-                    window.location.href = 'land.html';
-                });
-            }
+            // Update UI with total areas
+            document.getElementById('totalAreaSqMeters').textContent = totalSqMeters.toFixed(2);
+            document.getElementById('totalAreaHectares').textContent = totalHectares.toFixed(2);
+            document.getElementById('totalAreaAcres').textContent = totalAcres.toFixed(2);
         }
 
         function setupEventListeners() {
-            // Speech buttons (delegated since they're dynamically created)
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.speech-btn')) {
-                    const button = e.target.closest('.speech-btn');
-                    const section = button.getAttribute('data-section');
+            // Speech buttons
+            document.querySelectorAll('.speech-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
                     speakSection(section);
-                }
+                });
             });
             
-            // Edit profile button
+            // Action buttons
             document.getElementById('editProfileBtn').addEventListener('click', function() {
                 window.location.href = 'account-management.html';
             });
             
-            // Logout button
+            document.getElementById('addAccountBtn').addEventListener('click', function() {
+                window.location.href = 'account-management.html';
+            });
+            
+            document.getElementById('viewCropsBtn').addEventListener('click', function() {
+                window.location.href = 'crops.html';
+            });
+            
+            document.getElementById('addLandBtn').addEventListener('click', function() {
+                window.location.href = 'land.html';
+            });
+            
             document.getElementById('logoutBtn').addEventListener('click', async function() {
-                await signOut();
+                await window.authChecker.signOut();
             });
         }
 
-        async function signOut() {
-            try {
-                // Clear localStorage
-                localStorage.removeItem('growsmart_user_session');
-                
-                // Sign out from Supabase
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                    console.error('Error signing out from Supabase:', error);
-                }
-                
-                console.log('User signed out successfully');
-                
-                // Redirect to login page
-                window.location.href = 'login.html';
-                
-            } catch (error) {
-                console.error('Error in signOut:', error);
-                window.location.href = 'login.html';
-            }
-        }
-
         function speakSection(section) {
-            if (!window.speechSynthesis || !userData) {
-                console.warn("Speech synthesis not supported or no user data");
+            if (!window.speechSynthesis) {
+                console.warn("Speech synthesis not supported");
                 return;
             }
             
@@ -969,16 +716,16 @@
                 switch(section) {
                     case 'personal':
                         text = `आपकी व्यक्तिगत जानकारी: 
-                        नाम: ${userData.full_name || 'उपलब्ध नहीं'}, 
-                        फोन: ${userData.phone || 'उपलब्ध नहीं'}, 
-                        ईमेल: ${userData.email || 'उपलब्ध नहीं'}, 
+                        नाम: ${userData.full_name}, 
+                        फोन: ${userData.phone}, 
+                        ईमेल: ${userData.email}, 
                         भाषा: ${userData.language || 'अंग्रेजी'}`;
                         break;
                     case 'account':
-                        if (userData.account_holder_name || userData.account_number) {
+                        if (userData.account_holder_name && userData.account_number) {
                             text = `आपका खाता विवरण: 
-                            खाता धारक: ${userData.account_holder_name || 'उपलब्ध नहीं'}, 
-                            खाता नंबर: ${userData.account_number || 'उपलब्ध नहीं'}, 
+                            खाता धारक: ${userData.account_holder_name}, 
+                            खाता नंबर: ${userData.account_number}, 
                             आई एफ एस सी कोड: ${userData.ifsc_code || 'उपलब्ध नहीं'}, 
                             पानी का स्रोत: ${userData.water_source || 'उपलब्ध नहीं'}`;
                         } else {
@@ -1005,16 +752,16 @@
                 switch(section) {
                     case 'personal':
                         text = `Your personal information: 
-                        Name: ${userData.full_name || 'Not provided'}, 
-                        Phone: ${userData.phone || 'Not provided'}, 
-                        Email: ${userData.email || 'Not provided'}, 
+                        Name: ${userData.full_name}, 
+                        Phone: ${userData.phone}, 
+                        Email: ${userData.email}, 
                         Language: ${userData.language || 'English'}`;
                         break;
                     case 'account':
-                        if (userData.account_holder_name || userData.account_number) {
+                        if (userData.account_holder_name && userData.account_number) {
                             text = `Your account details: 
-                            Account holder: ${userData.account_holder_name || 'Not provided'}, 
-                            Account number: ${userData.account_number || 'Not provided'}, 
+                            Account holder: ${userData.account_holder_name}, 
+                            Account number: ${userData.account_number}, 
                             IFSC code: ${userData.ifsc_code || 'Not provided'}, 
                             Water source: ${userData.water_source || 'Not provided'}`;
                         } else {
@@ -1063,27 +810,8 @@
         }
 
         function showError(message) {
-            const errorContainer = document.getElementById('errorContainer');
-            errorContainer.innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>${escapeHtml(message)}</p>
-                </div>
-            `;
-            errorContainer.style.display = 'block';
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                errorContainer.style.display = 'none';
-            }, 5000);
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            alert(message);
         }
     </script>
 </body>
-</html>
+</html>          
