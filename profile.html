@@ -363,6 +363,25 @@
             font-weight: 600;
         }
 
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .loading i {
+            font-size: 32px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Responsive Design */
         @media (max-width: 480px) {
             .land-details {
@@ -440,33 +459,9 @@
                 </button>
             </h2>
             
-            <div id="accountInfo">
-                <div class="info-grid">
-                    <div class="info-card">
-                        <div class="info-label">Account Holder</div>
-                        <div class="info-value" id="profileAccountHolder">Loading...</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Account Number</div>
-                        <div class="info-value" id="profileAccountNumber">Loading...</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">IFSC Code</div>
-                        <div class="info-value" id="profileIfscCode">Loading...</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Water Source</div>
-                        <div class="info-value" id="profileWaterSource">Loading...</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="noAccountInfo" class="no-data" style="display: none;">
-                <i class="fas fa-university"></i>
-                <p>No account information added yet</p>
-                <button class="action-btn primary" id="addAccountBtn">
-                    <i class="fas fa-plus"></i> Add Account Details
-                </button>
+            <div id="accountInfo" class="loading">
+                <i class="fas fa-spinner"></i>
+                <p>Loading account information...</p>
             </div>
         </div>
 
@@ -480,33 +475,9 @@
             </h2>
             
             <div id="landsContainer">
-                <div class="land-summary">
-                    <div class="land-header">
-                        <div class="land-name">Total Land Area</div>
-                    </div>
-                    <div class="land-details">
-                        <div class="land-detail">
-                            <div class="detail-value" id="totalAreaSqMeters">0</div>
-                            <div class="detail-label">Square Meters</div>
-                        </div>
-                        <div class="land-detail">
-                            <div class="detail-value" id="totalAreaHectares">0</div>
-                            <div class="detail-label">Hectares</div>
-                        </div>
-                        <div class="land-detail">
-                            <div class="detail-value" id="totalAreaAcres">0</div>
-                            <div class="detail-label">Acres</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="action-btn secondary" id="viewCropsBtn">
-                        <i class="fas fa-seedling"></i> View Crops
-                    </button>
-                    <button class="action-btn primary" id="addLandBtn">
-                        <i class="fas fa-plus"></i> Add Land
-                    </button>
+                <div class="loading" id="landLoading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Loading land information...</p>
                 </div>
             </div>
         </div>
@@ -546,12 +517,22 @@
         </div>
     </div>
 
-    <!-- Include Supabase config and auth checker -->
+    <!-- Include Supabase from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script src="auth-checker.js"></script>
 
     <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: true
+            }
+        });
+
         // Global variables
         let currentLanguage = 'English';
         let speechLang = 'en-IN';
@@ -560,27 +541,71 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
-            setupEventListeners();
             updateTime();
             setInterval(updateTime, 60000);
         });
 
         async function initializeApp() {
+            console.log("Initializing profile page...");
+            
             // Check authentication
-            const isAuthenticated = await window.authChecker.requireAuth();
-            if (!isAuthenticated) return;
-
-            await loadUserData();
-            await loadLandsData();
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            
+            if (error || !session) {
+                console.error("Authentication error or no session:", error);
+                alert("Please login to view your profile");
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            console.log("User authenticated:", session.user.id);
+            
+            // Get user ID from localStorage or session
+            const userId = getUserId();
+            
+            if (!userId) {
+                console.error("No user ID found");
+                alert("User profile not found. Please login again.");
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            console.log("Loading data for user ID:", userId);
+            
+            await loadUserData(userId);
+            await loadLandsData(userId);
         }
 
-        async function loadUserData() {
-            try {
-                const userId = await window.authChecker.getUserId();
-                if (!userId) return;
+        function getUserId() {
+            // Try to get user ID from multiple sources
+            const storedUser = localStorage.getItem('growsmart_current_user');
+            if (storedUser) {
+                try {
+                    const user = JSON.parse(storedUser);
+                    console.log("Found user ID in localStorage:", user.user_id);
+                    return user.user_id;
+                } catch (e) {
+                    console.error("Error parsing stored user:", e);
+                }
+            }
+            
+            // Try from URL or other sources
+            const urlParams = new URLSearchParams(window.location.search);
+            const userIdFromUrl = urlParams.get('user_id');
+            if (userIdFromUrl) {
+                console.log("Found user ID in URL:", userIdFromUrl);
+                return userIdFromUrl;
+            }
+            
+            return null;
+        }
 
-                // Get user data from users table
-                const { data, error } = await window.supabaseClient
+        async function loadUserData(userId) {
+            try {
+                console.log("Loading user data from database...");
+                
+                // Get user data from users table using user_id
+                const { data, error } = await supabaseClient
                     .from('users')
                     .select('*')
                     .eq('user_id', userId)
@@ -588,31 +613,66 @@
                 
                 if (error) {
                     console.error('Error loading user data:', error);
-                    showError('User profile not found.');
+                    
+                    // Try alternative: Get by auth_id from session
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    if (session?.user?.id) {
+                        console.log("Trying to get user by auth_id:", session.user.id);
+                        const { data: authData, error: authError } = await supabaseClient
+                            .from('users')
+                            .select('*')
+                            .eq('auth_id', session.user.id)
+                            .single();
+                        
+                        if (authError) {
+                            console.error('Error loading user by auth_id:', authError);
+                            showError('User profile not found. Please contact support.');
+                            return;
+                        }
+                        
+                        if (authData) {
+                            console.log("Found user by auth_id:", authData);
+                            userData = authData;
+                            updateProfileUI();
+                            return;
+                        }
+                    }
+                    
+                    showError('User profile not found. Please login again.');
                     return;
                 }
                 
                 if (data) {
+                    console.log("User data loaded:", data);
                     userData = data;
                     currentLanguage = data.language || 'English';
                     speechLang = currentLanguage === 'Hindi' ? 'hi-IN' : 'en-IN';
                     
                     // Update UI with user data
                     updateProfileUI();
+                    
+                    // Store in localStorage for future use
+                    localStorage.setItem('growsmart_current_user', JSON.stringify({
+                        user_id: data.user_id,
+                        email: data.email,
+                        name: data.full_name,
+                        language: data.language,
+                        registered: true,
+                        timestamp: new Date().toISOString()
+                    }));
                 }
             } catch (error) {
                 console.error('Error loading user data:', error);
-                showError('Error loading user profile');
+                showError('Error loading user profile. Please try again.');
             }
         }
 
-        async function loadLandsData() {
+        async function loadLandsData(userId) {
             try {
-                const userId = await window.authChecker.getUserId();
-                if (!userId) return;
+                console.log("Loading lands data for user:", userId);
                 
-                // Get lands data from lands table
-                const { data, error } = await window.supabaseClient
+                // Get lands data from lands table using user_id
+                const { data, error } = await supabaseClient
                     .from('lands')
                     .select('*')
                     .eq('user_id', userId)
@@ -620,42 +680,85 @@
                 
                 if (error) {
                     console.error('Error loading lands data:', error);
+                    showNoLandsData();
                     return;
                 }
                 
                 if (data && data.length > 0) {
+                    console.log("Lands data loaded:", data.length, "lands found");
                     landsData = data;
                     updateLandsUI();
+                } else {
+                    console.log("No lands data found for user");
+                    showNoLandsData();
                 }
             } catch (error) {
                 console.error('Error loading lands data:', error);
+                showNoLandsData();
             }
         }
 
         function updateProfileUI() {
+            console.log("Updating profile UI with:", userData);
+            
             // Personal Information
-  document.getElementById('userFullName').textContent = userData.full_name;
-            document.getElementById('profileFullName').textContent = userData.full_name;
-            document.getElementById('profilePhone').textContent = userData.phone;
-            document.getElementById('profileEmail').textContent = userData.email;
+            document.getElementById('userFullName').textContent = userData.full_name || 'Not provided';
+            document.getElementById('profileFullName').textContent = userData.full_name || 'Not provided';
+            document.getElementById('profilePhone').textContent = userData.phone || 'Not provided';
+            document.getElementById('profileEmail').textContent = userData.email || 'Not provided';
             document.getElementById('profileLanguage').textContent = userData.language || 'English';
             
             // Account Information
-            if (userData.account_holder_name && userData.account_number) {
-                document.getElementById('profileAccountHolder').textContent = userData.account_holder_name;
-                document.getElementById('profileAccountNumber').textContent = userData.account_number;
-                document.getElementById('profileIfscCode').textContent = userData.ifsc_code || 'Not provided';
-                document.getElementById('profileWaterSource').textContent = userData.water_source || 'Not provided';
+            const accountInfoDiv = document.getElementById('accountInfo');
+            
+            if (userData.account_holder_name || userData.account_number) {
+                accountInfoDiv.innerHTML = `
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-label">Account Holder</div>
+                            <div class="info-value">${userData.account_holder_name || 'Not provided'}</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Account Number</div>
+                            <div class="info-value">${userData.account_number || 'Not provided'}</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">IFSC Code</div>
+                            <div class="info-value">${userData.ifsc_code || 'Not provided'}</div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn primary" id="addAccountBtn">
+                            <i class="fas fa-edit"></i> Update Account Details
+                        </button>
+                    </div>
+                `;
                 
-                document.getElementById('accountInfo').style.display = 'block';
-                document.getElementById('noAccountInfo').style.display = 'none';
+                // Add event listener to the new button
+                document.getElementById('addAccountBtn').addEventListener('click', function() {
+                    window.location.href = 'account-management.html';
+                });
             } else {
-                document.getElementById('accountInfo').style.display = 'none';
-                document.getElementById('noAccountInfo').style.display = 'block';
+                accountInfoDiv.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-university"></i>
+                        <p>No account information added yet</p>
+                        <button class="action-btn primary" id="addAccountBtn">
+                            <i class="fas fa-plus"></i> Add Account Details
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listener to the new button
+                document.getElementById('addAccountBtn').addEventListener('click', function() {
+                    window.location.href = 'account-management.html';
+                });
             }
         }
 
         function updateLandsUI() {
+            const landsContainer = document.getElementById('landsContainer');
+            
             // Calculate total area across all lands
             let totalSqMeters = 0;
             let totalHectares = 0;
@@ -667,30 +770,42 @@
                 totalAcres += parseFloat(land.area_acres) || 0;
             });
             
-            // Update UI with total areas
-            document.getElementById('totalAreaSqMeters').textContent = totalSqMeters.toFixed(2);
-            document.getElementById('totalAreaHectares').textContent = totalHectares.toFixed(2);
-            document.getElementById('totalAreaAcres').textContent = totalAcres.toFixed(2);
-        }
-
-        function setupEventListeners() {
-            // Speech buttons
-            document.querySelectorAll('.speech-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const section = this.getAttribute('data-section');
-                    speakSection(section);
-                });
-            });
+            landsContainer.innerHTML = `
+                <div class="land-summary">
+                    <div class="land-header">
+                        <div class="land-name">Total Land Area</div>
+                    </div>
+                    <div class="land-details">
+                        <div class="land-detail">
+                            <div class="detail-value">${totalSqMeters.toFixed(2)}</div>
+                            <div class="detail-label">Square Meters</div>
+                        </div>
+                        <div class="land-detail">
+                            <div class="detail-value">${totalHectares.toFixed(2)}</div>
+                            <div class="detail-label">Hectares</div>
+                        </div>
+                        <div class="land-detail">
+                            <div class="detail-value">${totalAcres.toFixed(2)}</div>
+                            <div class="detail-label">Acres</div>
+                        </div>
+                    </div>
+                    ${landsData.length > 0 ? 
+                        `<p style="text-align: center; color: var(--text-light); font-size: 14px; margin-top: 12px;">
+                            <i class="fas fa-info-circle"></i> You have ${landsData.length} land(s) registered
+                        </p>` : ''}
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn secondary" id="viewCropsBtn">
+                        <i class="fas fa-seedling"></i> View Crops
+                    </button>
+                    <button class="action-btn primary" id="addLandBtn">
+                        <i class="fas fa-plus"></i> Add Land
+                    </button>
+                </div>
+            `;
             
-            // Action buttons
-            document.getElementById('editProfileBtn').addEventListener('click', function() {
-                window.location.href = 'account-management.html';
-            });
-            
-            document.getElementById('addAccountBtn').addEventListener('click', function() {
-                window.location.href = 'account-management.html';
-            });
-            
+            // Add event listeners
             document.getElementById('viewCropsBtn').addEventListener('click', function() {
                 window.location.href = 'crops.html';
             });
@@ -698,15 +813,72 @@
             document.getElementById('addLandBtn').addEventListener('click', function() {
                 window.location.href = 'land.html';
             });
+        }
+
+        function showNoLandsData() {
+            const landsContainer = document.getElementById('landsContainer');
+            landsContainer.innerHTML = `
+                <div class="no-data">
+                    <i class="fas fa-tractor"></i>
+                    <p>No land information added yet</p>
+                    <div class="action-buttons">
+                        <button class="action-btn primary" id="addLandBtn">
+                            <i class="fas fa-plus"></i> Add Your First Land
+                        </button>
+                    </div>
+                </div>
+            `;
             
-            document.getElementById('logoutBtn').addEventListener('click', async function() {
-                await window.authChecker.signOut();
+            document.getElementById('addLandBtn').addEventListener('click', function() {
+                window.location.href = 'land.html';
             });
+        }
+
+        function setupEventListeners() {
+            // Edit profile button
+            document.getElementById('editProfileBtn').addEventListener('click', function() {
+                window.location.href = 'account-management.html';
+            });
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', async function() {
+                await signOut();
+            });
+            
+            // Speech buttons (added dynamically)
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.speech-btn')) {
+                    const button = e.target.closest('.speech-btn');
+                    const section = button.getAttribute('data-section');
+                    speakSection(section);
+                }
+            });
+        }
+
+        async function signOut() {
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
+                
+                // Clear localStorage
+                localStorage.removeItem('growsmart_current_user');
+                
+                // Redirect to login
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+                alert('Error signing out. Please try again.');
+            }
         }
 
         function speakSection(section) {
             if (!window.speechSynthesis) {
                 console.warn("Speech synthesis not supported");
+                return;
+            }
+            
+            if (!userData) {
+                alert("User data not loaded yet");
                 return;
             }
             
@@ -726,8 +898,7 @@
                             text = `आपका खाता विवरण: 
                             खाता धारक: ${userData.account_holder_name}, 
                             खाता नंबर: ${userData.account_number}, 
-                            आई एफ एस सी कोड: ${userData.ifsc_code || 'उपलब्ध नहीं'}, 
-                            पानी का स्रोत: ${userData.water_source || 'उपलब्ध नहीं'}`;
+                            आई एफ एस सी कोड: ${userData.ifsc_code || 'उपलब्ध नहीं'}`;
                         } else {
                             text = 'कोई खाता विवरण उपलब्ध नहीं है। कृपया खाता विवरण जोड़ें।';
                         }
@@ -762,8 +933,7 @@
                             text = `Your account details: 
                             Account holder: ${userData.account_holder_name}, 
                             Account number: ${userData.account_number}, 
-                            IFSC code: ${userData.ifsc_code || 'Not provided'}, 
-                            Water source: ${userData.water_source || 'Not provided'}`;
+                            IFSC code: ${userData.ifsc_code || 'Not provided'}`;
                         } else {
                             text = 'No account details available. Please add account details.';
                         }
@@ -812,6 +982,11 @@
         function showError(message) {
             alert(message);
         }
+
+        // Initialize event listeners after DOM is loaded
+        setTimeout(() => {
+            setupEventListeners();
+        }, 1000);
     </script>
 </body>
-</html>          
+</html>
