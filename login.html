@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grow smart - Farmer Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Load Supabase from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -532,7 +530,34 @@
         </div>
     </div>
 
+    <!-- Load Supabase from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
+        // ==============================================
+        // SUPABASE INITIALIZATION
+        // ==============================================
+        const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
+        
+        let supabaseClient;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true,
+                    storage: window.localStorage
+                }
+            });
+            console.log("Supabase client created successfully");
+        } catch (error) {
+            console.error("Error creating Supabase client:", error);
+        }
+        
+        // ==============================================
+        // MAIN SCRIPT - RUNS AFTER DOM LOADS
+        // ==============================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log("DOM loaded, starting login page...");
             
@@ -550,57 +575,19 @@
             const captchaInput = document.getElementById('captchaInput');
             
             // ==============================================
-            // 2. INITIALIZE SUPABASE
-            // ==============================================
-            async function initializeSupabase() {
-                console.log("Initializing Supabase...");
-                
-                // Supabase Configuration
-                const SUPABASE_URL = 'https://nowtlqsmpdmbvjsbtmuk.supabase.co';
-                const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd3RscXNtcGRtYnZqc2J0bXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5Mzk2NjUsImV4cCI6MjA3NTUxNTY2NX0.pS_-eUArnyw4J8YE1WHM-IJZQ87_PTNU8gAjVg3zzfk';
-                
-                try {
-                    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-                        auth: {
-                            autoRefreshToken: true,
-                            persistSession: true,
-                            detectSessionInUrl: true,
-                            storage: window.localStorage
-                        }
-                    });
-                    
-                    window.supabaseClient = supabase;
-                    console.log('Supabase client initialized successfully');
-                    
-                    // Check for existing session
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session) {
-                        console.log('Existing session found for user:', session.user.email);
-                    }
-                    
-                    return supabase;
-                } catch (error) {
-                    console.error('Error initializing Supabase client:', error);
-                    return null;
-                }
-            }
-            
-            // ==============================================
-            // 3. CHECK IF ALREADY LOGGED IN
+            // 2. CHECK IF ALREADY LOGGED IN
             // ==============================================
             async function checkIfAlreadyLoggedIn() {
                 console.log("Checking if user is already logged in...");
                 
-                // Initialize Supabase first
-                const supabase = await initializeSupabase();
-                if (!supabase) {
-                    console.warn("Supabase client could not be initialized");
+                if (!supabaseClient) {
+                    console.warn("Supabase client not initialized");
                     return false;
                 }
                 
                 try {
                     // Check Supabase session
-                    const { data: { session }, error } = await supabase.auth.getSession();
+                    const { data: { session }, error } = await supabaseClient.auth.getSession();
                     
                     if (error) {
                         console.error("Session check error:", error);
@@ -610,60 +597,47 @@
                     if (session && session.user) {
                         console.log("User already logged in:", session.user.email);
                         
-                        // Show message
-                        showSuccess("Already logged in! Redirecting...");
+                        // Get user profile from users table
+                        const { data: userProfile } = await supabaseClient
+                            .from('users')
+                            .select('*')
+                            .or(`auth_id.eq.${session.user.id},email.eq.${session.user.email}`)
+                            .single();
                         
-                        // Get user profile to determine role
-                        try {
-                            const { data: userProfile } = await supabase
-                                .from('users')
-                                .select('role, full_name')
-                                .eq('auth_id', session.user.id)
-                                .single();
+                        if (userProfile) {
+                            console.log("Found user profile:", userProfile);
                             
-                            // Store session
-                            const userSession = {
-                                user_id: session.user.id,
+                            // Store user data in localStorage
+                            localStorage.setItem('growsmart_current_user', JSON.stringify({
+                                user_id: userProfile.user_id,
+                                email: userProfile.email,
+                                name: userProfile.full_name,
+                                language: userProfile.language || 'English',
+                                phone: userProfile.phone,
+                                role: userProfile.role || 'farmer',
+                                logged_in: true,
+                                timestamp: new Date().toISOString()
+                            }));
+                            
+                            // Also store session separately
+                            localStorage.setItem('growsmart_user_session', JSON.stringify({
+                                user_id: userProfile.user_id,
                                 auth_id: session.user.id,
                                 email: session.user.email,
-                                name: userProfile?.full_name || session.user.email,
-                                role: userProfile?.role || 'farmer',
+                                name: userProfile.full_name,
+                                role: userProfile.role || 'farmer',
                                 logged_in: true,
                                 session_start: new Date().toISOString()
-                            };
+                            }));
                             
-                            localStorage.setItem('growsmart_user_session', JSON.stringify(userSession));
-                            
-                            // Redirect based on role
-                            setTimeout(() => {
-                                if (userProfile?.role === 'admin') {
-                                    window.location.href = 'admin-dashboard.html';
-                                } else {
-                                    window.location.href = 'dashboard.html';
-                                }
-                            }, 1500);
-                            
+                            // Redirect immediately
+                            window.location.href = userProfile.role === 'admin' ? 'admin-dashboard.html' : 'dashboard.html';
                             return true;
-                        } catch (profileError) {
-                            console.warn("Could not get user profile:", profileError);
-                            
-                            // Store basic session anyway
-                            const userSession = {
-                                user_id: session.user.id,
-                                auth_id: session.user.id,
-                                email: session.user.email,
-                                name: session.user.email,
-                                role: 'farmer',
-                                logged_in: true,
-                                session_start: new Date().toISOString()
-                            };
-                            
-                            localStorage.setItem('growsmart_user_session', JSON.stringify(userSession));
-                            
-                            setTimeout(() => {
-                                window.location.href = 'dashboard.html';
-                            }, 1500);
-                            return true;
+                        } else {
+                            console.log("No user profile found, but auth session exists");
+                            // User exists in auth but not in users table yet
+                            // This can happen if registration was incomplete
+                            return false;
                         }
                     }
                 } catch (error) {
@@ -672,11 +646,11 @@
                 return false;
             }
             
-            // Run check after a short delay
-            setTimeout(checkIfAlreadyLoggedIn, 500);
+            // Check for existing session
+            setTimeout(checkIfAlreadyLoggedIn, 100);
             
             // ==============================================
-            // 4. LANGUAGE SELECTION
+            // 3. LANGUAGE SELECTION
             // ==============================================
             let currentLanguage = 'English';
             let speechEnabled = false;
@@ -757,7 +731,7 @@
             }
             
             // ==============================================
-            // 5. FORM FUNCTIONALITY
+            // 4. FORM FUNCTIONALITY
             // ==============================================
             function generateCaptcha() {
                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -858,7 +832,7 @@
             }
             
             // ==============================================
-            // 6. FORM SUBMISSION
+            // 5. LOGIN FORM SUBMISSION
             // ==============================================
             loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -868,13 +842,9 @@
                     return;
                 }
                 
-                // Ensure Supabase is initialized
-                if (!window.supabaseClient) {
-                    const supabase = await initializeSupabase();
-                    if (!supabase) {
-                        showError('Database connection error. Please refresh the page.');
-                        return;
-                    }
+                if (!supabaseClient) {
+                    showError('Database connection error. Please refresh the page.');
+                    return;
                 }
                 
                 showLoading(true);
@@ -887,8 +857,8 @@
                     
                     console.log("Attempting login for:", loginData.email);
                     
-                    // Sign in with Supabase
-                    const { data: authData, error: authError } = await window.supabaseClient.auth.signInWithPassword({
+                    // Sign in with Supabase Auth
+                    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
                         email: loginData.email,
                         password: loginPassword.value
                     });
@@ -911,58 +881,71 @@
                     
                     console.log("Login successful, user ID:", authData.user.id);
                     
-                    // Get user profile
-                    let userProfile = null;
-                    try {
-                        const { data: profileData, error: profileError } = await window.supabaseClient
+                    // Get user profile from users table
+                    const { data: userProfile, error: profileError } = await supabaseClient
+                        .from('users')
+                        .select('*')
+                        .or(`auth_id.eq.${authData.user.id},email.eq.${loginData.email}`)
+                        .single();
+                    
+                    if (profileError) {
+                        console.warn("Profile fetch error:", profileError);
+                        
+                        // If user doesn't exist in users table but auth succeeded,
+                        // try to find them by email
+                        const { data: userByEmail } = await supabaseClient
                             .from('users')
                             .select('*')
-                            .eq('auth_id', authData.user.id)
+                            .eq('email', loginData.email)
                             .single();
                         
-                        if (!profileError) {
-                            userProfile = profileData;
+                        if (userByEmail) {
+                            console.log("Found user by email:", userByEmail);
+                            // Update auth_id in users table
+                            await supabaseClient
+                                .from('users')
+                                .update({ auth_id: authData.user.id })
+                                .eq('user_id', userByEmail.user_id);
+                            
+                            // Use this user data
+                            displaySuccessAndRedirect(userByEmail, authData);
+                            return;
                         } else {
-                            console.warn("Profile fetch warning:", profileError.message);
+                            // Create a basic user profile if doesn't exist
+                            const newUserId = 'USER' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6).toUpperCase();
+                            const newUserProfile = {
+                                user_id: newUserId,
+                                auth_id: authData.user.id,
+                                full_name: authData.user.user_metadata?.full_name || loginData.email.split('@')[0],
+                                phone: authData.user.user_metadata?.phone || '',
+                                email: loginData.email,
+                                language: currentLanguage,
+                                role: 'farmer',
+                                created_at: new Date().toISOString()
+                            };
+                            
+                            // Insert new user
+                            const { data: createdUser } = await supabaseClient
+                                .from('users')
+                                .insert([newUserProfile])
+                                .select()
+                                .single();
+                            
+                            if (createdUser) {
+                                console.log("Created new user profile:", createdUser);
+                                displaySuccessAndRedirect(createdUser, authData);
+                                return;
+                            } else {
+                                throw new Error(currentLanguage === 'Hindi' ? 
+                                    'उपयोगकर्ता प्रोफाइल बनाने में त्रुटि' : 
+                                    'Error creating user profile');
+                            }
                         }
-                    } catch (profileErr) {
-                        console.warn("Could not fetch user profile:", profileErr);
+                    } else {
+                        // User profile found successfully
+                        console.log("User profile found:", userProfile);
+                        displaySuccessAndRedirect(userProfile, authData);
                     }
-                    
-                    // Store session
-                    const userSession = {
-                        user_id: userProfile?.user_id || authData.user.id,
-                        auth_id: authData.user.id,
-                        email: authData.user.email,
-                        name: userProfile?.full_name || authData.user.user_metadata?.full_name || authData.user.email,
-                        language: userProfile?.language || currentLanguage,
-                        role: userProfile?.role || 'farmer',
-                        logged_in: true,
-                        session_start: new Date().toISOString()
-                    };
-                    
-                    // Store in localStorage
-                    localStorage.setItem('growsmart_user_session', JSON.stringify(userSession));
-                    
-                    console.log("User session stored, redirecting...");
-                    
-                    // Show success
-                    showSuccess(currentLanguage === 'Hindi' ? 
-                        'लॉगिन सफल! डैशबोर्ड पर रीडायरेक्ट किया जा रहा है...' :
-                        'Login successful! Redirecting to dashboard...');
-                    
-                    // Clear form
-                    loginForm.reset();
-                    generateCaptcha();
-                    
-                    // Redirect after delay
-                    setTimeout(() => {
-                        if (userSession.role === 'admin') {
-                            window.location.href = 'admin-dashboard.html';
-                        } else {
-                            window.location.href = 'dashboard.html';
-                        }
-                    }, 2000);
                     
                 } catch (error) {
                     console.error("Login error:", error);
@@ -973,8 +956,54 @@
                 }
             });
             
+            function displaySuccessAndRedirect(userProfile, authData) {
+                // Store user data in localStorage
+                localStorage.setItem('growsmart_current_user', JSON.stringify({
+                    user_id: userProfile.user_id,
+                    email: userProfile.email,
+                    name: userProfile.full_name,
+                    language: userProfile.language || currentLanguage,
+                    phone: userProfile.phone,
+                    role: userProfile.role || 'farmer',
+                    logged_in: true,
+                    timestamp: new Date().toISOString()
+                }));
+                
+                // Also store session separately
+                localStorage.setItem('growsmart_user_session', JSON.stringify({
+                    user_id: userProfile.user_id,
+                    auth_id: authData.user.id,
+                    email: authData.user.email,
+                    name: userProfile.full_name,
+                    language: userProfile.language || currentLanguage,
+                    role: userProfile.role || 'farmer',
+                    logged_in: true,
+                    session_start: new Date().toISOString()
+                }));
+                
+                console.log("User session stored, redirecting...");
+                
+                // Show success
+                showSuccess(currentLanguage === 'Hindi' ? 
+                    'लॉगिन सफल! डैशबोर्ड पर रीडायरेक्ट किया जा रहा है...' :
+                    'Login successful! Redirecting to dashboard...');
+                
+                // Clear form
+                loginForm.reset();
+                generateCaptcha();
+                
+                // Redirect after delay
+                setTimeout(() => {
+                    if (userProfile.role === 'admin') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }, 2000);
+            }
+            
             // ==============================================
-            // 7. FORGOT PASSWORD
+            // 6. FORGOT PASSWORD
             // ==============================================
             document.getElementById('forgotPasswordLink').addEventListener('click', async function(e) {
                 e.preventDefault();
@@ -994,15 +1023,11 @@
                 this.style.pointerEvents = 'none';
                 
                 try {
-                    // Ensure Supabase is initialized
-                    if (!window.supabaseClient) {
-                        const supabase = await initializeSupabase();
-                        if (!supabase) {
-                            throw new Error('Database connection not available');
-                        }
+                    if (!supabaseClient) {
+                        throw new Error('Database connection not available');
                     }
                     
-                    const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
+                    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
                         redirectTo: window.location.origin + '/reset-password.html'
                     });
                     
@@ -1028,7 +1053,7 @@
             });
             
             // ==============================================
-            // 8. SPEECH SUPPORT
+            // 7. SPEECH SUPPORT
             // ==============================================
             function setupSpeechSupport() {
                 if (!window.speechSynthesis || !speechEnabled) {
